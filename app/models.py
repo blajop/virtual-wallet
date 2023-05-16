@@ -10,36 +10,61 @@ class UserSchema(BaseModel):
     last_name: str
     username: constr(min_length=2, max_length=20)
     email: EmailStr
-    phone_num: constr(regex='^\d{10}$')
+    phone_num: constr(regex="^\d{10}$")
     wallets: list[Wallet] = []
     cards: list[Card] = []
     contacts: list[UserPermissionsSchema] = []
     avatar: str | None = None
 
     @classmethod
-    def from_query_result(cls, id, first_name, last_name, username, email, password, 
-                          phone_num, wallets, cards, contacts, avatar):
-        return cls(id=id, first_name=first_name, last_name=last_name, username=username, email=email,
-                   phone_num=phone_num, wallets=wallets, cards=cards, contacts=contacts, avatar=avatar)
+    def from_query_result(
+        cls,
+        id,
+        first_name,
+        last_name,
+        username,
+        email,
+        password,
+        phone_num,
+        wallets,
+        cards,
+        contacts,
+        avatar,
+    ):
+        return cls(
+            id=id,
+            first_name=first_name,
+            last_name=last_name,
+            username=username,
+            email=email,
+            phone_num=phone_num,
+            wallets=wallets,
+            cards=cards,
+            contacts=contacts,
+            avatar=avatar,
+        )
+
 
 class RegisterSchema(UserSchema):
-    password: constr(regex='^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[-+*&^_]).{8,}$')
+    password: constr(regex="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[-+*&^_]).{8,}$")
+
 
 class UserPermissionsSchema(UserSchema):
-    password: str                 
-    scopes: list[str] = ['user']
+    password: str
+    scopes: list[str] = ["user"]
     email_confirmed: bool = False
 
     @classmethod
-    def from_query_result(cls, id, first_name, last_name, username, email, scopes, password):
+    def from_query_result(
+        cls, id, first_name, last_name, username, email, scopes, password
+    ):
         pass
 
     @property
     def is_admin(self):
-        if 'admin' in self.scopes:
+        if "admin" in self.scopes:
             return True
         return False
-    
 
 
 class Wallet(BaseModel):
@@ -55,8 +80,7 @@ class JointWallet(Wallet):
 
 class Card(BaseModel):
     id: int | None
-    number: constr(regex='^\d{16}$')
-    expiry: datetime    # ??
+    number: constr(regex="^\d{16}$")
+    expiry: datetime  # ??
     holder: constr(min_length=2, max_length=30)
-    cvc: constr(regex='^\d{3}$')
-    
+    cvc: constr(regex="^\d{3}$")
