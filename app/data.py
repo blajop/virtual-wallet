@@ -1,38 +1,58 @@
-from mariadb.connections import Connection
-from mariadb import connect
+import sqlalchemy
 
 
-def _get_connection() -> Connection:
-    return connect(
-        user="root",
-        password="mainatavihakeri",
-        host="91.139.226.224",
-        port=4444,
-        database="v-wallet",
-    )
+engine = sqlalchemy.create_engine(
+    "mariadb+mariadbconnector://root:mainatavihakeri@91.139.226.224:4444/v-wallet"
+)
+
+# base_orm = declarative_base()
+
+# class NewTableORM(base_orm):
+#     __tablename__ = "new_table"
+#     id = Column(Integer, primary_key=True)
+#     name = Column(String)
+#     kur = Column(Integer)
+
+# class AddressORM(base_orm):
+#     __tablename__ = "address"
+#     idaddress = Column(Integer, primary_key=True)
+#     address = Column(String)
+#     user = Column(Integer, ForeignKey("new_table.id"))
+
+# class Address(BaseModel):
+#     idaddress : int
+#     address : str
+#     user :int
+#     class Config:
+#         orm_mode = True
+
+# class NewTable(BaseModel):
+#     id: int | None
+#     name: str
+#     kur: int
+#     address: Address | None
+#     class Config:
+#         orm_mode = True
 
 
-def read_query(sql: str, sql_params=()):
-    with _get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(sql, sql_params)
+# with Session(engine) as session:
+#     orm = NewTableORM(name='44T', kur=25)
+#     pyd = NewTable.from_orm(orm)
+#     print(pyd)
+#     print(orm)
+#     session.add(orm)
+#     session.commit()
 
-        return list(cursor)
+# with Session(engine) as session:
+#     result = session.execute(select(NewTableORM, AddressORM).join_from(NewTableORM, AddressORM, isouter=False))
+#     for row in result:
+#         user = NewTable.from_orm(row[0])
+#         addr = Address.from_orm(row[1])
+#         user.address = addr
+#         print(user)
+#         print(addr)
+# print(result)
+# print(NewTable.from_orm(result))
 
-
-def insert_query(sql: str, sql_params=()) -> int:
-    with _get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(sql, sql_params)
-        conn.commit()
-
-        return cursor.lastrowid
-
-
-def update_query(sql: str, sql_params=()) -> bool:
-    with _get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(sql, sql_params)
-        conn.commit()
-
-        return cursor.rowcount
+# result = select(NewTableORM).where(NewTableORM.name == "44T")
+# print(result)
