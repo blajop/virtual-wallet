@@ -5,6 +5,15 @@ import smtplib
 from fastapi import HTTPException, Response
 from app.models import User
 from jose import jwt
+from jinja2 import (
+    Environment,
+    FileSystemLoader,
+    select_autoescape,
+)
+
+env = Environment(
+    loader=FileSystemLoader("app/static/html"), autoescape=select_autoescape()
+)
 
 
 def send_email(recipient: User, msg_data: dict):
@@ -62,20 +71,11 @@ def send_email(recipient: User, msg_data: dict):
     return Response(status_code=200, content="Email sent successfully!")
 
 
-from jinja2 import (
-    Environment,
-    FileSystemLoader,
-    select_autoescape,
-)
-
-env = Environment(
-    loader=FileSystemLoader("app/static/html"), autoescape=select_autoescape()
-)
-
-
 def registration_mail(user: User):
     template = env.get_template("email_verify.html")
     return {
         "subject": "Account confirmation",
-        "body": template.render(user=user.username),
+        "body": template.render(
+            user=user.username, link=f"91.139.226.224/confirm?id={user.id}"
+        ),
     }
