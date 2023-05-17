@@ -1,15 +1,15 @@
 import datetime
+import random
 from snowflake import SnowflakeGenerator, Snowflake
 
 
-def generate_id(instance: int = 1) -> str:
+def generate_id() -> str:
     """Generates a unique identifier.
 
-    Args:
-        instance: int between 0 and 1023; the seed for generation
     Returns:
         str: 19 digits in a str format
     """
+    instance = random.choice(range(1, 1024))
     return str(next(SnowflakeGenerator(instance)))
 
 
