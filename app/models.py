@@ -27,10 +27,6 @@ class User(BaseModel):
     phone: constr(regex="^\d{10}$")
     f_name: str
     l_name: str
-    wallets: list[Wallet] = []
-    cards: list[Card] = []
-    contacts: list[UserPermission] = []
-    avatar: str | None = None
 
     class Config:
         orm_mode = True
@@ -40,19 +36,20 @@ class UserRegistration(User):
     password: constr(regex="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[-+*&^_]).{8,}$")
 
 
-class UserPermission(User):
+class UserExtended(User):
     password: str
     scopes: list[str] = ["user"]
     email_confirmed: bool = False
+    wallets: list[Wallet] = []
+    cards: list[Card] = []
+    contacts: list[UserExtended] = []
+    avatar: str | None = None
 
     @property
     def is_admin(self):
         if "admin" in self.scopes:
             return True
         return False
-
-    class Config:
-        orm_mode = True
 
 
 class WalletORM(base_orm):
@@ -65,7 +62,7 @@ class WalletORM(base_orm):
 
 class Wallet(BaseModel):
     id: str | None
-    owner: UserPermission | None
+    owner: UserExtended | None
     currency: str  # Currency
     balance: float
 
@@ -74,7 +71,7 @@ class Wallet(BaseModel):
 
 
 class JointWallet(Wallet):
-    users: list[UserPermission] = []
+    users: list[UserExtended] = []
 
 
 class CardORM(base_orm):
@@ -119,3 +116,24 @@ class Transaction(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+    user_info: UserExtended
+
+
+class TokenData(BaseModel):
+    username: str | None = None
+    scopes: list[str] = []
+
+
+class PasswordUpdateModel(BaseModel):
+    old_password: str
+    new_password: str
+
+
+class UserLogin(BaseModel):
+    username: constr(min_length=2, max_length=20)
+    password: str
