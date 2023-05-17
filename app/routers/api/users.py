@@ -9,6 +9,9 @@ from fastapi import (
     Security,
 )
 from app.auth import auth
+from fastapi.responses import JSONResponse
+from fastapi.encoders import jsonable_encoder
+from app.services import mail_services
 from app.models import (
     PasswordUpdateModel,
     Token,
@@ -45,13 +48,20 @@ async def profile_info(
     return current_user
 
 
-#################
-
-
-@users_router.post("/sign-up")
+@users_router.post("/signup")
 def sign_up_user(user: UserRegistration, background_tasks: BackgroundTasks):
-    # background_tasks.add_task(auth.send_email_verify, user)
-    return user_services.register_user(user)
+    background_tasks.add_task(
+        mail_services.send_email, user, mail_services.registration_mail(user)
+    )
+    return JSONResponse(
+        content={
+            "registered_user": jsonable_encoder(user_services.register_user(user)),
+            "msg": "Link for email verification has been sent to your declared email",
+        }
+    )
+
+
+#################
 
 
 # @users_router.put("/password-change")
