@@ -64,7 +64,7 @@ class Wallet(BaseModel):
     id: str | None
     owner: UserExtended | None
     currency: str  # Currency
-    balance: float
+    balance: float = 0
 
     class Config:
         orm_mode = True
