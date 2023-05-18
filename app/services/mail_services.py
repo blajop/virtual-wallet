@@ -1,6 +1,7 @@
 import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+import os
 import smtplib
 from fastapi import HTTPException, Response
 from app.models import User
@@ -10,6 +11,11 @@ from jinja2 import (
     FileSystemLoader,
     select_autoescape,
 )
+from dotenv import load_dotenv
+
+
+load_dotenv()
+
 
 env = Environment(
     loader=FileSystemLoader("app/static/html"), autoescape=select_autoescape()
@@ -42,7 +48,7 @@ def send_email(recipient: User, msg_data: dict):
         raise HTTPException(status_code=400)
 
     # Set up the sender and receiver email addresses
-    sender_email = "zlatnite@abv.bg"
+    sender_email = os.getenv("SMTP_LOGIN_MAIL")
     receiver_email = recipient.email
     # Set up the email content
     message = MIMEMultipart()
@@ -59,8 +65,8 @@ def send_email(recipient: User, msg_data: dict):
     smtp_port = 465
 
     # Log in to the SMTP server using your abv.bg email account
-    username = "zlatnite@abv.bg"
-    password = "Momcheta"
+    username = os.getenv("SMTP_LOGIN_MAIL")
+    password = os.getenv("SMTP_LOGIN_PASS")
     server = smtplib.SMTP_SSL(smtp_server, smtp_port)
     server.login(username, password)
 

@@ -1,4 +1,8 @@
+import os
 import requests
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 def get_all_rates() -> dict:
@@ -9,9 +13,7 @@ def get_all_rates() -> dict:
         dict: keys of which are the currencies - 'USD', 'BGN' etc.
     """
 
-    data = requests.get(
-        f"https://api.freecurrencyapi.com/v1/latest?apikey=CaObycAixuF3GJJl9IVBdOQZNeTL2MmM3TamraI7&currencies=USD%2CEUR%2CBGN%2CCAD%2CAUD%2CCHF%2CCNY%2CJPY%2CGBP%2CNOK"
-    )
+    data = requests.get(os.getenv("CURRENCY_REQUEST_URL"))
 
     data = data.json().get("data")
     return data

@@ -1,9 +1,10 @@
+import os
 import sqlalchemy
+from dotenv import load_dotenv
 
+load_dotenv()
 
-engine = sqlalchemy.create_engine(
-    "mariadb+mariadbconnector://root:mainatavihakeri@91.139.226.224:4444/v-wallet"
-)
+engine = sqlalchemy.create_engine(os.getenv("DB_ENGINE"))
 
 # base_orm = declarative_base()
 
