@@ -10,8 +10,15 @@ from fastapi.encoders import jsonable_encoder
 
 def get_users():
     with Session(engine) as session:
-        result = session.scalar(select(User))
-        return result.__dict__
+        final = []
+        result = session.exec(select(User))
+        print(result)
+        for user in result:
+            user[0].scopes
+            user[0].cards
+            user[0].wallets
+            final.append(user[0].__dict__)
+        return final
 
 
 # def register_user(new_user: UserRegistration):
