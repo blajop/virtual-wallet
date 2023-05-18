@@ -6,7 +6,7 @@ from fastapi import (
     Response,
     Security,
 )
-from app.services import wallet_services
+from app.crud import crud_wallet
 
 
 wallets_router = APIRouter(prefix="/wallets", tags=["02. API / Wallets"])
@@ -14,4 +14,4 @@ wallets_router = APIRouter(prefix="/wallets", tags=["02. API / Wallets"])
 
 @wallets_router.get("/")
 def get_wallets():
-    return wallet_services.get_wallets()
+    return crud_wallet.get_wallets()

@@ -19,17 +19,8 @@ from app.data import engine
 
 class UserScopeLink(SQLModel, table=True):
     __tablename__ = "users_scopes"
-<<<<<<< HEAD
-    user_id: Optional[str] = Field(
-        default=None, foreign_key="users.id", primary_key=True
-    )
-    scope_id: Optional[str] = Field(
-        default=None, foreign_key="scopes.id", primary_key=True
-    )
-=======
     user_id: str = Field(foreign_key="users.id", primary_key=True)
     scope_id: str = Field(foreign_key="scopes.id", primary_key=True)
->>>>>>> 0c87cfe2c650b66a403b02cc82f9f83a0deb1c79
 
 
 class Scope(SQLModel, table=True):
@@ -93,11 +84,6 @@ class User(SQLModel, table=True):
     email_confirmed: bool = Field(default=False)
 
     scopes: Scope = Relationship(back_populates="users", link_model=UserScopeLink)
-<<<<<<< HEAD
-    wallets: list[Wallet] = Field(default=[], foreign_key="shared_wallets.user_id")
-    cards: list[Card] = Field(default=[], foreign_key="cards_users.user_id")
-    # friends: list[User] = Field(default=[], foreign_key="friends.user_id")
-=======
     cards: Card = Relationship(back_populates="users", link_model=UserCardLink)
     wallets: Wallet = Relationship(back_populates="users", link_model=UserWalletLink)
     friends: User = Relationship(
@@ -110,7 +96,6 @@ class User(SQLModel, table=True):
     )
 
     wallet: Optional[Wallet] = Relationship(back_populates="owner")
->>>>>>> 0c87cfe2c650b66a403b02cc82f9f83a0deb1c79
     # avatar: Optional[str] = None
 
     # @property

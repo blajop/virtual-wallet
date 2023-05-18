@@ -11,7 +11,7 @@ from fastapi import (
 from app.auth import auth
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
-from app.services import mail_services
+from app.crud import crud_mail
 from app.models import (
     PasswordUpdateModel,
     Token,
@@ -19,7 +19,7 @@ from app.models import (
     User,
     UserRegistration,
 )
-from app.services import user_services
+from app.crud import crud_user
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import RedirectResponse
 
@@ -31,7 +31,7 @@ router = APIRouter(prefix="/users", tags=["01. API / Users"])
 
 @router.get("/")  # , response_model=User
 def get_users():
-    return user_services.get_users()
+    return crud_user.get_users()
 
 
 @router.post("/login")
@@ -53,11 +53,11 @@ async def profile_info(current_user: Annotated[User, Depends(auth.get_current_us
 @router.post("/signup")
 def sign_up_user(user: UserRegistration, background_tasks: BackgroundTasks):
     background_tasks.add_task(
-        mail_services.send_email, user, mail_services.registration_mail(user)
+        crud_mail.send_email, user, crud_mail.registration_mail(user)
     )
     return JSONResponse(
         content={
-            "registered_user": jsonable_encoder(user_services.register_user(user)),
+            "registered_user": jsonable_encoder(crud_user.register_user(user)),
             "msg": "Link for email verification has been sent to your declared email",
         }
     )
