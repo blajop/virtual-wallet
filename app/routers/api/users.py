@@ -16,7 +16,6 @@ from app.models import (
     PasswordUpdateModel,
     Token,
     UserLogin,
-    UserExtended,
     User,
     UserRegistration,
 )
@@ -30,6 +29,11 @@ users_router = APIRouter(prefix="/users", tags=["01. API / Users"])
 # admin may toggle the write access of a user even irrespective of his confirming or not the email
 
 
+@users_router.get("/users")  # , response_model=User
+def get_users():
+    return user_services.get_users()
+
+
 @users_router.post("/login")
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
@@ -37,10 +41,8 @@ async def login_for_access_token(
     return auth.get_token(form_data)
 
 
-@users_router.get("/profile")  # , response_model=UserExtended
-async def profile_info(
-    current_user: Annotated[UserExtended, Depends(auth.get_current_user)]
-):
+@users_router.get("/profile")  # , response_model=User
+async def profile_info(current_user: Annotated[User, Depends(auth.get_current_user)]):
     if not current_user:
         raise HTTPException(
             status_code=401, detail="You must be logged in to see your profile"
@@ -59,6 +61,14 @@ def sign_up_user(user: UserRegistration, background_tasks: BackgroundTasks):
             "msg": "Link for email verification has been sent to your declared email",
         }
     )
+
+
+# @users_router.get("/{search_param}")
+# def get_user(search_param: str):
+#     user = user_services.search(search_param)
+#     if not user:
+#         return Response(status_code=404)
+#     return user
 
 
 #################

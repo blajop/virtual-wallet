@@ -1,127 +1,94 @@
 from __future__ import annotations
 from pydantic import BaseModel, EmailStr, constr
-from currencies import Currency
 from datetime import datetime
-from sqlalchemy import Column, DateTime, Float, String, Integer, select, ForeignKey
-from sqlalchemy.orm import Session, declarative_base
+from typing import Optional, List
+from sqlmodel import SQLModel, Field, create_engine, ForeignKey, Relationship
+from fastapi.encoders import jsonable_encoder
 
 
-base_orm = declarative_base()
+class UserScopeLink(SQLModel, table=True):
+    __tablename__ = "users_scopes"
+    user_id: Optional[int] = Field(
+        default=None, foreign_key="users.id", primary_key=True
+    )
+    scope_id: Optional[int] = Field(
+        default=None, foreign_key="scopes.id", primary_key=True
+    )
 
 
-class UserORM(base_orm):
+class Scope(SQLModel, table=True):
+    __tablename__ = "scopes"
+    id: Optional[str] = Field(primary_key=True)
+    scope: str
+    users: User = Relationship(back_populates="scopes", link_model=UserScopeLink)
+
+
+class User(SQLModel, table=True):
     __tablename__ = "users"
-    id = Column(String, primary_key=True)
-    username = Column(String, unique=True)
-    password = Column(String)
-    email = Column(String, unique=True)
-    phone = Column(String, unique=True)
-    f_name = Column(String)
-    l_name = Column(String)
+    id: Optional[str] = Field(primary_key=True)
+    username: constr(min_length=2, max_length=20) = Field(unique=True)
+    password: str
+    email: EmailStr = Field(unique=True)
+    phone: constr(regex="^\d{10}$") = Field(unique=True)
+    f_name: str
+    l_name: str
+    email_confirmed: bool = Field(default=False)
+    scopes: Scope = Relationship(back_populates="users", link_model=UserScopeLink)
+    # wallets: list[Wallet] = Field(default=[], foreign_key="shared_wallets.user_id")
+    # cards: list[Card] = Field(default=[], foreign_key="cards_users.user_id")
+    # friends: list[User] = Field(default=[], foreign_key="friends.user_id")
+    # avatar: Optional[str] = None
+
+    # @property
+    # def is_admin(self):
+    #     if "admin" in self.scopes:
+    #         return True
+    #     return False
 
 
-class User(BaseModel):
+class UserRegistration(BaseModel):
     id: str | None
     username: constr(min_length=2, max_length=20)
     email: EmailStr
     phone: constr(regex="^\d{10}$")
     f_name: str
     l_name: str
-
-    class Config:
-        orm_mode = True
-
-
-class UserRegistration(User):
     password: constr(regex="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[-+*&^_]).{8,}$")
 
 
-class UserExtended(User):
-    password: str
-    scopes: list[str] = ["user"]
-    email_confirmed: bool = False
-    wallets: list[Wallet] = []
-    cards: list[Card] = []
-    contacts: list[UserExtended] = []
-    avatar: str | None = None
-
-    @property
-    def is_admin(self):
-        if "admin" in self.scopes:
-            return True
-        return False
-
-
-class WalletORM(base_orm):
+class Wallet(SQLModel, table=True):
     __tablename__ = "wallets"
-    id = Column(String, primary_key=True)
-    owner_id = Column(String)
-    currency = Column(String)
-    balance = Column(Float)
-
-
-class Wallet(BaseModel):
-    id: str | None
-    owner: UserExtended | None
+    id: Optional[str] = Field(primary_key=True)
+    owner: Optional[str] = Field(default=None, foreign_key="users.id")
     currency: str  # Currency
-    balance: float = 0
-
-    class Config:
-        orm_mode = True
+    balance: float = Field(default=0)
+    users: list[str] = Field(default=[], foreign_key="shared_wallets.wallet_id")
 
 
-class JointWallet(Wallet):
-    users: list[UserExtended] = []
-
-
-class CardORM(base_orm):
+class Card(SQLModel, table=True):
     __tablename__ = "cards"
-    id = Column(String, primary_key=True)
-    number = Column(String, unique=True)
-    expiry = Column(DateTime)
-    holder = Column(String)
-    cvc = Column(String)
-
-
-class Card(BaseModel):
-    id: str | None
-    number: constr(regex="^\d{16}$")
+    id: Optional[str] = Field(primary_key=True)
+    number: constr(regex="^\d{16}$") = Field(unique=True)
     expiry: datetime
     holder: constr(min_length=2, max_length=30)
     cvc: constr(regex="^\d{3}$")
 
-    class Config:
-        orm_mode = True
-
-
-class TransactionORM(base_orm):
-    __tablename__ = "transactions"
-    id = Column(String, primary_key=True)
-    wallet_sender = Column(String)
-    card_sender = Column(String)
-    wallet_receiver = Column(String)
-    currency = Column(String)
-    amount = Column(Float)
-    status = Column(String)
-
 
 class Transaction(BaseModel):
-    id: str | None
-    wallet_sender: str | None
-    card_sender: str | None
+    __tablename__ = "transactions"
+    id: Optional[str] = Field(primary_key=True)
+    wallet_sender: Optional[str]
+    card_sender: Optional[str]
     wallet_receiver: str
     currency: str  # Currency
     amount: float
     status: constr(regex="^pending|success|cancelled$")
 
-    class Config:
-        orm_mode = True
-
 
 class Token(BaseModel):
     access_token: str
     token_type: str
-    user_info: UserExtended
+    user_info: User
 
 
 class TokenData(BaseModel):

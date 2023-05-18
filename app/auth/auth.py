@@ -7,7 +7,7 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import ValidationError
 
-from app.models import TokenData, UserORM, UserExtended
+from app.models import User, TokenData
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from app.data import engine
@@ -30,11 +30,11 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 
-def get_user(username: str) -> UserExtended | None:
+def get_user(username: str) -> User | None:
     with Session(engine) as session:
-        result = session.scalar(select(UserORM).filter(UserORM.username == username))
+        result = session.scalar(select(User).filter(User.username == username))
         if result:
-            return UserExtended.from_orm(result)
+            return User.from_orm(result)
         return None
 
 
@@ -72,7 +72,7 @@ def get_token(form_data):
 
 async def get_current_user(
     security_scopes: SecurityScopes, token: Annotated[str, Depends(oauth2_scheme)]
-) -> UserExtended | None:
+) -> User | None:
     if security_scopes.scopes:
         authenticate_value = f'Bearer scope="{security_scopes.scope_str}"'
     else:
