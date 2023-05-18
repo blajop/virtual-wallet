@@ -11,6 +11,7 @@ from fastapi.encoders import jsonable_encoder
 def get_users():
     with Session(engine) as session:
         result = session.scalar(select(User))
+        result.scopes
         return result.__dict__
 
 

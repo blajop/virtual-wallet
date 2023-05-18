@@ -8,10 +8,10 @@ from fastapi.encoders import jsonable_encoder
 
 class UserScopeLink(SQLModel, table=True):
     __tablename__ = "users_scopes"
-    user_id: Optional[int] = Field(
+    user_id: Optional[str] = Field(
         default=None, foreign_key="users.id", primary_key=True
     )
-    scope_id: Optional[int] = Field(
+    scope_id: Optional[str] = Field(
         default=None, foreign_key="scopes.id", primary_key=True
     )
 
@@ -33,9 +33,10 @@ class User(SQLModel, table=True):
     f_name: str
     l_name: str
     email_confirmed: bool = Field(default=False)
+
     scopes: Scope = Relationship(back_populates="users", link_model=UserScopeLink)
-    # wallets: list[Wallet] = Field(default=[], foreign_key="shared_wallets.user_id")
-    # cards: list[Card] = Field(default=[], foreign_key="cards_users.user_id")
+    wallets: list[Wallet] = Field(default=[], foreign_key="shared_wallets.user_id")
+    cards: list[Card] = Field(default=[], foreign_key="cards_users.user_id")
     # friends: list[User] = Field(default=[], foreign_key="friends.user_id")
     # avatar: Optional[str] = None
 
