@@ -7,14 +7,21 @@ from app.data import engine
 from app.auth import auth
 from app.helpers import snowflake_ids as sf
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy.orm import selectinload, joinedload, contains_eager
+from sqlalchemy.orm import selectinload
 
 
 def get_users():
     with Session(engine) as session:
-        result = session.exec(select(User).options(contains_eager(User.scopes)))
-        # find the right option
-        return result.all()
+        result = session.exec(
+            select(User).options(
+                selectinload(User.scopes),
+                selectinload(User.wallets),
+                selectinload(User.friends),
+                selectinload(User.cards),
+            ),
+        )
+
+        return [i.__dict__ for i in result.unique().scalars().all()]
 
 
 # def register_user(new_user: UserRegistration):
