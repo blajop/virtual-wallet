@@ -24,24 +24,24 @@ from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import RedirectResponse
 
 
-users_router = APIRouter(prefix="/users", tags=["01. API / Users"])
+router = APIRouter(prefix="/users", tags=["01. API / Users"])
 
 # admin may toggle the write access of a user even irrespective of his confirming or not the email
 
 
-@users_router.get("/")  # , response_model=User
+@router.get("/")  # , response_model=User
 def get_users():
     return user_services.get_users()
 
 
-@users_router.post("/login")
+@router.post("/login")
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
 ):
     return auth.get_token(form_data)
 
 
-@users_router.get("/profile")  # , response_model=User
+@router.get("/profile")  # , response_model=User
 async def profile_info(current_user: Annotated[User, Depends(auth.get_current_user)]):
     if not current_user:
         raise HTTPException(
@@ -50,7 +50,7 @@ async def profile_info(current_user: Annotated[User, Depends(auth.get_current_us
     return current_user
 
 
-@users_router.post("/signup")
+@router.post("/signup")
 def sign_up_user(user: UserRegistration, background_tasks: BackgroundTasks):
     background_tasks.add_task(
         mail_services.send_email, user, mail_services.registration_mail(user)
