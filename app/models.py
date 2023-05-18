@@ -58,7 +58,12 @@ class Wallet(SQLModel, table=True):
     owner_id: Optional[str] = Field(default=None, foreign_key="users.id")
     currency: str  # Currency
     balance: float = Field(default=0)
+
     users: User = Relationship(back_populates="wallets", link_model=UserWalletLink)
+
+    owner: User = Relationship(
+        sa_relationship_kwargs=dict(primaryjoin="User.id==Wallet.owner_id")
+    )
 
 
 class FriendLink(SQLModel, table=True):
@@ -88,6 +93,8 @@ class User(SQLModel, table=True):
             secondaryjoin="User.id==FriendLink.friend_id",
         ),
     )
+
+    wallet: Optional[Wallet] = Relationship(back_populates="owner")
     # avatar: Optional[str] = None
 
     # @property
