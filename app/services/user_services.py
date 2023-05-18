@@ -1,3 +1,4 @@
+from __future__ import annotations
 from fastapi import HTTPException
 from app.models import User, UserRegistration
 from sqlmodel import Session
@@ -12,13 +13,32 @@ def get_users():
     with Session(engine) as session:
         final = []
         result = session.exec(select(User))
-        print(result)
         for user in result:
+            # print(type(user[0]))
             user[0].scopes
             user[0].cards
             user[0].wallets
+            user[0].friends
             final.append(user[0].__dict__)
         return final
+
+
+# def get_user_friends(user_id: str):
+#     """
+#     A service that loads the friends of a user as user objects into his friends attr
+#     """
+
+#     with Session(engine) as session:
+#         friend_ids = set(
+#             id for id in session.exec(select(Friend).filter(Friend.user_id == user_id))
+#         )
+#         user = session.scalar(select(User).filter(User.id == user_id))
+#         if not user:
+#             raise HTTPException(status_code=404, detail="No such user")
+#         user_friends = (
+#             fr for fr in session.exec(select(User).filter(User.id in friend_ids))
+#         )
+#         user.friends = user_friends
 
 
 # def register_user(new_user: UserRegistration):

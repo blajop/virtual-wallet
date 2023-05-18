@@ -1,7 +1,7 @@
-import sqlalchemy
+from sqlmodel import create_engine
 
 
-engine = sqlalchemy.create_engine(
+engine = create_engine(
     "mariadb+mariadbconnector://root:mainatavihakeri@91.139.226.224:4444/v-wallet"
 )
 

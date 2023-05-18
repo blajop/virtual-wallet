@@ -1,9 +1,20 @@
 from __future__ import annotations
+from fastapi import HTTPException
 from pydantic import BaseModel, EmailStr, constr
 from datetime import datetime
-from typing import Optional, List
-from sqlmodel import SQLModel, Field, create_engine, ForeignKey, Relationship
+from typing import Any, Optional, List
+from sqlalchemy.orm import relationship
+from sqlmodel import (
+    SQLModel,
+    Field,
+    Session,
+    create_engine,
+    ForeignKey,
+    Relationship,
+    select,
+)
 from fastapi.encoders import jsonable_encoder
+from app.data import engine
 
 
 class UserScopeLink(SQLModel, table=True):
@@ -50,7 +61,7 @@ class Wallet(SQLModel, table=True):
     users: User = Relationship(back_populates="wallets", link_model=UserWalletLink)
 
 
-class UserFriendLink(SQLModel, table=True):
+class FriendLink(SQLModel, table=True):
     __tablename__ = "friends"
     user_id: str = Field(foreign_key="users.id", primary_key=True)
     friend_id: str = Field(foreign_key="users.id", primary_key=True)
@@ -69,14 +80,21 @@ class User(SQLModel, table=True):
     scopes: Scope = Relationship(back_populates="users", link_model=UserScopeLink)
     cards: Card = Relationship(back_populates="users", link_model=UserCardLink)
     wallets: Wallet = Relationship(back_populates="users", link_model=UserWalletLink)
-    # friends: User = Relationship(back_populates="friends", link_model=UserFriendLink)
+    friends: User = Relationship(
+        back_populates="friends",
+        link_model=FriendLink,
+        sa_relationship_kwargs=dict(
+            primaryjoin="User.id==FriendLink.user_id",
+            secondaryjoin="User.id==FriendLink.friend_id",
+        ),
+    )
     # avatar: Optional[str] = None
 
-    @property
-    def is_admin(self):
-        if "admin" in self.scopes:
-            return True
-        return False
+    # @property
+    # def is_admin(self):
+    #     if "admin" in self.scopes:
+    #         return True
+    #     return False
 
 
 class UserRegistration(BaseModel):
