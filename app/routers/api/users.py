@@ -29,7 +29,7 @@ users_router = APIRouter(prefix="/users", tags=["01. API / Users"])
 # admin may toggle the write access of a user even irrespective of his confirming or not the email
 
 
-@users_router.get("/users")  # , response_model=User
+@users_router.get("/")  # , response_model=User
 def get_users():
     return user_services.get_users()
 

@@ -1,3 +1,4 @@
+from __future__ import annotations
 from fastapi import HTTPException
 from app.models import User, UserRegistration
 from sqlmodel import Session
@@ -10,9 +11,15 @@ from fastapi.encoders import jsonable_encoder
 
 def get_users():
     with Session(engine) as session:
-        result = session.scalar(select(User))
-        result.scopes
-        return result.__dict__
+        final = []
+        result = session.exec(select(User))
+        for user in result:
+            user[0].scopes
+            user[0].cards
+            user[0].wallets
+            user[0].friends
+            final.append(user[0].__dict__)
+        return final
 
 
 # def register_user(new_user: UserRegistration):

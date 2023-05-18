@@ -1,12 +1,14 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from app.routers.api.users import users_router
+from app.routers.api.wallets import wallets_router
 
 app = FastAPI()
 
 
 # API Routers
 app.include_router(users_router, prefix="/api")
+app.include_router(wallets_router, prefix="/api")
 
 
 # Static files

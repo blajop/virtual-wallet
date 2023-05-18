@@ -1,10 +1,10 @@
 import os
-import sqlalchemy
+import sqlmodel
 from dotenv import load_dotenv
 
 load_dotenv()
 
-engine = sqlalchemy.create_engine(os.getenv("DB_ENGINE"))
+engine = sqlmodel.create_engine(os.getenv("DB_ENGINE"))
 
 # base_orm = declarative_base()
 
