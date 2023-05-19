@@ -8,13 +8,14 @@ from passlib.context import CryptContext
 from pydantic import ValidationError
 
 from app.models import User, TokenData
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import select
 from app.data import engine
+import os
+from dotenv import load_dotenv
 
-SECRET_KEY = "cf98a80999e5e4aca4c397be5c2e189c4c8bab6d8d75416267e47d669b290e7d"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+load_dotenv()
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/users/login", auto_error=False)
@@ -32,9 +33,15 @@ def get_password_hash(password):
 
 def get_user(username: str) -> User | None:
     with Session(engine) as session:
-        result = session.scalar(select(User).filter(User.username == username))
+        result = session.scalar(
+            select(User)
+            .filter(User.username == username)
+            .options(
+                selectinload(User.scopes),
+            ),
+        )
         if result:
-            return User.from_orm(result)
+            return result
         return None
 
 
@@ -54,7 +61,9 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     else:
         expire = datetime.utcnow() + timedelta(minutes=15)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(
+        to_encode, os.getenv("JWT_SECRET_KEY"), algorithm=os.getenv("JWT_ALGORITHM")
+    )
     return encoded_jwt
 
 
@@ -62,11 +71,11 @@ def get_token(form_data):
     user = authenticate_user(form_data.username, form_data.password)
     if not user:
         raise HTTPException(status_code=400, detail="Incorrect username or password")
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token_expires = timedelta(minutes=int(os.getenv("JWT_EXPIRE_MINUTES")))
     access_token = create_access_token(
-        data={"sub": user.username, "scopes": user.scopes},
+        data={"sub": user.username, "scopes": [sc.id for sc in user.scopes]},
         expires_delta=access_token_expires,
-    )
+    )  # it takes the str names, not ids for the user scopes
     return {"access_token": access_token, "token_type": "bearer"}  # "user_info": user
 
 
@@ -89,7 +98,9 @@ async def get_current_user(
 
     # when not a guest...
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(
+            token, os.getenv("JWT_SECRET_KEY"), algorithms=[os.getenv("JWT_ALGORITHM")]
+        )
         username: str = payload.get("sub")
         if username is None:
             raise credentials_exception
@@ -122,7 +133,9 @@ def user_from_token(token):
 
     # when not a guest...
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(
+            token, os.getenv("JWT_SECRET_KEY"), algorithms=[os.getenv("JWT_ALGORITHM")]
+        )
         username: str = payload.get("sub")
         if username is None:
             raise credentials_exception
