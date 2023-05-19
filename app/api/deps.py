@@ -1,6 +1,4 @@
 from typing import Generator, Optional
-from fastapi_azure_auth import SingleTenantAzureAuthorizationCodeBearer
-
 from jose import jwt
 from jose.exceptions import JWTError
 from pydantic import ValidationError
