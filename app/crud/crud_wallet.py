@@ -1,4 +1,5 @@
-from sqlmodel import select, Session
+from sqlmodel import Session
+from sqlalchemy import select
 from app.models import Wallet, User
 from app.helpers import snowflake_ids as sf
 from app.data import engine
@@ -8,11 +9,7 @@ def get_wallets():
     with Session(engine) as session:
         final = []
         result = session.exec(select(Wallet))
-        for wallet in result:
-            # print(type(user[0]))
-            wallet.owner
-            final.append(wallet.__dict__)
-        return final
+        return [el.__dict__ for el in result.unique().scalars().all()]
 
 
 # def create_wallet(user: UserExtended, currency: str):
