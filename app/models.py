@@ -62,10 +62,8 @@ class Wallet(SQLModel, table=True):
     users: User = Relationship(back_populates="wallets", link_model=UserWalletLink)
 
     owner: User = Relationship(
-        sa_relationship_kwargs=dict(
-            primaryjoin="User.id==Wallet.owner_id", lazy="joined"
-        )
-    )
+        sa_relationship_kwargs=dict(primaryjoin="User.id==Wallet.owner_id")
+    )  # lazy="joined" can be added here
 
 
 class FriendLink(SQLModel, table=True):
@@ -95,7 +93,7 @@ class User(SQLModel, table=True):
             primaryjoin="User.id==FriendLink.user_id",
             secondaryjoin="User.id==FriendLink.friend_id",
         ),
-    )
+    )  # lazy="joined" can be added here
     # avatar: Optional[str] = None
 
     # @property
@@ -106,7 +104,6 @@ class User(SQLModel, table=True):
 
 
 class UserRegistration(BaseModel):
-    id: str | None
     username: constr(min_length=2, max_length=20)
     email: EmailStr
     phone: constr(regex="^\d{10}$")
@@ -126,22 +123,18 @@ class Transaction(SQLModel, table=True):
     status: constr(regex="^pending|success|cancelled$")
 
     card_sen_obj: Optional[Card] = Relationship(
-        sa_relationship_kwargs=dict(
-            primaryjoin="Card.id==Transaction.card_sender", lazy="joined"
-        )
-    )
+        sa_relationship_kwargs=dict(primaryjoin="Card.id==Transaction.card_sender")
+    )  # lazy="joined" can be added here
 
     wallet_sen_obj: Optional[Wallet] = Relationship(
-        sa_relationship_kwargs=dict(
-            primaryjoin="Wallet.id==Transaction.wallet_sender", lazy="joined"
-        )
-    )
+        sa_relationship_kwargs=dict(primaryjoin="Wallet.id==Transaction.wallet_sender")
+    )  # lazy="joined" can be added here
 
     wallet_rec_obj: Optional[Wallet] = Relationship(
         sa_relationship_kwargs=dict(
-            primaryjoin="Wallet.id==Transaction.wallet_receiver", lazy="joined"
+            primaryjoin="Wallet.id==Transaction.wallet_receiver"
         )
-    )
+    )  # lazy="joined" can be added here
 
 
 class Token(BaseModel):
