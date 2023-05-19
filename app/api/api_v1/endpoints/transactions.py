@@ -6,7 +6,7 @@ from fastapi import (
     Response,
     Security,
 )
-from app.services import transaction_services
+from app.crud import crud_transaction
 
 
 transactions_router = APIRouter(prefix="/transactions", tags=["03. API / Transactions"])
@@ -14,4 +14,4 @@ transactions_router = APIRouter(prefix="/transactions", tags=["03. API / Transac
 
 @transactions_router.get("/")
 def get_transactions():
-    return transaction_services.get_transactions()
+    return crud_transaction.get_transactions()
