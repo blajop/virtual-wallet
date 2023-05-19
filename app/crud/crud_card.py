@@ -1,7 +1,6 @@
-from app.models import Card, User
+# from app.models import Card, User
 from sqlalchemy.orm import Session
 from app.data import engine
-import app
 
 
 def add_card(user: User, card: Card):

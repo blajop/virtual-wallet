@@ -1,6 +1,5 @@
 from sqlmodel import Session
 from sqlalchemy import select
-from app.models import Wallet, User
 from app.data import engine
 
 

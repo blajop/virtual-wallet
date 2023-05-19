@@ -4,7 +4,6 @@ from email.mime.text import MIMEText
 import os
 import smtplib
 from fastapi import HTTPException, Response
-from app.models import User, UserRegistration
 from jose import jwt
 from jinja2 import (
     Environment,

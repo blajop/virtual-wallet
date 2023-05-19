@@ -64,7 +64,7 @@
 
 # util_mail.send_test_email("vray1@abv.bg")
 
-import app
+# import app
 
-print(a := app.utils.util_id.generate_id())
-print(app.utils.util_id.datetime_from_id(a))
+# print(a := app.utils.util_id.generate_id())
+# print(app.utils.util_id.datetime_from_id(a))
