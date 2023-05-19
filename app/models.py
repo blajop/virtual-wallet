@@ -62,7 +62,9 @@ class Wallet(SQLModel, table=True):
     users: User = Relationship(back_populates="wallets", link_model=UserWalletLink)
 
     owner: User = Relationship(
-        sa_relationship_kwargs=dict(primaryjoin="User.id==Wallet.owner_id")
+        sa_relationship_kwargs=dict(
+            primaryjoin="User.id==Wallet.owner_id", lazy="joined"
+        )
     )
 
 
@@ -94,8 +96,6 @@ class User(SQLModel, table=True):
             secondaryjoin="User.id==FriendLink.friend_id",
         ),
     )
-
-    wallet: Optional[Wallet] = Relationship(back_populates="owner")
     # avatar: Optional[str] = None
 
     # @property
@@ -115,15 +115,33 @@ class UserRegistration(BaseModel):
     password: constr(regex="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[-+*&^_]).{8,}$")
 
 
-class Transaction(BaseModel):
+class Transaction(SQLModel, table=True):
     __tablename__ = "transactions"
     id: Optional[str] = Field(primary_key=True)
-    wallet_sender: Optional[str]
-    card_sender: Optional[str]
-    wallet_receiver: str
+    wallet_sender: Optional[str] = Field(default=None, foreign_key="wallets.id")
+    card_sender: Optional[str] = Field(default=None, foreign_key="cards.id")
+    wallet_receiver: str = Field(foreign_key="wallets.id")
     currency: str  # Currency
     amount: float
     status: constr(regex="^pending|success|cancelled$")
+
+    card_sen_obj: Optional[Card] = Relationship(
+        sa_relationship_kwargs=dict(
+            primaryjoin="Card.id==Transaction.card_sender", lazy="joined"
+        )
+    )
+
+    wallet_sen_obj: Optional[Wallet] = Relationship(
+        sa_relationship_kwargs=dict(
+            primaryjoin="Wallet.id==Transaction.wallet_sender", lazy="joined"
+        )
+    )
+
+    wallet_rec_obj: Optional[Wallet] = Relationship(
+        sa_relationship_kwargs=dict(
+            primaryjoin="Wallet.id==Transaction.wallet_receiver", lazy="joined"
+        )
+    )
 
 
 class Token(BaseModel):
