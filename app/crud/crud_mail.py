@@ -4,7 +4,7 @@ from email.mime.text import MIMEText
 import os
 import smtplib
 from fastapi import HTTPException, Response
-from app.models import User
+from app.models import User, UserRegistration
 from jose import jwt
 from jinja2 import (
     Environment,
@@ -77,11 +77,11 @@ def send_email(recipient: User, msg_data: dict):
     return Response(status_code=200, content="Email sent successfully!")
 
 
-def registration_mail(user: User):
+def registration_mail(user: UserRegistration, user_id: str):
     template = env.get_template("email_verify.html")
     return {
         "subject": "Account confirmation",
         "body": template.render(
-            user=user.username, link=f"91.139.226.224/confirm?id={user.id}"
+            user=user.username, link=f"91.139.226.224/confirm?id={user_id}"
         ),
     }
