@@ -3,23 +3,36 @@ from fastapi import HTTPException
 from app.models import Scope, User, UserRegistration
 from sqlmodel import Session, or_
 from app.data import engine
-from app.auth import auth
-from app.helpers import snowflake_ids as sf
-from fastapi.encoders import jsonable_encoder
+from app.core import security
 from sqlalchemy.orm import selectinload
 from sqlalchemy import select
+from operator import itemgetter
 
 
 def get_users():
     with Session(engine) as session:
-        result = session.exec(select(User))
-        # .options(
-        #         selectinload(User.scopes),
-        #         selectinload(User.wallets),
-        #         selectinload(User.friends),
-        #         selectinload(User.cards),
-        #     ),
-        return [i.__dict__ for i in result.unique().scalars().all()]
+        result = session.exec(
+            select(User).options(
+                selectinload(User.scopes),
+                selectinload(User.wallets),
+                selectinload(User.friends),
+                selectinload(User.cards),
+            ),
+        )
+        users = result.unique().scalars().all()
+        attribute_names = User.__table__.columns.keys() + [
+            "scopes",
+            "wallets",
+            "cards",
+            "friends",
+        ]
+
+        user_dicts = [
+            dict(zip(attribute_names, itemgetter(*attribute_names)(user.__dict__)))
+            for user in users
+        ]
+
+        return user_dicts
 
 
 def register_user(new_user: UserRegistration):

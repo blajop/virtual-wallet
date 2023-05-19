@@ -1,7 +1,6 @@
 from sqlmodel import Session
 from sqlalchemy import select
 from app.models import Wallet, User
-from app.helpers import snowflake_ids as sf
 from app.data import engine
 
 

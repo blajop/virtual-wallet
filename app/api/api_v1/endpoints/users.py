@@ -8,10 +8,10 @@ from fastapi import (
     Response,
     Security,
 )
-from app.auth import auth
+from app.core import security
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
-from app.crud import crud_mail
+from app.crud import crud_mail, crud_user
 from app.models import (
     PasswordUpdateModel,
     Token,
@@ -19,10 +19,9 @@ from app.models import (
     User,
     UserRegistration,
 )
-from app.crud import crud_user
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import RedirectResponse
-
+import app
 
 router = APIRouter(prefix="/users", tags=["01. API / Users"])
 
@@ -31,16 +30,16 @@ router = APIRouter(prefix="/users", tags=["01. API / Users"])
 
 @router.get("/")  # , response_model=User
 def get_users():
-    return crud_user.get_users()
+    return app.crud.get_users()
 
 
 @router.post("/login")
 def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
-    return auth.get_token(form_data)
+    return security.get_token(form_data)
 
 
 @router.get("/profile")  # , response_model=User
-def profile_info(current_user: Annotated[User, Depends(auth.get_current_user)]):
+def profile_info(current_user: Annotated[User, Depends(security.get_current_user)]):
     if not current_user:
         raise HTTPException(
             status_code=401, detail="You must be logged in to see your profile"
@@ -50,7 +49,7 @@ def profile_info(current_user: Annotated[User, Depends(auth.get_current_user)]):
 
 @router.post("/signup")
 def sign_up_user(
-    current_user: Annotated[User, Depends(auth.get_current_user)],
+    current_user: Annotated[User, Depends(security.get_current_user)],
     new_user: UserRegistration,
     background_tasks: BackgroundTasks,
 ):
