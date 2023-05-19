@@ -8,7 +8,7 @@ from fastapi import (
     Response,
     Security,
 )
-from app.auth import auth
+from app.core import security
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from app.crud import crud_mail
@@ -19,10 +19,9 @@ from app.models import (
     User,
     UserRegistration,
 )
-from app.crud import crud_user
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import RedirectResponse
-
+import app
 
 router = APIRouter(prefix="/users", tags=["01. API / Users"])
 
@@ -31,18 +30,20 @@ router = APIRouter(prefix="/users", tags=["01. API / Users"])
 
 @router.get("/")  # , response_model=User
 def get_users():
-    return crud_user.get_users()
+    return app.crud.get_users()
 
 
 @router.post("/login")
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
 ):
-    return auth.get_token(form_data)
+    return security.get_token(form_data)
 
 
 @router.get("/profile")  # , response_model=User
-async def profile_info(current_user: Annotated[User, Depends(auth.get_current_user)]):
+async def profile_info(
+    current_user: Annotated[User, Depends(security.get_current_user)]
+):
     if not current_user:
         raise HTTPException(
             status_code=401, detail="You must be logged in to see your profile"
@@ -50,17 +51,17 @@ async def profile_info(current_user: Annotated[User, Depends(auth.get_current_us
     return current_user
 
 
-@router.post("/signup")
-def sign_up_user(user: UserRegistration, background_tasks: BackgroundTasks):
-    background_tasks.add_task(
-        crud_mail.send_email, user, crud_mail.registration_mail(user)
-    )
-    return JSONResponse(
-        content={
-            "registered_user": jsonable_encoder(crud_user.register_user(user)),
-            "msg": "Link for email verification has been sent to your declared email",
-        }
-    )
+# @router.post("/signup")
+# def sign_up_user(user: UserRegistration, background_tasks: BackgroundTasks):
+#     background_tasks.add_task(
+#         crud_mail.send_email, user, crud_mail.registration_mail(user)
+#     )
+#     return JSONResponse(
+#         content={
+#             "registered_user": jsonable_encoder(crud.crud_user.register_user(user)),
+#             "msg": "Link for email verification has been sent to your declared email",
+#         }
+#     )
 
 
 # @users_router.get("/{search_param}")

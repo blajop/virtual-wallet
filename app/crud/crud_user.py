@@ -1,13 +1,11 @@
 from __future__ import annotations
-from fastapi import HTTPException
 from app.models import User, UserRegistration
 from sqlmodel import Session
 from sqlalchemy import or_, select
 from app.data import engine
-from app.auth import auth
-from app.helpers import snowflake_ids as sf
-from fastapi.encoders import jsonable_encoder
+from app.core import security
 from sqlalchemy.orm import selectinload
+from operator import itemgetter
 
 
 def get_users():
@@ -20,8 +18,20 @@ def get_users():
                 selectinload(User.cards),
             ),
         )
+        users = result.unique().scalars().all()
+        attribute_names = User.__table__.columns.keys() + [
+            "scopes",
+            "wallets",
+            "cards",
+            "friends",
+        ]
 
-        return [i.__dict__ for i in result.unique().scalars().all()]
+        user_dicts = [
+            dict(zip(attribute_names, itemgetter(*attribute_names)(user.__dict__)))
+            for user in users
+        ]
+
+        return user_dicts
 
 
 # def register_user(new_user: UserRegistration):

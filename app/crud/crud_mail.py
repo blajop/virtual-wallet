@@ -11,10 +11,7 @@ from jinja2 import (
     FileSystemLoader,
     select_autoescape,
 )
-from dotenv import load_dotenv
-
-
-load_dotenv()
+from app.core.config import settings
 
 
 env = Environment(
@@ -65,8 +62,8 @@ def send_email(recipient: User, msg_data: dict):
     smtp_port = 465
 
     # Log in to the SMTP server using your abv.bg email account
-    username = os.getenv("SMTP_LOGIN_MAIL")
-    password = os.getenv("SMTP_LOGIN_PASS")
+    username = settings.SMTP_USER
+    password = settings.SMTP_PASSWORD
     server = smtplib.SMTP_SSL(smtp_server, smtp_port)
     server.login(username, password)
 
@@ -82,6 +79,6 @@ def registration_mail(user: User):
     return {
         "subject": "Account confirmation",
         "body": template.render(
-            user=user.username, link=f"91.139.226.224/confirm?id={user.id}"
+            user=user.username, link=f"{settings.SERVER_HOST}/confirm?id={user.id}"
         ),
     }

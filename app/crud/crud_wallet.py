@@ -1,6 +1,5 @@
 from sqlmodel import select, Session
 from app.models import Wallet, User
-from app.helpers import snowflake_ids as sf
 from app.data import engine
 
 
@@ -9,7 +8,6 @@ def get_wallets():
         final = []
         result = session.exec(select(Wallet))
         for wallet in result:
-            # print(type(user[0]))
             wallet.owner
             final.append(wallet.__dict__)
         return final
