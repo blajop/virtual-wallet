@@ -20,12 +20,12 @@ from app.data import engine
 class UserScopeLink(SQLModel, table=True):
     __tablename__ = "users_scopes"
     user_id: str = Field(foreign_key="users.id", primary_key=True)
-    scope_id: str = Field(foreign_key="scopes.id", primary_key=True)
+    scope_id: int = Field(foreign_key="scopes.id", primary_key=True)
 
 
 class Scope(SQLModel, table=True):
     __tablename__ = "scopes"
-    id: Optional[str] = Field(primary_key=True)
+    id: Optional[int] = Field(primary_key=True)
     scope: str
     users: User = Relationship(back_populates="scopes", link_model=UserScopeLink)
 
@@ -83,7 +83,11 @@ class User(SQLModel, table=True):
     l_name: str
     email_confirmed: bool = Field(default=False)
 
-    scopes: Scope = Relationship(back_populates="users", link_model=UserScopeLink)
+    scopes: Scope = Relationship(
+        back_populates="users",
+        link_model=UserScopeLink,
+        sa_relationship_kwargs=dict(lazy="joined"),
+    )
     cards: Card = Relationship(back_populates="users", link_model=UserCardLink)
     wallets: Wallet = Relationship(back_populates="users", link_model=UserWalletLink)
     friends: User = Relationship(
@@ -95,12 +99,6 @@ class User(SQLModel, table=True):
         ),
     )  # lazy="joined" can be added here
     # avatar: Optional[str] = None
-
-    # @property
-    # def is_admin(self):
-    #     if "admin" in self.scopes:
-    #         return True
-    #     return False
 
 
 class UserRegistration(BaseModel):
@@ -145,7 +143,7 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: str | None = None
-    scopes: list[str] = []
+    scopes: list[int] = []
 
 
 class PasswordUpdateModel(BaseModel):
