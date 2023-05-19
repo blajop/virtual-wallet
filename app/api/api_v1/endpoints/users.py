@@ -35,29 +35,39 @@ def get_users():
 
 
 @router.post("/login")
-async def login_for_access_token(
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
-):
+def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     return auth.get_token(form_data)
 
 
 @router.get("/profile")  # , response_model=User
-async def profile_info(current_user: Annotated[User, Depends(auth.get_current_user)]):
+def profile_info(current_user: Annotated[User, Depends(auth.get_current_user)]):
     if not current_user:
         raise HTTPException(
             status_code=401, detail="You must be logged in to see your profile"
         )
-    return current_user
+    return current_user.__dict__
 
 
 @router.post("/signup")
-def sign_up_user(user: UserRegistration, background_tasks: BackgroundTasks):
+def sign_up_user(
+    current_user: Annotated[User, Depends(auth.get_current_user)],
+    new_user: UserRegistration,
+    background_tasks: BackgroundTasks,
+):
+    if current_user:
+        raise HTTPException(
+            status_code=403, detail="You should be logged out in order to register"
+        )
+    registered_user = crud_user.register_user(new_user)
+    generated_id = registered_user.id
     background_tasks.add_task(
-        crud_mail.send_email, user, crud_mail.registration_mail(user)
+        crud_mail.send_email,
+        new_user,
+        crud_mail.registration_mail(new_user, generated_id),
     )
     return JSONResponse(
         content={
-            "registered_user": jsonable_encoder(crud_user.register_user(user)),
+            "registered_user": jsonable_encoder(registered_user),
             "msg": "Link for email verification has been sent to your declared email",
         }
     )
