@@ -1,6 +1,8 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
+from fastapi import Body
+
 if TYPE_CHECKING:
     from app.models.card import Card
     from app.models.scope import Scope
@@ -39,6 +41,15 @@ class UserUpdate(SQLModel):
     l_name: Optional[str] = None
     password: Optional[str] = Field(
         default=None, regex="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[-+*&^_]).{8,}$"
+    )
+
+
+class UserResetPass(SQLModel):
+    new_password: str = Body(
+        regex="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[-+*&^_]).{8,}$"
+    )
+    verify_password: str = Body(
+        regex="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[-+*&^_]).{8,}$"
     )
 
 
