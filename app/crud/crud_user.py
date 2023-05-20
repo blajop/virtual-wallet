@@ -13,8 +13,19 @@ from app.models.user import User, UserCreate, UserUpdate
 
 
 class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
-    def create(self, db: Session, new_user: UserCreate):
-        if not self.user_data_taken(new_user):
+    def create(self, db: Session, new_user: UserCreate) -> User | HTTPException:
+        """
+        Registers a new user.
+
+        Arguments:
+            db: Session
+            new_user: UserCreate model
+        Returns:
+            User model
+        Raises:
+            HTTPException with status code 409: Username/Email/Phone number already taken
+        """
+        if not self.user_data_taken(db, new_user):
             user_orm = User.from_orm(new_user)
             user_orm.id = utils.util_id.generate_id()
             user_orm.password = security.get_password_hash(user_orm.password)

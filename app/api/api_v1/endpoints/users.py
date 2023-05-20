@@ -50,24 +50,27 @@ def get_user(user: str, db: Session = Depends(deps.get_db)):
 
 @router.post("/signup")
 def sign_up_user(
-    current_user: Annotated[User, Depends(deps.get_current_user)],
     new_user: UserCreate,
     background_tasks: BackgroundTasks,
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_user),
 ):
     if current_user:
         raise HTTPException(
             status_code=403, detail="You should be logged out in order to register"
         )
-    registered_user = crud_user.register_user(new_user)
-    generated_id = registered_user.id
+
+    registered_user = crud_user.user.create(db, new_user)
+
     background_tasks.add_task(
         util_mail.send_new_account_email,
         registered_user.email,
         registered_user.username,
     )
+
     return JSONResponse(
         content={
-            "registered_user": jsonable_encoder(registered_user),
+            "user": jsonable_encoder(registered_user),
             "msg": "Link for email verification has been sent to your declared email",
         }
     )
