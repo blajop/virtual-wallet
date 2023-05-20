@@ -5,65 +5,47 @@ if TYPE_CHECKING:
     from app.models.card import Card
     from app.models.scope import Scope
     from app.models.wallet import Wallet
+
 from app.models.card import UserCardLink
 from app.models.wallet import UserWalletLink
 from app.models.scope import UserScopeLink
 
-from fastapi import HTTPException
-from pydantic import BaseModel, EmailStr, constr
-from datetime import datetime
-from typing import Any, Optional, List
-from sqlalchemy.orm import relationship
-from sqlmodel import (
-    SQLModel,
-    Field,
-    Session,
-    create_engine,
-    ForeignKey,
-    Relationship,
-    select,
-)
-from fastapi.encoders import jsonable_encoder
-from app.data import engine
-
-
-class UserBase(SQLModel):
-    pass
+from pydantic import BaseModel, EmailStr
+from typing import Optional
+from sqlmodel import SQLModel, Field, Relationship
 
 
 class UserLogin(BaseModel):
-    username: constr(min_length=2, max_length=20)
+    username: str
     password: str
 
 
-class UserCreate:
-    pass
+class UserBase(SQLModel):
+    username: str = Field(min_length=2, max_length=20, unique=True)
+    email: EmailStr = Field(unique=True)
+    phone: str = Field(regex="^\d{10}$", unique=True)
+    f_name: str
+    l_name: str
 
 
-class UserUpdate:
-    pass
+class UserCreate(UserBase):
+    password: str = Field(regex="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[-+*&^_]).{8,}$")
 
 
-class UserPassChange:
-    pass
-
-
-class UserCollections:
-    pass
+class UserUpdate(SQLModel):
+    email: Optional[EmailStr] = None
+    phone: Optional[str] = Field(default=None, regex="^\d{10}$")
+    f_name: Optional[str] = None
+    l_name: Optional[str] = None
+    password: Optional[str] = Field(
+        default=None, regex="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[-+*&^_]).{8,}$"
+    )
 
 
 class FriendLink(SQLModel, table=True):
     __tablename__ = "friends"
     user_id: str = Field(foreign_key="users.id", primary_key=True)
     friend_id: str = Field(foreign_key="users.id", primary_key=True)
-
-
-class UserBase(SQLModel):
-    username: constr(min_length=2, max_length=20) = Field(unique=True)
-    email: EmailStr = Field(unique=True)
-    phone: constr(regex="^\d{10}$") = Field(unique=True)
-    f_name: str
-    l_name: str
 
 
 class User(UserBase, table=True):
@@ -88,7 +70,3 @@ class User(UserBase, table=True):
         ),
     )  # lazy="joined" can be added here
     # avatar: Optional[str] = None
-
-
-class UserCreate(UserBase):
-    password: constr(regex="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[-+*&^_]).{8,}$")
