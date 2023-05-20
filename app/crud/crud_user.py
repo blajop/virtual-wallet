@@ -3,7 +3,6 @@ from typing import Optional
 from fastapi import HTTPException
 from sqlmodel import Session, or_
 from app.crud.base import CRUDBase
-from app.data import engine
 from app.core import security
 from sqlalchemy import select
 from app import utils
@@ -68,23 +67,23 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
     def is_admin(self, user: User) -> bool:
         return "admin" in [sc.scope for sc in user.scopes]
 
-    def user_data_taken(self, db: Session, user: UserCreate):
-        with Session(engine) as session:
-            result = session.scalar(select(User).filter(User.username == user.username))
-            if result:
-                raise HTTPException(status_code=409, detail="Username is already taken")
+    # def user_data_taken(self, db: Session, user: UserCreate):
+    #     with Session(engine) as session:
+    #         result = session.scalar(select(User).filter(User.username == user.username))
+    #         if result:
+    #             raise HTTPException(status_code=409, detail="Username is already taken")
 
-            result = session.scalar(select(User).filter(User.email == user.email))
-            if result:
-                raise HTTPException(status_code=409, detail="Email is already taken")
+    #         result = session.scalar(select(User).filter(User.email == user.email))
+    #         if result:
+    #             raise HTTPException(status_code=409, detail="Email is already taken")
 
-            result = session.scalar(select(User).filter(User.phone == user.phone))
-            if result:
-                raise HTTPException(
-                    status_code=409, detail="Phone number is already taken"
-                )
+    #         result = session.scalar(select(User).filter(User.phone == user.phone))
+    #         if result:
+    #             raise HTTPException(
+    #                 status_code=409, detail="Phone number is already taken"
+    #             )
 
-        return False
+    #     return False
 
 
 user = CRUDUser(User)

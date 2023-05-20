@@ -4,7 +4,6 @@ from sqlalchemy import select
 from app import utils
 from app.core import security
 from app.crud.base import CRUDBase
-from app.data import engine
 from app.models.card import Card
 from app.models.user import User
 from app.models.wallet import Wallet, WalletCreate, WalletUpdate
