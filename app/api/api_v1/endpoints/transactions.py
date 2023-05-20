@@ -3,8 +3,6 @@ from fastapi import (
     BackgroundTasks,
     Depends,
     HTTPException,
-    Response,
-    Security,
 )
 from app.crud import crud_transaction
 
