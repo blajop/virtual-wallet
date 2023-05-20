@@ -5,7 +5,11 @@ if TYPE_CHECKING:
     from app.models.user import User
 from typing import Optional
 from sqlmodel import Field, Relationship, SQLModel
-from pydantic import BaseModel
+from pydantic import BaseModel, constr
+
+
+class WalletCreate(BaseModel):
+    currency: constr(regex="^(USD|EUR|BGN|CAD|AUD|CHF|CNY|JPY|GBP|NOK)$")
 
 
 class UserWalletLink(SQLModel, table=True):
@@ -18,7 +22,7 @@ class Wallet(SQLModel, table=True):
     __tablename__ = "wallets"
     id: Optional[str] = Field(primary_key=True)
     owner_id: Optional[str] = Field(default=None, foreign_key="users.id")
-    currency: str  # Currency
+    currency: constr(regex="^(USD|EUR|BGN|CAD|AUD|CHF|CNY|JPY|GBP|NOK)$")  # Currency
     balance: float = Field(default=0)
 
     users: User = Relationship(back_populates="wallets", link_model=UserWalletLink)
