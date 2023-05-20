@@ -13,7 +13,7 @@ from app import models
 
 
 reusable_oauth2 = OAuth2PasswordBearer(
-    tokenUrl=f"{settings.API_V1_STR}/users/login/access-token",
+    tokenUrl=f"{settings.API_V1_STR}/login/access-token",
     auto_error=False,
 )
 
@@ -24,21 +24,19 @@ def get_db():
 
 
 def get_current_user(
-    db: Session = Depends(get_db), token: Optional[str] = Depends(reusable_oauth2)
-) -> Optional[models.User]:
-    if not token:
-        return None
+    db: Session = Depends(get_db), token: str = Depends(reusable_oauth2)
+) -> models.User:
     try:
         payload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[security.ALGORITHM]
         )
-        token_data = models.token.TokenPayload(**payload)
-    except (JWTError, ValidationError):
+        token_data = models.TokenPayload(**payload)
+    except (jwt.JWTError, ValidationError):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Could not validate credentials",
         )
-    user = security_copy.get_user(token_data.sub)
+    user = crud.user.get(db, user=token_data.sub)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
