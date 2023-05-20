@@ -65,6 +65,9 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             return None
         return user
 
+    def is_admin(self, user: User) -> bool:
+        return "admin" in [sc.scope for sc in user.scopes]
+
     def user_data_taken(self, db: Session, user: UserCreate):
         with Session(engine) as session:
             result = session.scalar(select(User).filter(User.username == user.username))
