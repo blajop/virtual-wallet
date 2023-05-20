@@ -6,10 +6,11 @@ from sqlmodel import Session
 from app.core import security, security_copy
 from fastapi import Depends, HTTPException, status
 from app.core.config import settings
-from app.db.session import SessionLocal
+from app.db.session import engine
 from fastapi.security import OAuth2PasswordBearer
 from app import crud
 from app import models
+
 
 reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/users/login/access-token",
@@ -17,19 +18,16 @@ reusable_oauth2 = OAuth2PasswordBearer(
 )
 
 
-def get_db() -> Generator:
-    try:
-        db = SessionLocal()
-        yield db
-    finally:
-        db.close()
+def get_db():
+    with Session(engine) as session:
+        yield session
 
 
 def get_current_user(
     db: Session = Depends(get_db), token: Optional[str] = Depends(reusable_oauth2)
-) -> models.User:
+) -> Optional[models.User]:
     if not token:
-        return
+        return None
     try:
         payload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[security.ALGORITHM]
