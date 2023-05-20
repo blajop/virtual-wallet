@@ -3,7 +3,7 @@ from sqlalchemy import select
 from app import utils
 from app.data import engine
 from app.models.user import User
-from app.models.wallet import Wallet
+from app.models.wallet import Wallet, WalletCreate
 
 
 def get_wallets():
@@ -13,16 +13,19 @@ def get_wallets():
         return [el.__dict__ for el in result.unique().scalars().all()]
 
 
-def create_wallet(user: User, currency: str):
+def create_wallet(user: User, new_wallet: WalletCreate):
     generated_id = utils.util_id.generate_id()
-    new_wallet = Wallet(id=generated_id, owner_id=user.id, currency=currency, balance=0)
+    wallet_orm = Wallet(
+        id=generated_id, owner_id=user.id, currency=new_wallet.currency, balance=0
+    )
 
     with Session(engine) as session:
-        session.add(Wallet(new_wallet))
+        session.add(wallet_orm)
+        wallet_orm.users.append(user)
         session.commit()
-        session.refresh(new_wallet)
+        session.refresh(wallet_orm)
 
-    return new_wallet
+    return wallet_orm
 
 
 def add_user_to_wallet(wallet: Wallet, user: User):

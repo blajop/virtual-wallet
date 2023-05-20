@@ -10,7 +10,7 @@ from operator import itemgetter
 from app import utils
 from app.core import security
 from app.models.scope import Scope
-from app.models.user import User, UserCreate, UserRegistration, UserUpdate
+from app.models.user import User, UserCreate, UserUpdate
 
 
 class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):

@@ -5,19 +5,9 @@ from pydantic import AnyHttpUrl, BaseSettings, EmailStr, Field
 class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     SECRET_KEY: str = Field(default="secret", env="SECRET_KEY")
+    ALGORITHM: str = "HS256"
     # 60 minutes * 24 hours * 8 days = 8 days
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
-
-    # Azure auth
-    OPENAPI_CLIENT_ID: str = Field(default="", env="OPENAPI_CLIENT_ID")
-    APP_CLIENT_ID: str = Field(default="", env="APP_CLIENT_ID")
-    TENANT_ID: str = Field(default="", env="TENANT_ID")
-    CLIENT_SECRET: str = Field(default="", env="CLIENT_SECRET")
-
-    BACKEND_CORS_ORIGINS: list[Union[str, AnyHttpUrl]] = [
-        "http://localhost:8000",
-        "http://91.139.226.224",
-    ]
 
     SERVER_HOST: str = "91.139.226.224"
     DB_ENGINE_URI: str = Field(default="", env="DB_ENGINE")

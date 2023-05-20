@@ -1,11 +1,11 @@
 from sqlalchemy.orm import Session
 from app.data import engine
-from app.models.card import Card, CardRegister
+from app.models.card import Card, CardCreate
 from app.models.user import User
 from app import utils
 
 
-def add_card(user: User, new_card: CardRegister):
+def add_card(user: User, new_card: CardCreate):
     card_orm = Card.from_orm(new_card)
     card_orm.id = utils.util_id.generate_id()
     with Session(engine) as session:

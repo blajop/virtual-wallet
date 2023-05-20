@@ -8,7 +8,7 @@ from fastapi import (
     Response,
     Security,
 )
-from app.core import security
+from app.core import security_copy
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from app.crud import crud_mail, crud_user
@@ -16,10 +16,10 @@ from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import RedirectResponse
 import app
 from app.api import deps
+from app.models.user import User, UserCreate
+from app.utils import util_mail
 
-router = APIRouter(prefix="/users", tags=["01. API / Users"])
-
-# admin may toggle the write access of a user even irrespective of his confirming or not the email
+router = APIRouter()
 
 
 @router.get("/")  # , response_model=User
@@ -27,9 +27,9 @@ def get_users():
     return app.crud.get_users()
 
 
-@router.post("/login")
+@router.post("/login/access-token")
 def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
-    return security.get_token(form_data)
+    return security_copy.get_token(form_data)
 
 
 @router.get("/profile")  # , response_model=User
@@ -44,7 +44,7 @@ def profile_info(current_user: Annotated[User, Depends(deps.get_current_user)]):
 @router.post("/signup")
 def sign_up_user(
     current_user: Annotated[User, Depends(deps.get_current_user)],
-    new_user: UserRegistration,
+    new_user: UserCreate,
     background_tasks: BackgroundTasks,
 ):
     if current_user:
@@ -54,9 +54,9 @@ def sign_up_user(
     registered_user = crud_user.register_user(new_user)
     generated_id = registered_user.id
     background_tasks.add_task(
-        crud_mail.send_email,
-        new_user,
-        crud_mail.registration_mail(new_user, generated_id),
+        util_mail.send_new_account_email,
+        registered_user.email,
+        registered_user.username,
     )
     return JSONResponse(
         content={

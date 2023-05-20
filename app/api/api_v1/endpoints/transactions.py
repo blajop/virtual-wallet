@@ -9,9 +9,9 @@ from fastapi import (
 from app.crud import crud_transaction
 
 
-transactions_router = APIRouter(prefix="/transactions", tags=["03. API / Transactions"])
+router = APIRouter()
 
 
-@transactions_router.get("/")
+@router.get("/")
 def get_transactions():
     return crud_transaction.get_transactions()
