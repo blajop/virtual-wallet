@@ -14,22 +14,30 @@ class UserWalletLink(SQLModel, table=True):
     wallet_id: str = Field(foreign_key="wallets.id", primary_key=True)
 
 
-class WalletBase(SQLModel):
+class WalletCreate(SQLModel):
+    currency: constr(regex="^(USD|EUR|BGN|CAD|AUD|CHF|CNY|JPY|GBP|NOK)$")
+
+
+class WalletBase(WalletCreate):
     owner_id: Optional[str] = Field(default=None, foreign_key="users.id")
-    currency: constr(regex="^(USD|EUR|BGN|CAD|AUD|CHF|CNY|JPY|GBP|NOK)$")  # Currency
-    balance: float = Field(default=0)
+    balance: Optional[float] = Field(default=0)
 
 
 class Wallet(WalletBase, table=True):
     __tablename__ = "wallets"
     id: Optional[str] = Field(primary_key=True)
 
-    users: User = Relationship(back_populates="wallets", link_model=UserWalletLink)
+    users: User = Relationship(
+        back_populates="wallets",
+        link_model=UserWalletLink,
+        sa_relationship_kwargs=dict(lazy="joined"),
+    )
 
     owner: User = Relationship(
         sa_relationship_kwargs=dict(primaryjoin="User.id==Wallet.owner_id")
     )  # lazy="joined" can be added here
 
 
-class WalletCreate(SQLModel):
-    currency: constr(regex="^(USD|EUR|BGN|CAD|AUD|CHF|CNY|JPY|GBP|NOK)$")
+class WalletUpdate(Wallet):
+    # manages balance?
+    pass
