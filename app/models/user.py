@@ -59,14 +59,19 @@ class User(UserBase, table=True):
         link_model=UserScopeLink,
         sa_relationship_kwargs=dict(lazy="joined"),
     )
-    cards: Card = Relationship(back_populates="users", link_model=UserCardLink)
+
+    cards: Card = Relationship(
+        back_populates="users",
+        link_model=UserCardLink,
+    )
+
     wallets: Wallet = Relationship(back_populates="users", link_model=UserWalletLink)
     friends: User = Relationship(
         back_populates="friends",
         link_model=FriendLink,
-        sa_relationship_kwargs=dict(
-            primaryjoin="User.id==FriendLink.user_id",
-            secondaryjoin="User.id==FriendLink.friend_id",
-        ),
-    )  # lazy="joined" can be added here
+        sa_relationship_kwargs={
+            "primaryjoin": "User.id==FriendLink.user_id",
+            "secondaryjoin": "User.id==FriendLink.friend_id",
+        },
+    )  # 'lazy':"joined" can be added here
     # avatar: Optional[str] = None
