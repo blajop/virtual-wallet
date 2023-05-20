@@ -9,7 +9,7 @@ from operator import itemgetter
 from app import utils
 import app
 from app.models.scope import Scope
-from app.models.user import User, UserRegistration
+from app.models.user import User, UserCreate
 
 
 def get_users():
@@ -38,7 +38,7 @@ def get_users():
         return user_dicts
 
 
-def register_user(new_user: UserRegistration):
+def register_user(new_user: UserCreate):
     if not user_data_taken(new_user):
         user_orm = User.from_orm(new_user)
         user_orm.id = utils.util_id.generate_id()
@@ -70,7 +70,7 @@ def search_by_unique(param: str | None = None):
         return result
 
 
-def user_data_taken(user: UserRegistration):
+def user_data_taken(user: UserCreate):
     with Session(engine) as session:
         result = session.scalar(select(User).filter(User.username == user.username))
         if result:

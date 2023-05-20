@@ -16,7 +16,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import RedirectResponse
 import app
 from app.api import deps
-from app.models.user import User, UserRegistration
+from app.models.user import User, UserCreate
 from app.utils import util_mail
 
 router = APIRouter()
@@ -44,7 +44,7 @@ def profile_info(current_user: Annotated[User, Depends(deps.get_current_user)]):
 @router.post("/signup")
 def sign_up_user(
     current_user: Annotated[User, Depends(deps.get_current_user)],
-    new_user: UserRegistration,
+    new_user: UserCreate,
     background_tasks: BackgroundTasks,
 ):
     if current_user:

@@ -27,15 +27,6 @@ from fastapi.encoders import jsonable_encoder
 from app.data import engine
 
 
-class UserRegistration(BaseModel):
-    username: constr(min_length=2, max_length=20)
-    email: EmailStr
-    phone: constr(regex="^\d{10}$")
-    f_name: str
-    l_name: str
-    password: constr(regex="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[-+*&^_]).{8,}$")
-
-
 class UserBase(SQLModel):
     pass
 
@@ -67,15 +58,18 @@ class FriendLink(SQLModel, table=True):
     friend_id: str = Field(foreign_key="users.id", primary_key=True)
 
 
-class User(SQLModel, table=True):
-    __tablename__ = "users"
-    id: Optional[str] = Field(primary_key=True)
+class UserBase(SQLModel):
     username: constr(min_length=2, max_length=20) = Field(unique=True)
-    password: str
     email: EmailStr = Field(unique=True)
     phone: constr(regex="^\d{10}$") = Field(unique=True)
     f_name: str
     l_name: str
+
+
+class User(UserBase, table=True):
+    __tablename__ = "users"
+    id: Optional[str] = Field(primary_key=True)
+    password: str
     email_confirmed: bool = Field(default=False)
 
     scopes: Scope = Relationship(
@@ -94,3 +88,7 @@ class User(SQLModel, table=True):
         ),
     )  # lazy="joined" can be added here
     # avatar: Optional[str] = None
+
+
+class UserCreate(UserBase):
+    password: constr(regex="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[-+*&^_]).{8,}$")

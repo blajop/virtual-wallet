@@ -11,7 +11,7 @@ from jinja2 import (
     select_autoescape,
 )
 from app.core.config import settings
-from app.models.user import User, UserRegistration
+from app.models.user import User, UserCreate
 
 
 env = Environment(
@@ -74,7 +74,7 @@ def send_email(recipient: User, msg_data: dict):
     return Response(status_code=200, content="Email sent successfully!")
 
 
-def registration_mail(user: UserRegistration, user_id: str):
+def registration_mail(user: UserCreate, user_id: str):
     template = env.get_template("email_verify.html")
     return {
         "subject": "Account confirmation",
