@@ -24,16 +24,16 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         Raises:
             HTTPException with status code 409: Username/Email/Phone number already taken
         """
-        if not self.user_data_taken(db, new_user):
-            user_orm = User.from_orm(new_user)
-            user_orm.id = utils.util_id.generate_id()
-            user_orm.password = security.get_password_hash(user_orm.password)
+        # if not self.user_data_taken(db, new_user):
+        user_orm = User.from_orm(new_user)
+        user_orm.id = utils.util_id.generate_id()
+        user_orm.password = security.get_password_hash(user_orm.password)
 
-            db.add(user_orm)
-            db.commit()
-            db.refresh(user_orm)
+        db.add(user_orm)
+        db.commit()
+        db.refresh(user_orm)
 
-            return user_orm
+        return user_orm
 
     def get(self, db: Session, user: str) -> Optional[User]:
         return db.scalars(

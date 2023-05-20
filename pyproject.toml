@@ -41,12 +41,21 @@ SQLAlchemy = "1.4.35"
 emails = "^0.6"
 python-dotenv = "^1.0.0"
 pytest-cov = "^4.0.0"
+httpx = "^0.24.1"
 
 [tool.black]
 exclude = '(\.git|\.mypy_cache|\.venv)'
 include = '\.pyi?$'
 target-version = ['py39']
 max-line-length = 88
+
+
+[tool.pytest.ini_options]
+pythonpath = [
+  "."
+]
+
+
 
 
 [build-system]

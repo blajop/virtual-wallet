@@ -3,7 +3,7 @@ from jose import jwt
 from jose.exceptions import JWTError
 from pydantic import ValidationError
 from sqlmodel import Session
-from app.core import security, security_copy
+from app.core import security
 from fastapi import Depends, HTTPException, Path, status
 from app.core.config import settings
 from app.db.session import engine
