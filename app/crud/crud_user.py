@@ -1,87 +1,54 @@
 from __future__ import annotations
 from fastapi import HTTPException
 from sqlmodel import Session, or_
+from app.crud.base import CRUDBase
 from app.data import engine
 from app.core import security
 from sqlalchemy.orm import selectinload
 from sqlalchemy import select
 from operator import itemgetter
 from app import utils
-import app
+from app.core import security
 from app.models.scope import Scope
-from app.models.user import User, UserRegistration
+from app.models.user import User, UserCreate, UserRegistration, UserUpdate
 
 
-def get_users():
-    with Session(engine) as session:
-        result = session.exec(
-            select(User).options(
-                selectinload(User.scopes),
-                selectinload(User.wallets),
-                selectinload(User.friends),
-                selectinload(User.cards),
-            ),
-        )
-        users = result.unique().scalars().all()
-        attribute_names = User.__table__.columns.keys() + [
-            "scopes",
-            "wallets",
-            "cards",
-            "friends",
-        ]
+class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
+    def create(self, db: Session, new_user: UserCreate):
+        if not self.user_data_taken(new_user):
+            user_orm = User.from_orm(new_user)
+            user_orm.id = utils.util_id.generate_id()
+            user_orm.password = security.get_password_hash(user_orm.password)
 
-        user_dicts = [
-            dict(zip(attribute_names, itemgetter(*attribute_names)(user.__dict__)))
-            for user in users
-        ]
+            db.add(user_orm)
+            db.commit()
+            db.refresh(user_orm)
 
-        return user_dicts
+            return user_orm
 
+    def update(self, db: Session, *, db_obj: User, obj_in: UserUpdate) -> User:
+        update_data = obj_in
 
-def register_user(new_user: UserRegistration):
-    if not user_data_taken(new_user):
-        user_orm = User.from_orm(new_user)
-        user_orm.id = utils.util_id.generate_id()
-        user_orm.password = app.core.security.get_password_hash(user_orm.password)
+        if update_data["password"]:
+            hashed_password = security.get_password_hash(update_data["password"])
+            del update_data["password"]
+            update_data["hashed_password"] = hashed_password
+        return super().update(db, db_obj=db_obj, obj_in=update_data)
+
+    def user_data_taken(self, db: Session, user: UserCreate):
         with Session(engine) as session:
-            session.add(user_orm)
-            default_scopes = session.scalar(select(Scope).filter(Scope.id == 2))
-            user_orm.scopes.append(default_scopes)
-            # session.add(user_orm)
-            session.commit()
-            session.refresh(user_orm)
-        return user_orm
+            result = session.scalar(select(User).filter(User.username == user.username))
+            if result:
+                raise HTTPException(status_code=409, detail="Username is already taken")
 
+            result = session.scalar(select(User).filter(User.email == user.email))
+            if result:
+                raise HTTPException(status_code=409, detail="Email is already taken")
 
-def search_by_unique(param: str | None = None):
-    with Session(engine) as session:
-        if param:
-            result = session.scalar(
-                select(User).filter(
-                    or_(
-                        User.username == param,
-                        User.email == param,
-                        User.phone == param,
-                    )
+            result = session.scalar(select(User).filter(User.phone == user.phone))
+            if result:
+                raise HTTPException(
+                    status_code=409, detail="Phone number is already taken"
                 )
-            )
-        else:
-            result = session.scalar(select(User))
-        return result
 
-
-def user_data_taken(user: UserRegistration):
-    with Session(engine) as session:
-        result = session.scalar(select(User).filter(User.username == user.username))
-        if result:
-            raise HTTPException(status_code=409, detail="Username is already taken")
-
-        result = session.scalar(select(User).filter(User.email == user.email))
-        if result:
-            raise HTTPException(status_code=409, detail="Email is already taken")
-
-        result = session.scalar(select(User).filter(User.phone == user.phone))
-        if result:
-            raise HTTPException(status_code=409, detail="Phone number is already taken")
-
-    return False
+        return False
