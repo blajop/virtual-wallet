@@ -1,4 +1,14 @@
 from __future__ import annotations
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.models.card import Card
+    from app.models.scope import Scope
+    from app.models.wallet import Wallet
+from app.models.card import UserCardLink
+from app.models.wallet import UserWalletLink
+from app.models.scope import UserScopeLink
+
 from fastapi import HTTPException
 from pydantic import BaseModel, EmailStr, constr
 from datetime import datetime
@@ -15,9 +25,6 @@ from sqlmodel import (
 )
 from fastapi.encoders import jsonable_encoder
 from app.data import engine
-from app.models.card import Card, UserCardLink
-from app.models.scope import Scope, UserScopeLink
-from app.models.wallet import UserWalletLink, Wallet
 
 
 class UserRegistration(BaseModel):

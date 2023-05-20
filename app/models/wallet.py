@@ -1,6 +1,10 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.models.user import User
 from typing import Optional
 from sqlmodel import Field, Relationship, SQLModel
-from app.models.user import User
 from pydantic import BaseModel
 
 

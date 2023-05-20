@@ -7,15 +7,12 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import ValidationError
 
-from app.models import User, TokenData
+from app.models import User
+from app.models import TokenPayload
 from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import select
 from app.data import engine
-import os
-from dotenv import load_dotenv
-
-
-load_dotenv()
+from app.core.config import settings
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/users/login", auto_error=False)
@@ -62,7 +59,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
         expire = datetime.utcnow() + timedelta(minutes=15)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(
-        to_encode, os.getenv("JWT_SECRET_KEY"), algorithm=os.getenv("JWT_ALGORITHM")
+        to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM
     )
     return encoded_jwt
 
@@ -71,11 +68,11 @@ def get_token(form_data):
     user = authenticate_user(form_data.username, form_data.password)
     if not user:
         raise HTTPException(status_code=400, detail="Incorrect username or password")
-    access_token_expires = timedelta(minutes=int(os.getenv("JWT_EXPIRE_MINUTES")))
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": user.username, "scopes": [sc.id for sc in user.scopes]},
         expires_delta=access_token_expires,
-    )  # it takes the str names, not ids for the user scopes
+    )  # it takes ids for the user scopes
     return {"access_token": access_token, "token_type": "bearer"}  # "user_info": user
 
 
@@ -98,17 +95,15 @@ async def get_current_user(
 
     # when not a guest...
     try:
-        payload = jwt.decode(
-            token, os.getenv("JWT_SECRET_KEY"), algorithms=[os.getenv("JWT_ALGORITHM")]
-        )
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=settings.ALGORITHM)
         username: str = payload.get("sub")
         if username is None:
             raise credentials_exception
         token_scopes = payload.get("scopes", [])
-        token_data = TokenData(scopes=token_scopes, username=username)
+        token_data = TokenPayload(scopes=token_scopes, sub=username)
     except (JWTError, ValidationError):
         raise credentials_exception
-    user = get_user(username=token_data.username)
+    user = get_user(username=token_data.sub)
     if user is None:
         raise credentials_exception
 
@@ -133,14 +128,12 @@ def user_from_token(token):
 
     # when not a guest...
     try:
-        payload = jwt.decode(
-            token, os.getenv("JWT_SECRET_KEY"), algorithms=[os.getenv("JWT_ALGORITHM")]
-        )
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=settings.ALGORITHM)
         username: str = payload.get("sub")
         if username is None:
             raise credentials_exception
         token_scopes = payload.get("scopes", [])
-        token_data = TokenData(scopes=token_scopes, username=username)
+        token_data = TokenPayload(scopes=token_scopes, username=username)
     except (JWTError, ValidationError):
         raise credentials_exception
     user = get_user(username=token_data.username)

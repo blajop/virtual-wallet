@@ -9,9 +9,9 @@ from fastapi import (
 from app.crud import crud_wallet
 
 
-wallets_router = APIRouter(prefix="/wallets", tags=["02. API / Wallets"])
+router = APIRouter()
 
 
-@wallets_router.get("/")
+@router.get("/")
 def get_wallets():
     return crud_wallet.get_wallets()

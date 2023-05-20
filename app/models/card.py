@@ -1,8 +1,12 @@
-import datetime
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.models.user import User
+from datetime import datetime
 from typing import Optional
 from pydantic import constr, BaseModel
 from sqlmodel import Field, Relationship, SQLModel
-from app.models.user import User
 
 
 class CardRegister(BaseModel):
