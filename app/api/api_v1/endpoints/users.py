@@ -1,20 +1,14 @@
-from datetime import timedelta
-from typing import Annotated
 from fastapi import (
     APIRouter,
     BackgroundTasks,
     Depends,
     HTTPException,
     Response,
-    Security,
 )
 from sqlmodel import Session
-from app.core import security_copy
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
-from app.crud import crud_mail, crud_user
-from fastapi.security import OAuth2PasswordRequestForm
-from fastapi.responses import RedirectResponse
+from app import crud
 import app
 from app.api import deps
 from app.models.user import User, UserCreate
@@ -23,26 +17,26 @@ from app.utils import util_mail
 router = APIRouter()
 
 
-@router.get("/", response_model=list[User])
+@router.get("", response_model=list[User])
 def get_users(db: Session = Depends(deps.get_db)):
-    return app.crud.user.get_multi(db)
+    return crud.user.get_multi(db)
 
 
 @router.get("/profile", response_model=User)
-def profile_info(current_user: User = Depends(deps.get_current_user)):
-    if not current_user:
+def profile_info(logged_user: User = Depends(deps.get_current_user)):
+    if not logged_user:
         raise HTTPException(
             status_code=401, detail="You must be logged in to see your profile"
         )
-    return current_user
+    return logged_user
 
 
-@router.get("/{user}", response_model=User)
-def get_user(user: str, db: Session = Depends(deps.get_db)):
+@router.get("/{identifier}", response_model=User)
+def get_user(identifier: str, db: Session = Depends(deps.get_db)):
     """
     Returns a User model from username, email or id search
     """
-    user = app.crud.user.get(db, user)
+    user = app.crud.user.get(db, identifier)
     if not user:
         return Response(status_code=404)
     return user
@@ -53,14 +47,14 @@ def sign_up_user(
     new_user: UserCreate,
     background_tasks: BackgroundTasks,
     db: Session = Depends(deps.get_db),
-    current_user: User = Depends(deps.get_current_user),
+    logged_user: User = Depends(deps.get_current_user),
 ):
-    if current_user:
+    if logged_user:
         raise HTTPException(
             status_code=403, detail="You should be logged out in order to register"
         )
 
-    registered_user = crud_user.user.create(db, new_user)
+    registered_user = crud.user.create(db, new_user)
 
     background_tasks.add_task(
         util_mail.send_new_account_email,
