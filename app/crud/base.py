@@ -1,7 +1,7 @@
-from ast import List
-from typing import Generic, Optional, Type, TypeVar
+from typing import Generic, Optional, Type, TypeVar, List
 from pydantic import BaseModel
-from sqlmodel import Session, SQLModel
+from sqlmodel import SQLModel, select, or_
+from sqlalchemy.orm import Session
 from fastapi.encoders import jsonable_encoder
 
 ModelType = TypeVar("ModelType", bound=SQLModel)
@@ -20,13 +20,13 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         db.refresh(db_obj)
         return db_obj
 
-    def get(self, db: Session, id: str) -> Optional[ModelType]:
-        return db.exec(self.model).filter(self.model.id == id).first()
+    def get(self, db: Session, user: str) -> Optional[ModelType]:
+        return db.exec(select(self.model).where(self.model.id == user)).first().unique()
 
     def get_multi(
         self, db: Session, *, skip: int = 0, limit: int = 100
     ) -> List[ModelType]:
-        return db.exec(self.model).offset(skip).limit(limit).all()
+        return db.exec(select(self.model).offset(skip).limit(limit)).unique().all()
 
     def update(
         self, db: Session, *, db_obj: ModelType, obj_in: UpdateSchemaType

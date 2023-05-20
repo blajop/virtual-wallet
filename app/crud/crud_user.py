@@ -1,12 +1,11 @@
 from __future__ import annotations
+from typing import Optional
 from fastapi import HTTPException
 from sqlmodel import Session, or_
 from app.crud.base import CRUDBase
 from app.data import engine
 from app.core import security
-from sqlalchemy.orm import selectinload
 from sqlalchemy import select
-from operator import itemgetter
 from app import utils
 from app.core import security
 from app.models.scope import Scope
@@ -26,14 +25,34 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
 
             return user_orm
 
+    def get(self, db: Session, user: str) -> Optional[User]:
+        return db.scalars(
+            select(self.model).where(
+                or_(
+                    self.model.id == user,
+                    self.model.username == user,
+                    self.model.email == user,
+                )
+            )
+        ).first()
+
     def update(self, db: Session, *, db_obj: User, obj_in: UserUpdate) -> User:
         update_data = obj_in
 
-        if update_data["password"]:
-            hashed_password = security.get_password_hash(update_data["password"])
-            del update_data["password"]
-            update_data["hashed_password"] = hashed_password
+        if update_data.password:
+            update_data.password = security.get_password_hash(update_data.password)
+
         return super().update(db, db_obj=db_obj, obj_in=update_data)
+
+    def authenticate(
+        self, db: Session, *, username: str, password: str
+    ) -> Optional[User]:
+        user = self.get(db, user=username)
+        if not user:
+            return None
+        if not security.verify_password(password, user.password):
+            return None
+        return user
 
     def user_data_taken(self, db: Session, user: UserCreate):
         with Session(engine) as session:
@@ -52,3 +71,6 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
                 )
 
         return False
+
+
+user = CRUDUser(User)
