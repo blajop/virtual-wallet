@@ -1,5 +1,7 @@
 from typing import Optional
 from sqlmodel import Field, Relationship, SQLModel
+from app.models.user import User
+from pydantic import BaseModel
 
 
 class UserWalletLink(SQLModel, table=True):

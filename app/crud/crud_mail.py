@@ -11,6 +11,7 @@ from jinja2 import (
     select_autoescape,
 )
 from app.core.config import settings
+from app.models.user import User, UserRegistration
 
 
 env = Environment(

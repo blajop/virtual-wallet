@@ -1,6 +1,8 @@
 from typing import Optional
 from pydantic import constr
 from sqlmodel import Field, Relationship, SQLModel
+from app.models.card import Card
+from app.models.wallet import Wallet
 
 
 class Transaction(SQLModel, table=True):

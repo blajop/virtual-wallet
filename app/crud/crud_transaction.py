@@ -3,6 +3,7 @@ from sqlalchemy import select
 
 # from sqlalchemy import select
 from app.data import engine
+from app.models.transaction import Transaction
 
 
 def get_transactions():

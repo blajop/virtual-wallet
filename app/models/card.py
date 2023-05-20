@@ -1,7 +1,15 @@
 import datetime
 from typing import Optional
-from pydantic import constr
+from pydantic import constr, BaseModel
 from sqlmodel import Field, Relationship, SQLModel
+from app.models.user import User
+
+
+class CardRegister(BaseModel):
+    number: constr(regex="^\d{16}$") = Field(unique=True)
+    expiry: datetime
+    holder: constr(min_length=2, max_length=30)
+    cvc: constr(regex="^\d{3}$")
 
 
 class UserCardLink(SQLModel, table=True):

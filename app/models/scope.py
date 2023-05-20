@@ -1,5 +1,6 @@
 from typing import Optional
 from sqlmodel import Field, Relationship, SQLModel
+from app.models.user import User
 
 
 class UserScopeLink(SQLModel, table=True):

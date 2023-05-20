@@ -15,6 +15,9 @@ from sqlmodel import (
 )
 from fastapi.encoders import jsonable_encoder
 from app.data import engine
+from app.models.card import Card, UserCardLink
+from app.models.scope import Scope, UserScopeLink
+from app.models.wallet import UserWalletLink, Wallet
 
 
 class UserRegistration(BaseModel):
@@ -49,6 +52,12 @@ class UserPassChange:
 
 class UserCollections:
     pass
+
+
+class FriendLink(SQLModel, table=True):
+    __tablename__ = "friends"
+    user_id: str = Field(foreign_key="users.id", primary_key=True)
+    friend_id: str = Field(foreign_key="users.id", primary_key=True)
 
 
 class User(SQLModel, table=True):
