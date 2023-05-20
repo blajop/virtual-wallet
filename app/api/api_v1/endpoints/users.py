@@ -8,6 +8,7 @@ from fastapi import (
     Response,
     Security,
 )
+from sqlmodel import Session
 from app.core import security_copy
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
@@ -22,23 +23,29 @@ from app.utils import util_mail
 router = APIRouter()
 
 
-@router.get("/")  # , response_model=User
-def get_users():
-    return app.crud.get_users()
+@router.get("/", response_model=list[User])
+def get_users(db: Session = Depends(deps.get_db)):
+    return app.crud.user.get_multi(db)
 
 
-@router.post("/login/access-token")
-def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
-    return security_copy.get_token(form_data)
-
-
-@router.get("/profile")  # , response_model=User
-def profile_info(current_user: Annotated[User, Depends(deps.get_current_user)]):
+@router.get("/profile", response_model=User)
+def profile_info(current_user: User = Depends(deps.get_current_user)):
     if not current_user:
         raise HTTPException(
             status_code=401, detail="You must be logged in to see your profile"
         )
-    return current_user.__dict__
+    return current_user
+
+
+@router.get("/{user}", response_model=User)
+def get_user(user: str, db: Session = Depends(deps.get_db)):
+    """
+    Returns a User model from username, email or id search
+    """
+    user = app.crud.user.get(db, user)
+    if not user:
+        return Response(status_code=404)
+    return user
 
 
 @router.post("/signup")
@@ -64,14 +71,6 @@ def sign_up_user(
             "msg": "Link for email verification has been sent to your declared email",
         }
     )
-
-
-# @users_router.get("/{search_param}")
-# def get_user(search_param: str):
-#     user = user_services.search(search_param)
-#     if not user:
-#         return Response(status_code=404)
-#     return user
 
 
 #################

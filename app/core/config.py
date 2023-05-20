@@ -9,7 +9,8 @@ class Settings(BaseSettings):
     # 60 minutes * 24 hours * 8 days = 8 days
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
 
-    SERVER_HOST: str = "91.139.226.224"
+    # SERVER_HOST: str = "http://91.139.226.224"
+    SERVER_HOST: str = "http://localhost:8000"
     DB_ENGINE_URI: str = Field(default="", env="DB_ENGINE")
 
     PROJECT_NAME: str = "Kache"
