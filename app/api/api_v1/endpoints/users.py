@@ -41,7 +41,7 @@ def get_user(identifier: str, db: Session = Depends(deps.get_db)):
     user = crud.user.get(db, identifier)
 
     if not user:
-        return Response(status_code=404)
+        raise HTTPException(status_code=404)
     return user
 
 
