@@ -3,22 +3,26 @@ from typing import Dict, Generator
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
+from sqlmodel import Session
+from sqlmodel import SQLModel
 
 from app.core.config import settings
 from main import app
-import sqlite3
 
 # from app.tests.utils.user import authentication_token_from_email
 from app.tests.utils.utils import get_superuser_token_headers
 
-engine = create_engine("sqlite:///foo.db")
-conn = sqlite3.connect("test.db")
+engine = create_engine("sqlite:///:memory:", echo=True)
+
+
+def create_tables():
+    SQLModel.metadata.create_all(bind=engine)
 
 
 @pytest.fixture(scope="session")
 def db() -> Generator:
     with Session(engine) as session:
+        create_tables()
         yield session
 
 

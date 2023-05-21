@@ -1,5 +1,4 @@
-from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 
 if TYPE_CHECKING:
     from app.models.user import User
@@ -24,8 +23,11 @@ class CardBase(SQLModel):
 
 class Card(CardBase, table=True):
     __tablename__ = "cards"
-    id: Optional[str] = Field(primary_key=True)
-    users: User = Relationship(back_populates="cards", link_model=UserCardLink)
+    id: Optional[str] = Field(default=None, primary_key=True)
+    users: List["User"] = Relationship(
+        back_populates="cards",
+        link_model=UserCardLink,
+    )
 
 
 class CardCreate(CardBase):

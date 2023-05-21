@@ -1,5 +1,4 @@
-from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 
 from fastapi import Body
 
@@ -65,24 +64,30 @@ class User(UserBase, table=True):
     password: str
     email_confirmed: bool = Field(default=False)
 
-    scopes: Scope = Relationship(
+    scopes: Optional[List["Scope"]] = Relationship(
         back_populates="users",
         link_model=UserScopeLink,
         sa_relationship_kwargs=dict(lazy="joined"),
     )
 
-    cards: Card = Relationship(
+    cards: List["Card"] = Relationship(
         back_populates="users",
         link_model=UserCardLink,
     )
 
-    wallets: Wallet = Relationship(back_populates="users", link_model=UserWalletLink)
-    friends: User = Relationship(
+    wallets: List["Wallet"] = Relationship(
+        back_populates="users",
+        link_model=UserWalletLink,
+    )
+
+    friends: List["User"] = Relationship(
         back_populates="friends",
         link_model=FriendLink,
         sa_relationship_kwargs={
             "primaryjoin": "User.id==FriendLink.user_id",
             "secondaryjoin": "User.id==FriendLink.friend_id",
         },
-    )  # 'lazy':"joined" can be added here
+    )
+
+    # 'lazy':"joined" can be added here
     # avatar: Optional[str] = None

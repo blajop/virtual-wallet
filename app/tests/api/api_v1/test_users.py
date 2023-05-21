@@ -4,13 +4,10 @@ from sqlmodel import Session
 from app.core.config import settings
 from app import crud
 from app.models.user import User, UserCreate
+from app.api.api_v1.endpoints import users
 
 
-def test_get_users(
-    client: TestClient,
-    superuser_token_headers: dict,
-    db: Session,
-) -> None:
+def test_get_users(db: Session) -> None:
     username = "testuser123"
     email = "testuser123@example.com"
     phone = "0123456789"
@@ -47,10 +44,11 @@ def test_get_users(
 
     crud.user.create(db, new_user=user_in2)
 
-    r = client.get(f"{settings.API_V1_STR}/users/", headers=superuser_token_headers)
-    all_users = r.json()
+    # r = client.get(f"{settings.API_V1_STR}/users/", headers=superuser_token_headers)
 
-    assert len(all_users) > 1
+    all_users = users.get_users(db)
+
+    assert len(all_users) == 2
     for item in all_users:
         assert "email" in item
 

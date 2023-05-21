@@ -67,7 +67,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
     def authenticate(
         self, db: Session, *, username: str, password: str
     ) -> Optional[User]:
-        user = self.get(db, user=username)
+        user = self.get(db, identifier=username)
         if not user:
             return None
         if not security.verify_password(password, user.password):
