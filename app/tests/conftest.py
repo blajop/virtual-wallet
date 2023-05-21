@@ -3,10 +3,10 @@ from typing import Dict, Generator
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
-from sqlmodel import Session
-from sqlmodel import SQLModel
+from sqlmodel import SQLModel, Session
 
 from app.core.config import settings
+from app.models.scope import Scope
 from main import app
 
 # from app.tests.utils.user import authentication_token_from_email
@@ -19,10 +19,23 @@ def create_tables():
     SQLModel.metadata.create_all(bind=engine)
 
 
+def fill_scopes(session: Session):
+    with session:
+        scopes = [
+            Scope(id=1, scope="guest"),
+            Scope(id=2, scope="user"),
+            Scope(id=3, scope="admin"),
+        ]
+
+        session.add_all(scopes)
+        session.commit()
+
+
 @pytest.fixture(scope="session")
 def db() -> Generator:
     with Session(engine) as session:
         create_tables()
+        fill_scopes(session)
         yield session
 
 

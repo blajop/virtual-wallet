@@ -50,7 +50,7 @@ def test_get_users(db: Session) -> None:
 
     assert len(all_users) == 2
     for item in all_users:
-        assert "email" in item
+        assert "email" in item.__dict__
 
 
 def test_get_profile(
