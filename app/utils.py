@@ -7,8 +7,8 @@ from jose import jwt
 import requests
 import emails
 import random
-
 from app.core.config import settings
+from cryptography.fernet import Fernet
 
 
 class EmailUtility:
@@ -162,6 +162,18 @@ class CurrencyExchangeUtility:
         return amount * rate
 
 
+class EncryptUtility:
+    def __init__(self, key: bytes):
+        self.f = Fernet(key)
+
+    def encrypt(self, input: str) -> str:
+        return self.f.encrypt(input.encode()).decode()
+
+    def decrypt(self, input: str) -> str:
+        return self.f.decrypt(input.encode()).decode()
+
+
 util_mail = EmailUtility()
 util_id = IDUtility()
 util_exchange = CurrencyExchangeUtility()
+util_crypt = EncryptUtility(settings.F_KEY.encode())

@@ -27,6 +27,8 @@ class CardBase(SQLModel):
 class Card(CardBase, table=True):
     __tablename__ = "cards"
     id: Optional[str] = Field(default=None, primary_key=True)
+    number: str
+    cvc: str
     users: List["User"] = Relationship(
         back_populates="cards",
         link_model=UserCardLink,
@@ -34,7 +36,7 @@ class Card(CardBase, table=True):
 
 
 class CardShow(SQLModel):
-    number: constr(regex="^\d{16}$") = Field(unique=True)
+    number: str
     expiry: str
     holder: constr(min_length=2, max_length=30)
 

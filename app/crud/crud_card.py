@@ -6,7 +6,7 @@ from app.error_models.card_errors import CardDataError
 from app.models.card import Card, CardBase, CardCreate, CardShow
 from app.models.user import User
 from app.models.msg import Msg
-from app.utils import util_id
+from app.utils import util_id, util_crypt
 from sqlalchemy import exc as sqlExc
 
 
@@ -51,10 +51,10 @@ class CRUDCard(CRUDBase[Card, CardBase, CardCreate]):
 
         """
         card_orm = Card(
-            number=new_card.number,
+            number=util_crypt.encrypt(new_card.number),
             expiry=new_card.expiry.datetime_,
             holder=new_card.holder,
-            cvc=new_card.cvc,
+            cvc=util_crypt.encrypt(new_card.cvc),
         )
         if found_card := self.get(db, card_orm.number):
             # real-world logic for card verification by banks should be included otherwise

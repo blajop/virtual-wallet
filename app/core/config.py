@@ -7,9 +7,13 @@ class Settings(BaseSettings):
 
     API_V1_STR: str = "/api/v1"
 
+    # JWT SETTINGS
     SECRET_KEY: str = Field(default="secret", env="SECRET_KEY")
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
+
+    # ENCRYPT SETTINGS
+    F_KEY: str = Field(default="secret", env="FERNET_KEY")
 
     # SERVER_HOST: str = "http://91.139.226.224"
     SERVER_HOST: str = "http://localhost:8000"
