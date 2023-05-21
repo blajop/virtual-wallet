@@ -1,0 +1,2 @@
+class CardDataError(ValueError):
+    pass
