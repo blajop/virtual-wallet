@@ -33,12 +33,13 @@ def profile_info(logged_user: User = Depends(deps.get_current_user)):
     return logged_user
 
 
-@router.get("/{identifier}", response_model=User)
+@router.get("/{identifier}", response_model=UserBase)
 def get_user(identifier: str, db: Session = Depends(deps.get_db)):
     """
     Returns a User model from username, email or id search
     """
-    user = app.crud.user.get(db, identifier)
+    user = crud.user.get(db, identifier)
+
     if not user:
         return Response(status_code=404)
     return user

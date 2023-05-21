@@ -10,7 +10,7 @@ from app.core import security
 from app.error_models.user_errors import DataTakenError
 from app.models.msg import Msg
 from app.models.scope import Scope
-from app.models.user import User, UserCreate, UserUpdate
+from app.models.user import User, UserBase, UserCreate, UserUpdate
 
 
 class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
