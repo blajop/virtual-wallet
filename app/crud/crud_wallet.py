@@ -22,8 +22,6 @@ class CRUDWallet(CRUDBase[Wallet, WalletCreate, WalletUpdate]):
             new_wallet: WalletCreate model
         Returns:
             Wallet model
-        Raises:
-            HTTPException with status code 400: Username/Email/Phone number already taken
         """
 
         wallet_orm = Wallet.from_orm(new_wallet)
