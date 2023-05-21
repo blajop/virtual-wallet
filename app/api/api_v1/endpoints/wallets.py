@@ -2,6 +2,7 @@ from fastapi import (
     APIRouter,
     Depends,
     HTTPException,
+    Response,
 )
 from sqlmodel import Session
 from app.api import deps
@@ -25,7 +26,7 @@ def get_wallets(
     if not user:
         raise HTTPException(status_code=404)
 
-    if user.id != logged_user.id and not crud.user.is_admin(logged_user):
+    if user != logged_user and not crud.user.is_admin(logged_user):
         # admin can look up whoever
         raise HTTPException(status_code=401)
 
@@ -47,7 +48,7 @@ def create_wallet(
     if not user:
         raise HTTPException(status_code=404)
 
-    if user.id != logged_user.id:
+    if user != logged_user:
         raise HTTPException(
             status_code=403, detail="Cannot add wallets to other users!"
         )
@@ -68,11 +69,13 @@ def get_wallet_leeches(
     if not user:
         raise HTTPException(status_code=404)
 
-    if user.id != logged_user.id and not crud.user.is_admin(logged_user):
+    if user != logged_user and not crud.user.is_admin(logged_user):
         # admin can look up whoever
         raise HTTPException(status_code=401)
 
     wallet = crud.wallet.get(db, wallet_id)
+    if not wallet:
+        raise HTTPException(status_code=404)
 
     return wallet.users
 
@@ -109,3 +112,25 @@ def invite_wallet_leeches(
         )
 
     return crud.wallet.invite_user(db, wallet, leech_user).__dict__
+
+
+@router.delete("/{wallet_id}")
+def delete_wallet(
+    wallet_id: str,
+    user: User = Depends(deps.get_user_from_path),
+    db: Session = Depends(deps.get_db),
+    logged_user: User = Depends(deps.get_current_user),
+):
+    wallet = crud.wallet.get(db=db, id=wallet_id)
+
+    if logged_user != wallet.owner:
+        raise HTTPException(
+            status_code=403, detail="You cannot delete a wallet that you do not own!"
+        )
+
+    if user != logged_user:
+        raise HTTPException(status_code=403, detail="Cannot delete others' wallets!")
+
+    crud.wallet.remove(db=db, id=wallet_id)
+
+    return Response(status_code=204)
