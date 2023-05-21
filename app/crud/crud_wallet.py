@@ -1,6 +1,7 @@
+from typing import List
 from fastapi import HTTPException
 from sqlmodel import Session
-from sqlalchemy import select
+from sqlmodel import select
 from app import utils
 from app.core import security
 from app.crud.base import CRUDBase
@@ -34,7 +35,7 @@ class CRUDWallet(CRUDBase[Wallet, WalletCreate, WalletUpdate]):
 
         return wallet_orm
 
-    def get_multi_by_owner(self, db: Session, owner: User):
+    def get_multi_by_owner(self, db: Session, owner: User) -> List[Wallet]:
         return (
             db.exec(select(self.model).filter(self.model.owner_id == owner.id))
             .unique()
