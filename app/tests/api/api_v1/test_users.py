@@ -2,11 +2,11 @@ from unittest.mock import Mock
 from fastapi import HTTPException
 import pytest
 from sqlmodel import Session
-from app import crud
-from app.models.user import User, UserCreate
 from app.api.api_v1.endpoints import users
+from app.models.user import User, UserCreate
 from fastapi import BackgroundTasks
 from app.utils import util_mail
+from app.core.config import settings
 
 BACKGROUND_TASKS = Mock(spec=BackgroundTasks)
 BACKGROUND_TASKS.add_task = lambda a, b, c: None
@@ -23,7 +23,7 @@ def test_get_users(db: Session) -> None:
 
 def test_get_profile(db: Session):
     # test get_user endpoint
-    test_user = users.get_user("adminTest", db)
+    test_user = users.get_user(settings.ADMIN_TEST_USERNAME, db)
 
     with pytest.raises(HTTPException) as exc_info:
         users.get_user("doesntexist", db)
@@ -34,7 +34,7 @@ def test_get_profile(db: Session):
     assert test_user
     assert exc_info.value.status_code == 404
     assert profile_info
-    assert profile_info.username == "adminTest"
+    assert profile_info.username == settings.ADMIN_TEST_USERNAME
 
 
 def test_get_profile_raise_when_not_logged():

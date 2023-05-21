@@ -27,6 +27,14 @@ class Settings(BaseSettings):
 
     CURRENCY_REQUEST_URL = Field(default="", env="CURRENCY_REQUEST_URL")
 
+    # TESTING
+    ADMIN_TEST_USERNAME: str = "adminUser"
+    ADMIN_TEST_PASSWORD: str = "AdminPass_1"
+    ADMIN_TEST_EMAIL: str = "adminUser@example.com"
+    USER_TEST_USERNAME: str = "normalUser"
+    USER_TEST_PASSWORD: str = "UserPass_1"
+    USER_TEST_EMAIL: str = "normalUser@example.com"
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
