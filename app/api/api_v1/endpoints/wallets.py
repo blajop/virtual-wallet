@@ -9,7 +9,6 @@ from app.api import deps
 from app import crud
 from app.models.user import User
 from app.models.wallet import Wallet, WalletCreate
-from fastapi.encoders import jsonable_encoder
 
 router = APIRouter()
 
@@ -20,15 +19,12 @@ def get_wallets(
     db: Session = Depends(deps.get_db),
     logged_user: User = Depends(deps.get_current_user),
 ):
-    if not logged_user:
-        raise HTTPException(status_code=401)
-
     if not user:
         raise HTTPException(status_code=404)
 
     if user != logged_user and not crud.user.is_admin(logged_user):
         # admin can look up whoever
-        raise HTTPException(status_code=401)
+        raise HTTPException(status_code=403)
 
     return crud.wallet.get_multi_by_owner(db, user)
 
@@ -40,11 +36,6 @@ def create_wallet(
     db: Session = Depends(deps.get_db),
     logged_user: User = Depends(deps.get_current_user),
 ):
-    user: User = crud.user.get(db, user)
-
-    if not logged_user:
-        raise HTTPException(status_code=401)
-
     if not user:
         raise HTTPException(status_code=404)
 
@@ -63,15 +54,12 @@ def get_wallet_leeches(
     db: Session = Depends(deps.get_db),
     logged_user: User = Depends(deps.get_current_user),
 ):
-    if not logged_user:
-        raise HTTPException(status_code=401)
-
     if not user:
         raise HTTPException(status_code=404)
 
     if user != logged_user and not crud.user.is_admin(logged_user):
         # admin can look up whoever
-        raise HTTPException(status_code=401)
+        raise HTTPException(status_code=403)
 
     wallet = crud.wallet.get(db, wallet_id)
     if not wallet:
@@ -106,7 +94,7 @@ def invite_wallet_leeches(
     if not all([leech_user, wallet]):
         raise HTTPException(status_code=404)
 
-    if wallet.owner.id != logged_user.id:
+    if wallet.owner != logged_user:
         raise HTTPException(
             status_code=403, detail="Cannot invite to wallets you don't own"
         )
@@ -123,13 +111,11 @@ def delete_wallet(
 ):
     wallet = crud.wallet.get(db=db, id=wallet_id)
 
-    if logged_user != wallet.owner:
-        raise HTTPException(
-            status_code=403, detail="You cannot delete a wallet that you do not own!"
-        )
+    if not wallet:
+        raise HTTPException(status_code=404, detail="No such wallet!")
 
-    if user != logged_user:
-        raise HTTPException(status_code=403, detail="Cannot delete others' wallets!")
+    if user != logged_user or logged_user != wallet.owner:
+        raise HTTPException(status_code=403, detail="Can only delete your own wallets!")
 
     crud.wallet.remove(db=db, id=wallet_id)
 
