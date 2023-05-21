@@ -5,7 +5,7 @@ if TYPE_CHECKING:
     from app.models.user import User
 from datetime import datetime
 from typing import Optional
-from pydantic import constr, BaseModel
+from pydantic import constr
 from sqlmodel import Field, Relationship, SQLModel
 
 
