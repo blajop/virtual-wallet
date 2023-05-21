@@ -3,7 +3,7 @@ from sqlmodel import Session, or_, select
 from app import crud
 from app.crud.base import CRUDBase
 from app.error_models.card_errors import CardDataError
-from app.models.card import Card, CardBase, CardCreate
+from app.models.card import Card, CardBase, CardCreate, CardShow
 from app.models.user import User
 from app.models.msg import Msg
 from app.utils import util_id
@@ -11,7 +11,17 @@ from sqlalchemy import exc as sqlExc
 
 
 class CRUDCard(CRUDBase[Card, CardBase, CardCreate]):
-    def get(self, db: Session, card_identifier: str, user: User) -> Card | None:
+    def get(self, db: Session, card_identifier: str, user: User = None) -> Card | None:
+        """
+        Gets a card available to the passed user (registered for his account or any card for user admin).
+
+        Arguments:
+            db: Session
+            user: User model
+        Returns:
+            Card model
+
+        """
         found_card = db.exec(
             select(Card).filter(
                 or_(
@@ -20,12 +30,26 @@ class CRUDCard(CRUDBase[Card, CardBase, CardCreate]):
                 )
             )
         ).first()
+        if not user:
+            return found_card
         if found_card and (user in found_card.users or crud.user.is_admin(user)):
             return found_card
 
     def add_card(
         self, db: Session, user: User, new_card: CardCreate
     ) -> Card | Msg | CardDataError:
+        """
+        Registers a card attached to the account of the passed user.
+
+        Arguments:
+            db: Session
+            user: User model
+        Returns:
+            CardShow model | Msg
+        Raises:
+            CardDataError
+
+        """
         card_orm = Card(
             number=new_card.number,
             expiry=new_card.expiry.datetime_,
@@ -55,7 +79,11 @@ class CRUDCard(CRUDBase[Card, CardBase, CardCreate]):
         db.commit()
         db.refresh(card_orm)
 
-        return card_orm
+        return CardShow(
+            number=card_orm.number,
+            expiry=card_orm.expiry.strftime("%m/%y"),
+            holder=card_orm.holder,
+        )
 
 
 card = CRUDCard(Card)
