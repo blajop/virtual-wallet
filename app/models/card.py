@@ -35,7 +35,7 @@ class Card(CardBase, table=True):
 
 class CardShow(SQLModel):
     number: constr(regex="^\d{16}$") = Field(unique=True)
-    expiry: datetime
+    expiry: str
     holder: constr(min_length=2, max_length=30)
 
 
