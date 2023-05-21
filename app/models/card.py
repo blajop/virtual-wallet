@@ -1,10 +1,13 @@
 from typing import TYPE_CHECKING, List
+import calendar
+
+from app.error_models.card_errors import CardDataError
 
 if TYPE_CHECKING:
     from app.models.user import User
 from datetime import datetime
 from typing import Optional
-from pydantic import constr
+from pydantic import BaseModel, conint, constr, validator
 from sqlmodel import Field, Relationship, SQLModel
 
 
@@ -30,5 +33,37 @@ class Card(CardBase, table=True):
     )
 
 
+class CardShow(SQLModel):
+    number: constr(regex="^\d{16}$") = Field(unique=True)
+    expiry: datetime
+    holder: constr(min_length=2, max_length=30)
+
+
+class CardExpiry(BaseModel):
+    mm: str
+    yyyy: str
+
+    @property
+    def datetime_(self):
+        datetime_obj = datetime(
+            month=int(self.mm),
+            year=int(self.yyyy),
+            day=calendar.monthrange(int(self.yyyy), int(self.mm))[1],
+            hour=23,
+            minute=59,
+            second=59,
+        )
+        if datetime_obj < datetime.utcnow():
+            raise CardDataError("Your card is expired")
+        return datetime_obj
+
+    @validator("mm")
+    def validate_mm(cls, val: str):
+        val = val.strip("0")
+        if 1 > int(val) > 12:
+            raise ValueError("Invalid month entered")
+        return val
+
+
 class CardCreate(CardBase):
-    pass
+    expiry: CardExpiry
