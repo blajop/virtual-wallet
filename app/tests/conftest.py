@@ -9,6 +9,7 @@ from app.core.config import settings
 from app.models.scope import Scope
 from app.models.user import User, UserCreate
 from main import app
+from app.core.security import get_password_hash
 
 # from app.tests.utils.user import authentication_token_from_email
 # from app.tests.utils.utils import get_superuser_token_headers
@@ -39,24 +40,24 @@ def fill_basic_users(session: Session):
 
         admin = User(
             id="admin_id",
-            username="adminTest",
-            email="admintest@example.com",
+            username=settings.ADMIN_TEST_USERNAME,
+            email=settings.ADMIN_TEST_EMAIL,
             phone="0987654321",
             f_name="Admin",
             l_name="Adminov",
-            password="Testuser123_",
+            password=get_password_hash(settings.ADMIN_TEST_PASSWORD),
         )
         admin.scopes.append(scope_u)
         admin.scopes.append(scope_a)
 
         user = User(
             id="user_id",
-            username="userTest",
-            email="usertest@example.com",
+            username=settings.USER_TEST_USERNAME,
+            email=settings.USER_TEST_EMAIL,
             phone="1234567890",
             f_name="User",
             l_name="Userov",
-            password="Testuser123_",
+            password=get_password_hash(settings.USER_TEST_PASSWORD),
         )
         user.scopes.append(scope_u)
 

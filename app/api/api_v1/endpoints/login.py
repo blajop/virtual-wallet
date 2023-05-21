@@ -38,14 +38,6 @@ def login_access_token(
     }
 
 
-@router.post("/login/test-token", response_model=models.User)
-def test_token(current_user: models.User = Depends(deps.get_current_user)) -> Any:
-    """
-    Test access token
-    """
-    return current_user
-
-
 @router.post("/password-recovery/{email}", response_model=models.Msg)
 def recover_password(
     email: str, background: BackgroundTasks, db: Session = Depends(deps.get_db)
@@ -53,7 +45,7 @@ def recover_password(
     """
     Password Recovery
     """
-    user = crud.user.get(db, user=email)
+    user = crud.user.get(db, identifier=email)
 
     if not user:
         raise HTTPException(
@@ -84,10 +76,10 @@ def reset_password(
     if info.new_password != info.verify_password:
         raise HTTPException(status_code=400, detail="Passwords don't match")
 
-    email = util_mail.verify_password_reset_token(token)
+    email = util_mail.verify_email_link_token(token)
     if not email:
         raise HTTPException(status_code=400, detail="Invalid token")
-    user = crud.user.get(db, user=email)
+    user = crud.user.get(db, identifier=email)
     if not user:
         raise HTTPException(
             status_code=404,
