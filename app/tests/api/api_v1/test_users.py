@@ -110,6 +110,41 @@ def test_register_user(db: Session):
     assert data_info.value.status_code == 409
 
 
+def test_admin_user_inDB(db: Session):
+    all_users = users.get_users(db)
+    admin = users.get_user("admin_id", db)
+    user = users.get_user("user_id", db)
+    assert admin.username == "adminTest"
+    assert "user" in [sc.scope for sc in admin.scopes]
+    assert "admin" in [sc.scope for sc in admin.scopes]
+    assert user.username == "userTest"
+    assert "user" in [sc.scope for sc in user.scopes]
+    assert "admin" not in [sc.scope for sc in user.scopes]
+
+
+# def test_get_profile(
+#     client: TestClient,
+#     superuser_token_headers: dict,
+# ):
+#     r = client.get(
+#         f"{settings.API_V1_STR}/users/profile", headers=superuser_token_headers
+#     )
+#     info = r.json()
+
+#     user = User(
+#         id=info.get("id"),
+#         username=info.get("username"),
+#         email=info.get("email"),
+#         phone=info.get("phone"),
+#         f_name=info.get("f_name"),
+#         l_name=info.get("l_name"),
+#         password=info.get("password"),
+#     )
+
+#     assert user
+#     assert info.get("username") == "stanim"
+
+
 def test_verify_email(db: Session):
     # generate a token
     new_user = UserCreate(
