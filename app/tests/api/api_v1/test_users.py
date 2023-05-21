@@ -3,7 +3,7 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session
 from app.core.config import settings
 from app import crud
-from app.models.user import User, UserCreate
+from app.models.user import User, UserCreate 
 
 
 def test_get_users(

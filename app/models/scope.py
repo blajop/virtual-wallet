@@ -1,5 +1,5 @@
-from __future__ import annotations
-from typing import TYPE_CHECKING
+# from __future__ import annotations
+from typing import TYPE_CHECKING, List
 
 if TYPE_CHECKING:
     from app.models.user import User
@@ -17,4 +17,6 @@ class Scope(SQLModel, table=True):
     __tablename__ = "scopes"
     id: Optional[int] = Field(primary_key=True)
     scope: str
-    users: User = Relationship(back_populates="scopes", link_model=UserScopeLink)
+    users: List["User"] = Relationship(
+        back_populates="scopes", link_model=UserScopeLink
+    )

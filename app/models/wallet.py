@@ -1,5 +1,5 @@
-from __future__ import annotations
-from typing import TYPE_CHECKING
+# from __future__ import annotations
+from typing import TYPE_CHECKING, List
 
 if TYPE_CHECKING:
     from app.models.user import User
@@ -27,13 +27,13 @@ class Wallet(WalletBase, table=True):
     __tablename__ = "wallets"
     id: Optional[str] = Field(primary_key=True)
 
-    users: User = Relationship(
+    users: List["User"] = Relationship(
         back_populates="wallets",
         link_model=UserWalletLink,
         sa_relationship_kwargs=dict(lazy="joined"),
     )
 
-    owner: User = Relationship(
+    owner: "User" = Relationship(
         sa_relationship_kwargs=dict(primaryjoin="User.id==Wallet.owner_id")
     )  # lazy="joined" can be added here
 
