@@ -3,14 +3,15 @@ from typing import Dict, Generator
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
-from sqlmodel import SQLModel, Session
+from sqlmodel import SQLModel, Session, select
 
 from app.core.config import settings
 from app.models.scope import Scope
+from app.models.user import User, UserCreate
 from main import app
 
 # from app.tests.utils.user import authentication_token_from_email
-from app.tests.utils.utils import get_superuser_token_headers
+# from app.tests.utils.utils import get_superuser_token_headers
 
 engine = create_engine("sqlite:///:memory:", echo=True)
 
@@ -31,11 +32,44 @@ def fill_scopes(session: Session):
         session.commit()
 
 
+def fill_basic_users(session: Session):
+    with session:
+        scope_a = session.exec(select(Scope).filter(Scope.id == 3)).first()
+        scope_u = session.exec(select(Scope).filter(Scope.id == 2)).first()
+
+        admin = User(
+            id="admin_id",
+            username="adminTest",
+            email="admintest@example.com",
+            phone="0987654321",
+            f_name="Admin",
+            l_name="Adminov",
+            password="Testuser123_",
+        )
+        admin.scopes.append(scope_u)
+        admin.scopes.append(scope_a)
+
+        user = User(
+            id="user_id",
+            username="userTest",
+            email="usertest@example.com",
+            phone="1234567890",
+            f_name="User",
+            l_name="Userov",
+            password="Testuser123_",
+        )
+        user.scopes.append(scope_u)
+
+        session.add_all([admin, user])
+        session.commit()
+
+
 @pytest.fixture(scope="session")
 def db() -> Generator:
     with Session(engine) as session:
         create_tables()
         fill_scopes(session)
+        fill_basic_users(session)
         yield session
 
 
@@ -45,9 +79,9 @@ def client() -> Generator:
         yield c
 
 
-@pytest.fixture(scope="module")
-def superuser_token_headers(client: TestClient) -> Dict[str, str]:
-    return get_superuser_token_headers(client)
+# @pytest.fixture(scope="module")
+# def superuser_token_headers(client: TestClient) -> Dict[str, str]:
+#     return get_superuser_token_headers(client)
 
 
 # @pytest.fixture(scope="module")
