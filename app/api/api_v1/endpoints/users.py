@@ -20,7 +20,10 @@ router = APIRouter()
 
 
 @router.get("", response_model=list[User])
-def get_users(db: Session = Depends(deps.get_db)):
+def get_users(
+    db: Session = Depends(deps.get_db),
+    logged_user: User = Depends(deps.get_current_user),
+):
     return crud.user.get_multi(db)
 
 
@@ -50,12 +53,7 @@ def sign_up_user(
     new_user: UserCreate,
     background_tasks: BackgroundTasks,
     db: Session = Depends(deps.get_db),
-    logged_user: User = Depends(deps.get_current_user),
 ):
-    if logged_user:
-        raise HTTPException(
-            status_code=403, detail="You should be logged out in order to register"
-        )
     try:
         registered_user = crud.user.create(db, new_user)
     except DataTakenError as err:
