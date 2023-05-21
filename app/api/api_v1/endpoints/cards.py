@@ -21,7 +21,21 @@ from app.utils import util_mail
 
 router = APIRouter()
 
-# @router.get('/{identifier}')
+
+@router.get("/{card_identifier}", response_model=Card)
+def get_card(
+    card_identifier: str,
+    db: Session = Depends(deps.get_db),
+    logged_user: User = Depends(deps.get_current_user),
+):
+    if not logged_user:
+        raise HTTPException(status_code=401, detail="You should be logged in")
+
+    result = crud.card.get(db, card_identifier, logged_user)
+
+    if not result:
+        raise HTTPException(status_code=404)
+    return result
 
 
 @router.post("", response_model=CardShow | Msg)

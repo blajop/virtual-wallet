@@ -1,5 +1,6 @@
 from fastapi import HTTPException
 from sqlmodel import Session, or_, select
+from app import crud
 from app.crud.base import CRUDBase
 from app.error_models.card_errors import CardDataError
 from app.models.card import Card, CardBase, CardCreate
@@ -10,15 +11,17 @@ from sqlalchemy import exc as sqlExc
 
 
 class CRUDCard(CRUDBase[Card, CardBase, CardCreate]):
-    def get(self, db: Session, identifier: str) -> Card | None:
-        return db.exec(
+    def get(self, db: Session, card_identifier: str, user: User) -> Card | None:
+        found_card = db.exec(
             select(Card).filter(
                 or_(
-                    Card.number == identifier,
-                    Card.id == identifier,
+                    Card.number == card_identifier,
+                    Card.id == card_identifier,
                 )
             )
         ).first()
+        if found_card and (user in found_card.users or crud.user.is_admin(user)):
+            return found_card
 
     def add_card(
         self, db: Session, user: User, new_card: CardCreate
