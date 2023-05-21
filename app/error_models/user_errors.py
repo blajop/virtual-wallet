@@ -1,0 +1,2 @@
+class DataTakenError(ValueError):
+    pass

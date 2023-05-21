@@ -60,7 +60,7 @@ def recover_password(
             status_code=404,
             detail="User with this email does not exist in the system.",
         )
-    password_reset_token = util_mail.generate_password_reset_token(email=email)
+    password_reset_token = util_mail.generate_email_link_token(email=email)
 
     background.add_task(
         util_mail.send_reset_password_email,

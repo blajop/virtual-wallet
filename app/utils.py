@@ -75,9 +75,10 @@ class EmailUtility:
     def send_new_account_email(self, email_to: str, username: str) -> None:
         project_name = settings.PROJECT_NAME
         subject = f"{project_name} - New account for user {username}"
+        token = self.generate_email_link_token(email_to)
         with open(Path(settings.EMAIL_TEMPLATES_DIR) / "new_account.html") as f:
             template_str = f.read()
-        link = settings.SERVER_HOST
+        link = f"{settings.SERVER_HOST}{settings.API_V1_STR}/users/verify/{token}"
         self.send_email(
             email_to=email_to,
             subject_template=subject,
@@ -90,7 +91,7 @@ class EmailUtility:
             },
         )
 
-    def generate_password_reset_token(self, email: str) -> str:
+    def generate_email_link_token(self, email: str) -> str:
         delta = timedelta(hours=settings.EMAIL_RESET_TOKEN_EXPIRE_HOURS)
         now = datetime.utcnow()
         expires = now + delta
@@ -98,14 +99,16 @@ class EmailUtility:
         encoded_jwt = jwt.encode(
             {"exp": exp, "nbf": now, "sub": email},
             settings.SECRET_KEY,
-            algorithm="HS256",
+            algorithm=settings.ALGORITHM,
         )
         return encoded_jwt
 
-    def verify_password_reset_token(self, token: str) -> Optional[str]:
+    def verify_email_link_token(self, token: str) -> Optional[str]:
         try:
-            decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-            return decoded_token["email"]
+            decoded_token = jwt.decode(
+                token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+            )
+            return decoded_token["sub"]
         except jwt.JWTError:
             return None
 

@@ -10,8 +10,10 @@ from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from app import crud
 import app
+from app import utils
 from app.api import deps
-from app.models.user import User, UserCreate
+from app.error_models.user_errors import DataTakenError
+from app.models.user import User, UserBase, UserCreate
 from app.utils import util_mail
 
 router = APIRouter()
@@ -42,7 +44,7 @@ def get_user(identifier: str, db: Session = Depends(deps.get_db)):
     return user
 
 
-@router.post("/signup")
+@router.post("/signup", response_model=UserBase)
 def sign_up_user(
     new_user: UserCreate,
     background_tasks: BackgroundTasks,
@@ -53,8 +55,10 @@ def sign_up_user(
         raise HTTPException(
             status_code=403, detail="You should be logged out in order to register"
         )
-
-    registered_user = crud.user.create(db, new_user)
+    try:
+        registered_user = crud.user.create(db, new_user)
+    except DataTakenError as err:
+        raise HTTPException(status_code=409, detail=err.args[0])
 
     background_tasks.add_task(
         util_mail.send_new_account_email,
@@ -62,12 +66,16 @@ def sign_up_user(
         registered_user.username,
     )
 
-    return JSONResponse(
-        content={
-            "user": jsonable_encoder(registered_user),
-            "msg": "Link for email verification has been sent to your declared email",
-        }
-    )
+    return registered_user
+
+
+@router.get("/verify/{token}")
+def verify_email(token, db: Session = Depends(deps.get_db)):
+    user_email = util_mail.verify_email_link_token(token)
+    user = crud.user.get(db, user_email)
+    if not user:
+        raise HTTPException(status_code=404, detail="Token user not found")
+    return crud.user.confirm_email(db, db_obj=user)
 
 
 #################
