@@ -13,26 +13,6 @@ BACKGROUND_TASKS.add_task = lambda a, b, c: None
 
 
 def test_get_users(db: Session) -> None:
-    user_1 = UserCreate(
-        username="testuser123",
-        email="testuser123@example.com",
-        phone="0123456789",
-        f_name="testuser123",
-        l_name="testuser123",
-        password="Testuser123_",
-    )
-    user_2 = UserCreate(
-        username="testuser124",
-        email="testuser124@example.com",
-        phone="0124456789",
-        f_name="testuser123",
-        l_name="testuser123",
-        password="Testuser123_",
-    )
-
-    crud.user.create(db, new_user=user_1)
-    crud.user.create(db, new_user=user_2)
-
     all_users = users.get_users(db)
 
     assert len(all_users) > 1
@@ -43,7 +23,7 @@ def test_get_users(db: Session) -> None:
 
 def test_get_profile(db: Session):
     # test get_user endpoint
-    test_user = users.get_user("testuser124", db)
+    test_user = users.get_user("adminTest", db)
 
     with pytest.raises(HTTPException) as exc_info:
         users.get_user("doesntexist", db)
@@ -54,7 +34,7 @@ def test_get_profile(db: Session):
     assert test_user
     assert exc_info.value.status_code == 404
     assert profile_info
-    assert profile_info.username == "testuser124"
+    assert profile_info.username == "adminTest"
 
 
 def test_get_profile_raise_when_not_logged():
@@ -110,39 +90,16 @@ def test_register_user(db: Session):
     assert data_info.value.status_code == 409
 
 
-def test_admin_user_inDB(db: Session):
-    all_users = users.get_users(db)
-    admin = users.get_user("admin_id", db)
-    user = users.get_user("user_id", db)
-    assert admin.username == "adminTest"
-    assert "user" in [sc.scope for sc in admin.scopes]
-    assert "admin" in [sc.scope for sc in admin.scopes]
-    assert user.username == "userTest"
-    assert "user" in [sc.scope for sc in user.scopes]
-    assert "admin" not in [sc.scope for sc in user.scopes]
-
-
-# def test_get_profile(
-#     client: TestClient,
-#     superuser_token_headers: dict,
-# ):
-#     r = client.get(
-#         f"{settings.API_V1_STR}/users/profile", headers=superuser_token_headers
-#     )
-#     info = r.json()
-
-#     user = User(
-#         id=info.get("id"),
-#         username=info.get("username"),
-#         email=info.get("email"),
-#         phone=info.get("phone"),
-#         f_name=info.get("f_name"),
-#         l_name=info.get("l_name"),
-#         password=info.get("password"),
-#     )
-
-#     assert user
-#     assert info.get("username") == "stanim"
+# def test_admin_user_inDB(db: Session):
+#     all_users = users.get_users(db)
+#     admin = users.get_user("admin_id", db)
+#     user = users.get_user("user_id", db)
+#     assert admin.username == "adminTest"
+#     assert "user" in [sc.scope for sc in admin.scopes]
+#     assert "admin" in [sc.scope for sc in admin.scopes]
+#     assert user.username == "userTest"
+#     assert "user" in [sc.scope for sc in user.scopes]
+#     assert "admin" not in [sc.scope for sc in user.scopes]
 
 
 def test_verify_email(db: Session):
