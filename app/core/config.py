@@ -13,7 +13,8 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
 
     # ENCRYPT SETTINGS
-    F_KEY: str = Field(default="secret", env="FERNET_KEY")
+    AES_KEY: str = Field(default="secret", env="AES_KEY")
+    CBC_iv: str = Field(default="secret", env="CBC_iv")
 
     # SERVER_HOST: str = "http://91.139.226.224"
     SERVER_HOST: str = "http://localhost:8000"

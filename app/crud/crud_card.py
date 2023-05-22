@@ -11,6 +11,7 @@ from sqlalchemy import exc as sqlExc
 
 
 class CRUDCard(CRUDBase[Card, CardBase, CardCreate]):
+    # Called with user arg from the router, internally used with 2 args.
     def get(self, db: Session, card_identifier: str, user: User = None) -> Card | None:
         """
         Gets a card available to the passed user (registered for his account or any card for user admin).
@@ -22,17 +23,25 @@ class CRUDCard(CRUDBase[Card, CardBase, CardCreate]):
             Card model
 
         """
-        found_card = db.exec(
+        found_card: Card = db.exec(
             select(Card).filter(
                 or_(
-                    Card.number == card_identifier,
+                    Card.number == util_crypt.encrypt(card_identifier),
                     Card.id == card_identifier,
                 )
             )
         ).first()
+
+        if not found_card:
+            return None
+
+        found_card.number = util_crypt.decrypt(found_card.number)
+        found_card.cvc = util_crypt.decrypt(found_card.cvc)
+
         if not user:
             return found_card
-        if found_card and (user in found_card.users or crud.user.is_admin(user)):
+
+        if user in found_card.users or crud.user.is_admin(user):
             return found_card
 
     def add_card(
@@ -80,7 +89,7 @@ class CRUDCard(CRUDBase[Card, CardBase, CardCreate]):
         db.refresh(card_orm)
 
         return CardShow(
-            number=card_orm.number,
+            number=util_crypt.decrypt(card_orm.number),
             expiry=card_orm.expiry.strftime("%m/%y"),
             holder=card_orm.holder,
         )

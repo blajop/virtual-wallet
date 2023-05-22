@@ -8,7 +8,10 @@ import requests
 import emails
 import random
 from app.core.config import settings
-from cryptography.fernet import Fernet
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.primitives import padding
+import base64
+import os
 
 
 class EmailUtility:
@@ -163,17 +166,31 @@ class CurrencyExchangeUtility:
 
 
 class EncryptUtility:
-    def __init__(self, key: bytes):
-        self.f = Fernet(key)
+    def __init__(self):
+        self.cipher = Cipher(
+            algorithms.AES(base64.b64decode(settings.AES_KEY)),
+            modes.CBC(base64.b64decode(settings.CBC_iv)),
+        )
 
     def encrypt(self, input: str) -> str:
-        return self.f.encrypt(input.encode()).decode()
+        encryptor = self.cipher.encryptor()
+        padder = padding.PKCS7(128).padder()
+        padded_data = padder.update(input.encode()) + padder.finalize()
+        ciphertxt = encryptor.update(padded_data) + encryptor.finalize()
+        base_64_str = base64.b64encode(ciphertxt).decode()
+        return base_64_str
 
     def decrypt(self, input: str) -> str:
-        return self.f.decrypt(input.encode()).decode()
+        decryptor = self.cipher.decryptor()
+        ciphertxt = base64.b64decode(input)
+        decrypted_padded = decryptor.update(ciphertxt) + decryptor.finalize()
+        unpadder = padding.PKCS7(128).unpadder()
+        decrypted_data = unpadder.update(decrypted_padded) + unpadder.finalize()
+        base_64_str = base64.b64encode(decrypted_data).decode()
+        return base64.b64decode(base_64_str).decode()
 
 
 util_mail = EmailUtility()
 util_id = IDUtility()
 util_exchange = CurrencyExchangeUtility()
-util_crypt = EncryptUtility(settings.F_KEY.encode())
+util_crypt = EncryptUtility()
