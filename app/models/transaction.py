@@ -12,6 +12,7 @@ class TransactionBase(SQLModel):
     currency: str  # Currency
     amount: float
     status: constr(regex="^pending|success|cancelled$")
+    recurring: Optional[constr(regex="^month|year")] = Field(default=None)
 
 
 class Transaction(TransactionBase, table=True):
