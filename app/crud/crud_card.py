@@ -15,6 +15,8 @@ class CRUDCard(CRUDBase[Card, CardBase, CardCreate]):
     def get(self, db: Session, card_identifier: str, user: User = None) -> Card | None:
         """
         Gets a card available to the passed user (registered for his account or any card for user admin).
+        Note: The output is a Card object with plain text number and cvc,
+        so before updating it in the DB, they should be encrypted back.
 
         Arguments:
             db: Session
