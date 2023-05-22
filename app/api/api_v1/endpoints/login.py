@@ -10,7 +10,8 @@ from app.api import deps
 from app.core import security
 from app.core.config import settings
 from app.core.security import get_password_hash
-from app.models.user import UserResetPass
+from app.error_models.user_errors import DataTakenError
+from app.models.user import UserBase, UserCreate, UserResetPass
 from app.utils import util_mail
 
 router = APIRouter()
@@ -36,6 +37,40 @@ def login_access_token(
         ),
         "token_type": "bearer",
     }
+
+
+@router.post("/signup", response_model=UserBase)
+def sign_up(
+    new_user: UserCreate,
+    referral: str,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(deps.get_db),
+):
+    try:
+        registered_user = crud.user.create(db, new_user)
+    except DataTakenError as err:
+        raise HTTPException(status_code=409, detail=err.args[0])
+
+    # referral should lose a refer spot in his UserSettings
+    # if not more spots, dont give them money
+    # get referral from token and add each other as friends and fund their accounts
+
+    background_tasks.add_task(
+        util_mail.send_new_account_email,
+        registered_user.email,
+        registered_user.username,
+    )
+
+    return registered_user
+
+
+@router.get("/verify/{token}")
+def verify_email(token, db: Session = Depends(deps.get_db)):
+    user_email = util_mail.verify_email_link_token(token)
+    user = crud.user.get(db, user_email)
+    if not user:
+        raise HTTPException(status_code=404, detail="Token user not found")
+    return crud.user.confirm_email(db, db_obj=user)
 
 
 @router.post("/password-recovery/{email}", response_model=models.Msg)

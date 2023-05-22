@@ -52,35 +52,6 @@ def get_user(
     return user
 
 
-@router.post("/signup", response_model=UserBase)
-def sign_up_user(
-    new_user: UserCreate,
-    background_tasks: BackgroundTasks,
-    db: Session = Depends(deps.get_db),
-):
-    try:
-        registered_user = crud.user.create(db, new_user)
-    except DataTakenError as err:
-        raise HTTPException(status_code=409, detail=err.args[0])
-
-    background_tasks.add_task(
-        util_mail.send_new_account_email,
-        registered_user.email,
-        registered_user.username,
-    )
-
-    return registered_user
-
-
-@router.get("/verify/{token}")
-def verify_email(token, db: Session = Depends(deps.get_db)):
-    user_email = util_mail.verify_email_link_token(token)
-    user = crud.user.get(db, user_email)
-    if not user:
-        raise HTTPException(status_code=404, detail="Token user not found")
-    return crud.user.confirm_email(db, db_obj=user)
-
-
 #################
 
 
