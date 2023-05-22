@@ -19,9 +19,6 @@ def get_wallets(
     db: Session = Depends(deps.get_db),
     logged_user: User = Depends(deps.get_current_user),
 ):
-    if not user:
-        raise HTTPException(status_code=404)
-
     if user != logged_user and not crud.user.is_admin(logged_user):
         # admin can look up whoever
         raise HTTPException(status_code=403)
@@ -36,9 +33,6 @@ def create_wallet(
     db: Session = Depends(deps.get_db),
     logged_user: User = Depends(deps.get_current_user),
 ):
-    if not user:
-        raise HTTPException(status_code=404)
-
     if user != logged_user:
         raise HTTPException(
             status_code=403, detail="Cannot add wallets to other users!"
@@ -54,14 +48,11 @@ def get_wallet_leeches(
     db: Session = Depends(deps.get_db),
     logged_user: User = Depends(deps.get_current_user),
 ):
-    if not user:
-        raise HTTPException(status_code=404)
-
     if user != logged_user and not crud.user.is_admin(logged_user):
         # admin can look up whoever
         raise HTTPException(status_code=403)
 
-    wallet = crud.wallet.get(db, wallet_id)
+    wallet = crud.wallet.get_by_owner(db, user, wallet_id)
     if not wallet:
         raise HTTPException(status_code=404)
 
@@ -72,6 +63,7 @@ def get_wallet_leeches(
 def invite_wallet_leeches(
     wallet_id: str,
     leech: str,
+    user: User = Depends(deps.get_user_from_path),
     db: Session = Depends(deps.get_db),
     logged_user: User = Depends(deps.get_current_user),
 ):
@@ -84,22 +76,74 @@ def invite_wallet_leeches(
     Returns:
         wallet info
     Raises:
-        404 if leech user is not found
+        403 if trying to access another user's wallet
+        404 if leech user or wallet not found
 
     """
+    if user != logged_user:
+        raise HTTPException(
+            status_code=403, detail="Cannot invite to wallets that you don't own"
+        )
 
-    wallet = crud.wallet.get(db, wallet_id)
+    wallet = crud.wallet.get_by_owner(db, user, wallet_id)
     leech_user = crud.user.get(db, leech)
 
     if not all([leech_user, wallet]):
         raise HTTPException(status_code=404)
 
-    if wallet.owner != logged_user:
+    return crud.wallet.invite_user(db, wallet, leech_user).__dict__
+
+
+@router.post("/{wallet_id}/deposit")
+def deposit_to_wallet(
+    wallet_id: str,
+    amount: float,
+    source: str,
+    user: User = Depends(deps.get_user_from_path),
+    db: Session = Depends(deps.get_db),
+    logged_user: User = Depends(deps.get_current_user),
+):
+    if user != logged_user:
         raise HTTPException(
-            status_code=403, detail="Cannot invite to wallets you don't own"
+            status_code=403, detail="Cannot deposit to wallets that you don't own"
         )
 
-    return crud.wallet.invite_user(db, wallet, leech_user).__dict__
+    from_card = crud.card.get(db, source)
+    if not from_card:
+        raise HTTPException(status_code=404, detail="No such card added")
+
+    wallet = crud.wallet.get_by_owner(db, user, wallet_id)
+    if not wallet:
+        raise HTTPException(status_code=404, detail="No wallet found")
+
+    return crud.wallet.deposit(db=db, wallet=wallet, amount=amount, card=from_card)
+
+
+@router.post("/{wallet_id}/tansfer")
+def transfer_to_wallet(
+    wallet_id: str,
+    amount: float,
+    to: str,
+    user: User = Depends(deps.get_user_from_path),
+    db: Session = Depends(deps.get_db),
+    logged_user: User = Depends(deps.get_current_user),
+):
+    if user != logged_user:
+        raise HTTPException(
+            status_code=403, detail="Cannot transfer from wallets that you don't own"
+        )
+
+    to_wallet = crud.card.get(db, to)
+    if not to_wallet:
+        raise HTTPException(status_code=404, detail="No target wallet found")
+
+    from_wallet = crud.wallet.get_by_owner(db, user, wallet_id)
+    if not from_wallet:
+        raise HTTPException(status_code=404, detail="No wallet found")
+
+    return crud.wallet.transfer(
+        db=db, from_wallet=from_wallet, amount=amount, to_wallet=to_wallet
+    )
 
 
 @router.delete("/{wallet_id}")
