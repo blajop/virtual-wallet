@@ -15,6 +15,19 @@ from app.models.user import User
 router = APIRouter()
 
 
+@router.get("", response_model=list[Transaction])
+def get_transactions(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(deps.get_db),
+    logged_user: User = Depends(deps.get_current_user),
+):
+    if not logged_user:
+        raise HTTPException(status_code=401, detail="You should be logged in")
+
+    return crud.transaction.get_multi(db, skip=skip, limit=limit, user=logged_user)
+
+
 @router.get("/{id}", response_model=Transaction)
 def get_transaction(
     id: str,

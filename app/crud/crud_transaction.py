@@ -1,18 +1,31 @@
+from typing import List
 from fastapi import HTTPException
+from sqlalchemy.orm import Session
 from sqlmodel import Session, or_, select
 from app import crud
 from app.crud.base import CRUDBase
-from app.models.card import Card
+from app.models.card import Card, UserCardLink
 from app.models.transaction import Transaction, TransactionBase, TransactionCreate
 from app.models.user import User
 from app.models.msg import Msg
-from app.models.wallet import Wallet
+from app.models.wallet import Wallet, UserWalletLink
 from app.utils import util_id, util_crypt
 from sqlalchemy import exc as sqlExc
 
 
 class CRUDTransaction(CRUDBase[Transaction, TransactionBase, TransactionCreate]):
-    def get(self, db: Session, id: str, user: User):
+    def get(self, db: Session, id: str, user: User) -> Transaction:
+        """
+        Returns a transaction by id.
+
+        Arguments:
+            db: Session
+            id: str
+            user: User model
+            Takes skip and limit pagination args which have default values.
+        Returns:
+            Transaction model | None
+        """
         found_transaction = super().get(db, id)
 
         if not found_transaction:
@@ -33,13 +46,64 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionBase, TransactionCreate])
             return found_transaction
         return None
 
-    # def get(self, db: Session, id: str) -> Optional[ModelType]:
-    #     return db.exec(select(self.model).where(self.model.id == id)).first()
+    def get_multi(
+        self, db: Session, *, skip: int = 0, limit: int = 100, user: User
+    ) -> List[Transaction]:
+        """
+        Returns all transactions accessible to the passed user.
+        If the user is admin, he can see all transactions in the app.
+        If the user is a normal user, he can see all transactions with cards/wallets
+        which he owns or uses.
 
-    # def get_multi(
-    #     self, db: Session, *, skip: int = 0, limit: int = 100
-    # ) -> List[ModelType]:
-    #     return db.exec(select(self.model).offset(skip).limit(limit)).unique().all()
+        Arguments:
+            db: Session
+            user: User model
+            Takes skip and limit pagination args which have default values.
+        Returns:
+            list[Transaction]
+        """
+        if crud.user.is_admin(user):
+            return super().get_multi(db, skip=skip, limit=limit)
+
+        else:
+            user_wallets_ids = (
+                db.exec(
+                    select(UserWalletLink.wallet_id).filter(
+                        user.id == UserWalletLink.user_id
+                    )
+                )
+                .unique()
+                .all()
+            )
+            user_wallets_ids.extend(
+                db.exec(select(Wallet.id).filter(user.id == Wallet.owner_id))
+                .unique()
+                .all()
+            )
+            user_cards_ids = (
+                db.exec(
+                    select(UserCardLink.card_id).filter(user.id == UserCardLink.user_id)
+                )
+                .unique()
+                .all()
+            )
+
+            return (
+                db.exec(
+                    select(Transaction)
+                    .filter(
+                        or_(
+                            Transaction.card_sender.in_(user_cards_ids),
+                            Transaction.wallet_sender.in_(user_wallets_ids),
+                            Transaction.wallet_receiver.in_(user_wallets_ids),
+                        )
+                    )
+                    .offset(skip)
+                    .limit(limit)
+                )
+                .unique()
+                .all()
+            )
 
 
 transaction = CRUDTransaction(Transaction)
