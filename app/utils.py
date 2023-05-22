@@ -168,6 +168,9 @@ class CurrencyExchangeUtility:
         for curr, rate in data.items():
             rates.append(Currency(currency=curr, rate=rate))
 
+        db.exec("TRUNCATE TABLE currencies")
+        db.commit()
+
         db.add_all(rates)
         db.commit()
         print("DB currency rates refreshed")

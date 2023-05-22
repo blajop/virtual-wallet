@@ -15,7 +15,7 @@ app = FastAPI(
 # def init_data():
 #     initial_set = _init_data()
 #     scheduler = BackgroundScheduler()
-#     scheduler.add_job(_init_data, "cron", hour="8")
+#     scheduler.add_job(_init_data, "cron", hour=8)
 #     scheduler.start()
 
 
