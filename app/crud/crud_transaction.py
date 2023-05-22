@@ -106,6 +106,15 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
                 .all()
             )
 
+    def get_recurring(self, db: Session):
+        transactions = (
+            db.exec(select(Transaction).where(Transaction.recurring != None))
+            .unique()
+            .all()
+        )
+
+        return transactions
+
     def create(
         self, db: Session, *, new_transaction: TransactionCreate, user: User
     ) -> Transaction:
