@@ -37,7 +37,11 @@ def profile_info(logged_user: User = Depends(deps.get_current_user)):
 
 
 @router.get("/{identifier}", response_model=UserBase)
-def get_user(identifier: str, db: Session = Depends(deps.get_db)):
+def get_user(
+    identifier: str,
+    db: Session = Depends(deps.get_db),
+    logged_user: User = Depends(deps.get_current_user),
+):
     """
     Returns a User model from username, email or id search
     """
