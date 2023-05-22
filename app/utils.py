@@ -7,11 +7,16 @@ from jose import jwt
 import requests
 import emails
 import random
+
+from sqlmodel import Session
 from app.core.config import settings
+
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives import padding
 import base64
 import os
+
+from app.models.currency import Currency
 
 
 class EmailUtility:
@@ -156,6 +161,16 @@ class CurrencyExchangeUtility:
 
         data = data.json().get("data")
         return data
+
+    def write_rates_to_db(self, db: Session):
+        data = self.get_all_rates()
+        rates = []
+        for curr, rate in data.items():
+            rates.append(Currency(currency=curr, rate=rate))
+
+        db.add_all(rates)
+        db.commit()
+        print("DB currency rates refreshed")
 
     def get_rate(self, data: dict, base_curr: str, to_curr: str) -> float:
         rate = data[to_curr] / data[base_curr]

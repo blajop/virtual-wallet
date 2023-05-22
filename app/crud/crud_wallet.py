@@ -3,7 +3,6 @@ from fastapi import HTTPException, Response
 from sqlmodel import Session
 from sqlmodel import select
 from app import utils
-from app.core import security
 from app.crud.base import CRUDBase
 from app.models.card import Card
 from app.models.user import User
