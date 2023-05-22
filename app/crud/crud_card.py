@@ -2,7 +2,7 @@ from fastapi import HTTPException
 from sqlmodel import Session, or_, select
 from app import crud
 from app.crud.base import CRUDBase
-from app.error_models.card_errors import CardDataError
+from app.error_models.card_errors import CardDataError, CardNotFoundError
 from app.models.card import Card, CardBase, CardCreate, CardShow
 from app.models.user import User
 from app.models.msg import Msg
@@ -96,6 +96,44 @@ class CRUDCard(CRUDBase[Card, CardBase, CardCreate]):
             expiry=card_orm.expiry.strftime("%m/%y"),
             holder=card_orm.holder,
         )
+
+    def remove(self, db: Session, card_identifier: str, user: User):
+        """
+        Removes a card attached to the account of the passed user.
+        If the other users have registered this card also,
+        the card remains but is detached from the passed user account.
+        - If the admin removes a card he is using together with other people,
+        it is detached from his account only.
+        - If the admin removes a card he is not using, the card is
+        removed from the DB and detached from all connected accounts.
+        Arguments:
+            db: Session
+            card_identifier: str : id or number of the card
+            user: User model
+        Returns:
+            None
+        Raises:
+            CardNotFoundError
+
+        """
+        found_card = self.get(db, card_identifier)
+        if not found_card:
+            raise CardNotFoundError("There is no such card")
+        if crud.user.is_admin(user) and user not in found_card.users:
+            found_card.users.clear()
+            db.delete(found_card)
+            db.commit()
+        else:
+            if user not in found_card.users:
+                raise CardNotFoundError("There is no such card within your access")
+            if len(found_card.users) > 1:
+                found_card.users.remove(user)
+                found_card.number = util_crypt.encrypt(found_card.number)
+                found_card.cvc = util_crypt.encrypt(found_card.cvc)
+                db.commit()
+            else:
+                found_card.users.clear()
+                db.delete(found_card)
 
 
 card = CRUDCard(Card)
