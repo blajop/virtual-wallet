@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import (
     APIRouter,
     Depends,
@@ -123,23 +124,45 @@ def deposit_to_wallet(
 def transfer_to_wallet(
     wallet_id: str,
     amount: float,
-    to: str,
+    target: str,
+    fcurr: Optional[str],
+    tcurr: Optional[str],
+    confirm: bool = False,
     user: User = Depends(deps.get_user_from_path),
     db: Session = Depends(deps.get_db),
     logged_user: User = Depends(deps.get_current_user),
 ):
+    """
+    Transfer an amount from a wallet to another.
+
+    Args:
+        wallet_id - wallet to send from
+        amount - amount for the transfer
+        target - id of the wallet to receive
+        fcurr - sending wallet currency (BGN | EUR | USD ...)
+        tcurr - receiving wallet currency (BGN | EUR | USD ...)
+        confirm - confirm currency exchange (True | False)
+        user - sending user
+    """
     if user != logged_user:
         raise HTTPException(
             status_code=403, detail="Cannot transfer from wallets that you don't own"
         )
 
-    to_wallet = crud.card.get(db, to)
+    to_wallet = crud.card.get(db, target)
     if not to_wallet:
         raise HTTPException(status_code=404, detail="No target wallet found")
 
     from_wallet = crud.wallet.get_by_owner(db, user, wallet_id)
     if not from_wallet:
         raise HTTPException(status_code=404, detail="No wallet found")
+
+    # create transaction object
+
+    if not fcurr != tcurr and not confirm:
+        raise HTTPException(status_code=400)
+
+    # use exchange util to exchange the amount
 
     return crud.wallet.transfer(
         db=db, from_wallet=from_wallet, amount=amount, to_wallet=to_wallet
