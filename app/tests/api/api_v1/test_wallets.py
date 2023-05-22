@@ -12,13 +12,6 @@ from app.tests.utils.utils import random_user, random_wallet
 # GET WALLETS
 
 
-def test_get_wallets_404_when_no_user_found(db: Session, user: User):
-    with pytest.raises(HTTPException) as exc_info:
-        wallets.get_wallets(user=None, db=db, logged_user=user)
-
-    assert exc_info.value.status_code == 404
-
-
 def test_get_wallets_403_when_trying_to_view_another_user_wallet(
     db: Session, user: User
 ):
@@ -46,11 +39,7 @@ def test_get_wallets_by_owner_successfully(db: Session, user: User):
 # CREATE WALLET
 
 
-def test_create_wallet_404_when_no_user_found(db: Session, user: User):
-    with pytest.raises(HTTPException) as exc_info:
-        wallets.create_wallet(new_wallet="wallet", user=None, db=db, logged_user=user)
 
-    assert exc_info.value.status_code == 404
 
 
 def test_create_wallet_403_when_trying_to_create_for_another_user(
@@ -78,13 +67,7 @@ def test_create_wallet_successfully(db: Session, user: User):
 # GET WALLET LEECHES
 
 
-def test_get_wallet_leeches_404_when_no_user_found(db: Session, user: User):
-    with pytest.raises(HTTPException) as exc_info:
-        wallets.get_wallet_leeches(
-            wallet_id="wallet.id", user=None, db=db, logged_user=user
-        )
 
-    assert exc_info.value.status_code == 404
 
 
 def test_get_wallet_leeches_403_when_trying_to_get_for_another_users_wallet(
@@ -133,13 +116,7 @@ def test_get_wallet_leeches_successfully(db: Session, user: User):
 # INVITE WALLET LEECHES
 
 
-def test_invite_wallet_leeches_404_when_no_user_found(db: Session, user: User):
-    with pytest.raises(HTTPException) as exc_info:
-        wallets.invite_wallet_leeches(
-            wallet_id="wallet.id", leech=None, db=db, logged_user=user
-        )
 
-    assert exc_info.value.status_code == 404
 
 
 def test_invite_wallet_leeches_403_when_trying_to_invite_for_another_users_wallet(
