@@ -11,8 +11,9 @@ from app.models.user import User, UserCreate
 from main import app
 from app.core.security import get_password_hash
 
-# from app.tests.utils.user import authentication_token_from_email
-# from app.tests.utils.utils import get_superuser_token_headers
+from app.tests.utils.utils import random_user
+from app.utils import util_id
+
 
 engine = create_engine("sqlite:///:memory:", echo=True)
 
@@ -78,6 +79,11 @@ def db() -> Generator:
 def client() -> Generator:
     with TestClient(app) as c:
         yield c
+
+
+@pytest.fixture(scope="module")
+def user(db: Session) -> User:
+    return random_user(db)
 
 
 # @pytest.fixture(scope="module")

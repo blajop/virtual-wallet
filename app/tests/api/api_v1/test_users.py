@@ -64,29 +64,20 @@ def test_register_user(db: Session):
     )
 
     user = users.sign_up_user(
-        db=db, background_tasks=BACKGROUND_TASKS, new_user=new_user, logged_user=None
+        db=db, background_tasks=BACKGROUND_TASKS, new_user=new_user
     )
-    # test if a user is logged in and tries to access register endpoint
-    with pytest.raises(HTTPException) as exc_info:
-        users.sign_up_user(
-            db=db,
-            background_tasks=BACKGROUND_TASKS,
-            new_user=new_user,
-            logged_user=new_user,
-        )
+
     # test if user data is taken
     with pytest.raises(HTTPException) as data_info:
         users.sign_up_user(
             db=db,
             background_tasks=BACKGROUND_TASKS,
             new_user=new_user_with_taken_data,
-            logged_user=None,
         )
 
     assert user
     assert isinstance(user, User)
     assert user.username == "New"
-    assert exc_info.value.status_code == 403
     assert data_info.value.status_code == 409
 
 
@@ -116,7 +107,7 @@ def test_verify_email(db: Session):
     token = util_mail.generate_email_link_token(new_user.email)
 
     user = users.sign_up_user(
-        db=db, background_tasks=BACKGROUND_TASKS, new_user=new_user, logged_user=None
+        db=db, background_tasks=BACKGROUND_TASKS, new_user=new_user
     )
 
     users.verify_email(token, db=db)
