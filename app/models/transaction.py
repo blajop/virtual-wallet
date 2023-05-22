@@ -11,13 +11,15 @@ class TransactionBase(SQLModel):
     wallet_receiver: str = Field(foreign_key="wallets.id")
     currency: str  # Currency
     amount: float
-    status: constr(regex="^pending|success|cancelled$")
     recurring: Optional[constr(regex="^month|year")] = Field(default=None)
 
 
 class Transaction(TransactionBase, table=True):
     __tablename__ = "transactions"
     id: Optional[str] = Field(primary_key=True)
+    status: Optional[constr(regex="^pending|success|cancelled$")] = Field(
+        default="pending"
+    )
 
     card_sen_obj: Optional["Card"] = Relationship(
         sa_relationship_kwargs=dict(primaryjoin="Card.id==Transaction.card_sender")

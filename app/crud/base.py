@@ -13,8 +13,11 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     def __init__(self, model: Type[ModelType]):
         self.model = model
 
-    def create(self, db: Session, *, obj_in: CreateSchemaType) -> ModelType:
+    def create(
+        self, db: Session, *, obj_in: CreateSchemaType, generated_id: str
+    ) -> ModelType:
         db_obj = self.model.from_orm(obj_in)  # type: ignore
+        db_obj.id = generated_id
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
