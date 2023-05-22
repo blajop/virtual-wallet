@@ -2,5 +2,5 @@ class CardDataError(ValueError):
     pass
 
 
-class CardNotFoundError(ValueError):
+class CardNotFoundError(Exception):
     pass
