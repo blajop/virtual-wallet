@@ -149,7 +149,7 @@ class CurrencyExchangeUtility:
     def __init__(self):
         pass
 
-    def get_all_rates(self) -> dict:
+    def _get_all_rates(self) -> dict:
         """
         Gets the rates of all supported currencies.
 
@@ -162,8 +162,8 @@ class CurrencyExchangeUtility:
         data = data.json().get("data")
         return data
 
-    def write_rates_to_db(self, db: Session):
-        data = self.get_all_rates()
+    def _write_rates_to_db(self, db: Session):
+        data = self._get_all_rates()
         rates = []
         for curr, rate in data.items():
             rates.append(Currency(currency=curr, rate=rate))
