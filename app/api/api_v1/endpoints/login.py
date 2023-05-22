@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Any
+from typing import Any, Optional
 
 from fastapi import APIRouter, BackgroundTasks, Body, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
@@ -11,7 +11,7 @@ from app.core import security
 from app.core.config import settings
 from app.core.security import get_password_hash
 from app.error_models.user_errors import DataTakenError
-from app.models.user import UserBase, UserCreate, UserResetPass
+from app.models.user import User, UserBase, UserCreate, UserResetPass
 from app.utils import util_mail
 
 router = APIRouter()
@@ -39,11 +39,20 @@ def login_access_token(
     }
 
 
+@router.post("/refer")
+def refer_friend(
+    email: str,
+    db: Session = Depends(deps.get_db),
+    logged_user: User = Depends(deps.get_current_user),
+):
+    return crud.user.refer_friend(user=logged_user, email=email, db=db)
+
+
 @router.post("/signup", response_model=UserBase)
 def sign_up(
     new_user: UserCreate,
-    referral: str,
     background_tasks: BackgroundTasks,
+    referrer: Optional[str] = None,
     db: Session = Depends(deps.get_db),
 ):
     try:
@@ -51,9 +60,13 @@ def sign_up(
     except DataTakenError as err:
         raise HTTPException(status_code=409, detail=err.args[0])
 
-    # referral should lose a refer spot in his UserSettings
+    # referrer should lose a refer spot in his UserSettings
+    referrer_mail = util_mail.verify_email_link_token(referrer)
+    referrer = crud.user.get(db, identifier=referrer_mail)
     # if not more spots, dont give them money
-    # get referral from token and add each other as friends and fund their accounts
+    if referrer:
+        #  add each other as friends and fund their accounts 20 USD
+        pass
 
     background_tasks.add_task(
         util_mail.send_new_account_email,

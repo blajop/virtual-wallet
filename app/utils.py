@@ -17,6 +17,7 @@ import base64
 import os
 
 from app.models.currency import Currency
+from app.models.user import User
 
 
 class EmailUtility:
@@ -94,6 +95,31 @@ class EmailUtility:
             environment={
                 "project_name": settings.PROJECT_NAME,
                 "username": username,
+                "email": email_to,
+                "link": link,
+            },
+        )
+
+    def send_refferal_email(self, email_to: str, refferer: User):
+        # Needs a new html done and the link needs to connect to the client server
+        project_name = settings.PROJECT_NAME
+        refferer_fullname = f"{refferer.f_name} {refferer.l_name}"
+
+        subject = (
+            f"{project_name} - You have been invited to join from {refferer_fullname}"
+        )
+
+        token = self.generate_email_link_token(refferer.email)
+        with open(Path(settings.EMAIL_TEMPLATES_DIR) / "new_account.html") as f:
+            template_str = f.read()
+        link = f"{settings.SERVER_HOST}{settings.API_V1_STR}/signup?referrer={token}"
+        self.send_email(
+            email_to=email_to,
+            subject_template=subject,
+            html_template=template_str,
+            environment={
+                "project_name": settings.PROJECT_NAME,
+                "username": refferer_fullname,
                 "email": email_to,
                 "link": link,
             },

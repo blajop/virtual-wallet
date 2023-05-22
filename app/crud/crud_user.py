@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import Optional
-from fastapi import HTTPException
+from fastapi import HTTPException, Response
 from sqlmodel import Session, or_
 from app.crud.base import CRUDBase
 from app.core import security
@@ -91,6 +91,16 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             raise DataTakenError("Phone number is already taken")
 
         return False
+
+    def refer_friend(self, *, user: User, email: str, db: Session):
+        # check if email in system
+        if self.get(db, identifier=email):
+            return Response(status_code=400, content="User is already registered")
+
+        # send email with invite link
+        utils.util_mail.send_refferal_email(email_to=email, refferer=user)
+
+        return Response(status_code=200)
 
 
 user = CRUDUser(User)
