@@ -51,6 +51,21 @@ def create_transaction(
     db: Session = Depends(deps.get_db),
     logged_user: User = Depends(deps.get_current_user),
 ):
+    """
+    Used to create a new transaction.
+    One of the two wallet_sender | card_sender should be passed in the body
+    of the request, and the other removed/null.
+    If the transaction is not recurring, the recurring field should be
+    removed/null.
+
+    Arguments:
+        new_transaction: TransactionCreate model
+        db: Session
+        logged_user: User model
+
+    Returns:
+        Transaction
+    """
     if not logged_user:
         raise HTTPException(status_code=401, detail="You should be logged in")
     try:
