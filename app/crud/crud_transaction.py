@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from sqlmodel import Session, or_, select
 from app import crud
 from app.crud.base import CRUDBase
+from app.error_models.transaction_errors import TransactionError
 from app.models.card import Card, UserCardLink
 from app.models.transaction import Transaction, TransactionBase, TransactionCreate
 from app.models.user import User
@@ -13,7 +14,7 @@ from app.utils import util_id, util_crypt
 from sqlalchemy import exc as sqlExc
 
 
-class CRUDTransaction(CRUDBase[Transaction, TransactionBase, TransactionCreate]):
+class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase]):
     def get(self, db: Session, id: str, user: User) -> Transaction:
         """
         Returns a transaction by id.
@@ -113,6 +114,50 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionBase, TransactionCreate])
         )
 
         return transactions
+
+    def create(
+        self, db: Session, *, new_transaction: TransactionCreate, user: User
+    ) -> Transaction:
+        """
+        Creates a transaction.
+
+        Arguments:
+            db: Session
+            new_transaction: User model
+            Takes skip and limit pagination args which have default values.
+        Returns:
+            list[Transaction]
+        """
+        user_wallets = crud.wallet.get_multi_by_owner(db, user) + user.wallets
+
+        if (
+            sender_item := new_transaction.wallet_sender
+        ) and not new_transaction.card_sender:
+            if sender_item not in [w.id for w in user_wallets]:
+                raise TransactionError(
+                    "The sender item passed is not in your wallets/cards"
+                )
+            new_transaction.card_sender = None
+
+        elif (
+            sender_item := new_transaction.card_sender
+        ) and not new_transaction.wallet_sender:
+            if sender_item not in [c.id for c in user.cards]:
+                raise TransactionError(
+                    "The sender item passed is not in your wallets/cards"
+                )
+            new_transaction.wallet_sender = None
+
+        else:
+            raise TransactionError(
+                "You should pass either valid wallet or valid card sender"
+            )
+        try:
+            return super().create(
+                db, obj_in=new_transaction, generated_id=util_id.generate_id()
+            )
+        except sqlExc.IntegrityError:
+            raise TransactionError("The sender and receiver wallets are the same")
 
 
 transaction = CRUDTransaction(Transaction)

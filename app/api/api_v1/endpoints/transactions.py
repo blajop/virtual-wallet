@@ -8,7 +8,8 @@ from sqlmodel import Session
 from app import crud
 from app.api import deps
 from app.crud import crud_transaction
-from app.models.transaction import Transaction
+from app.error_models.transaction_errors import TransactionError
+from app.models.transaction import Transaction, TransactionCreate
 from app.models.user import User
 
 
@@ -42,3 +43,34 @@ def get_transaction(
             status_code=404, detail="There is no such transaction within your access"
         )
     return result
+
+
+@router.post("", response_model=Transaction, status_code=201)
+def create_transaction(
+    new_transaction: TransactionCreate,
+    db: Session = Depends(deps.get_db),
+    logged_user: User = Depends(deps.get_current_user),
+):
+    """
+    Used to create a new transaction.
+    One of the two wallet_sender | card_sender should be passed in the body
+    of the request, and the other removed/null.
+    If the transaction is not recurring, the recurring field should be
+    removed/null.
+
+    Arguments:
+        new_transaction: TransactionCreate model
+        db: Session
+        logged_user: User model
+
+    Returns:
+        Transaction
+    """
+    if not logged_user:
+        raise HTTPException(status_code=401, detail="You should be logged in")
+    try:
+        return crud.transaction.create(
+            db, new_transaction=new_transaction, user=logged_user
+        )
+    except TransactionError as err:
+        raise HTTPException(status_code=400, detail=err.args[0])
