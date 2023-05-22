@@ -65,13 +65,13 @@ class CRUDCard(CRUDBase[Card, CardBase, CardCreate]):
             holder=new_card.holder,
             cvc=util_crypt.encrypt(new_card.cvc),
         )
-        if found_card := self.get(db, card_orm.number):
+        if found_card := self.get(db, new_card.number):
             # real-world logic for card verification by banks should be included otherwise
             if not all(
                 (
                     found_card.expiry == card_orm.expiry,
                     found_card.holder == card_orm.holder,
-                    found_card.cvc == card_orm.cvc,
+                    found_card.cvc == new_card.cvc,
                 )
             ):
                 raise CardDataError(
@@ -79,12 +79,15 @@ class CRUDCard(CRUDBase[Card, CardBase, CardCreate]):
                 )
             if user in found_card.users:
                 return Msg(msg="You already have this card")
+            found_card.number = util_crypt.encrypt(found_card.number)
+            found_card.cvc = util_crypt.encrypt(found_card.cvc)
             card_orm = found_card
         else:
             card_orm.id = util_id.generate_id()
 
         card_orm.users.append(user)
-        db.add(card_orm)
+        if found_card:
+            db.add(card_orm)
         db.commit()
         db.refresh(card_orm)
 
