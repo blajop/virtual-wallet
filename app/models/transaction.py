@@ -9,7 +9,7 @@ class TransactionBase(SQLModel):
     wallet_sender: Optional[str] = Field(default=None, foreign_key="wallets.id")
     card_sender: Optional[str] = Field(default=None, foreign_key="cards.id")
     wallet_receiver: str = Field(foreign_key="wallets.id")
-    currency: str  # Currency
+    currency: constr(regex="^(USD|EUR|BGN|CAD|AUD|CHF|CNY|JPY|GBP|NOK)$")
     amount: float
     recurring: Optional[constr(regex="^month|year")] = Field(default=None)
 
