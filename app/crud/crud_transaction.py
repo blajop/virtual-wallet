@@ -69,11 +69,11 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
         Returns:
             list[Transaction]
         """
-        # Search to be implemented with filtering
+        # TBD : Search to be implemented with filtering
         if crud.user.is_admin(user):
             return super().get_multi(db, skip=skip, limit=limit)
 
-        # Search to be implemented with filtering
+        # TBD : Search to be implemented with filtering
         else:
             user_wallets_ids = [
                 w.id for w in crud.wallet.get_multi_by_owner(db, user)
@@ -126,6 +126,7 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
         """
         user_wallets = crud.wallet.get_multi_by_owner(db, user) + user.wallets
 
+        # If the sender is a wallet
         if (
             sender_item_id := new_transaction.wallet_sender
         ) and not new_transaction.card_sender:
@@ -138,6 +139,8 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
 
         # Card -> Wallet (depositing) - only from user's registered card to
         # wallet connected with the user
+
+        # If the sender is a card
         elif (
             sender_item_id := new_transaction.card_sender
         ) and not new_transaction.wallet_sender:

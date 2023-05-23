@@ -87,8 +87,7 @@ class CRUDCard(CRUDBase[Card, CardBase, CardCreate]):
         if found_card:
             db.add(card_orm)
         db.commit()
-        db.refresh(card_orm)
-
+        # db.refresh(card_orm)
         return CardShow(
             number=util_crypt.decrypt(card_orm.number),
             expiry=card_orm.expiry.strftime("%m/%y"),
