@@ -69,9 +69,11 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
         Returns:
             list[Transaction]
         """
+        # Search to be implemented with filtering
         if crud.user.is_admin(user):
             return super().get_multi(db, skip=skip, limit=limit)
 
+        # Search to be implemented with filtering
         else:
             user_wallets_ids = [
                 w.id for w in crud.wallet.get_multi_by_owner(db, user)
@@ -159,6 +161,9 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
             )
         receiver_wallet_obj = crud.wallet.get(db, new_transaction.wallet_receiver)
 
+        if sender_item_id == new_transaction.wallet_receiver:
+            raise TransactionError("The sender and receiver wallets are the same")
+
         # Here the money transfer between the items happens
         self.money_transfer(
             db,
@@ -168,13 +173,9 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
             amount=new_transaction.amount,
         )
 
-        try:
-            return super().create(
-                db, obj_in=new_transaction, generated_id=util_id.generate_id()
-            )
-        except sqlExc.IntegrityError:
-            # the other sql error is prevented by the above code (a single sender item)
-            raise TransactionError("The sender and receiver wallets are the same")
+        return super().create(
+            db, obj_in=new_transaction, generated_id=util_id.generate_id()
+        )
 
     def money_transfer(
         self,
