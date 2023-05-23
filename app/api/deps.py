@@ -1,12 +1,14 @@
-from jose import jwt
-from pydantic import ValidationError
-from sqlmodel import Session
 from fastapi import Depends, HTTPException, Path, status
-from app.core.config import settings
-from app.db.session import engine
 from fastapi.security import OAuth2PasswordBearer
-from app import crud
+from pydantic import ValidationError
+
 from app.models import User, TokenPayload
+from app.core import settings
+from app.db import engine
+from app import crud
+
+from sqlmodel import Session
+from jose import jwt
 
 
 reusable_oauth2 = OAuth2PasswordBearer(

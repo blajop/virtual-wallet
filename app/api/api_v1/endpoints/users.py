@@ -1,20 +1,8 @@
-from fastapi import (
-    APIRouter,
-    BackgroundTasks,
-    Depends,
-    HTTPException,
-    Response,
-)
+from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session
-from fastapi.responses import JSONResponse
-from fastapi.encoders import jsonable_encoder
-from app import crud
-import app
-from app import utils
-from app.api import deps
-from app.error_models.user_errors import DataTakenError
-from app.models.user import User, UserBase, UserCreate
-from app.utils import util_mail
+
+from app import crud, deps
+from app.models import User, UserBase
 
 router = APIRouter()
 

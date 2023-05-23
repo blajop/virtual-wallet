@@ -1,7 +1,8 @@
 from fastapi import FastAPI
-from app.core.config import settings
-from app.api.api_v1.api import api_router
 from apscheduler.schedulers.background import BackgroundScheduler
+
+from app.core import settings
+from app.api.api_v1.api import api_router
 from app.core.init_data import _init_data
 
 

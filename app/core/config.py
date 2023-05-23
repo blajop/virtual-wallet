@@ -1,5 +1,5 @@
-from typing import Optional
 from pydantic import BaseSettings, EmailStr, Field
+from typing import Optional
 
 
 class Settings(BaseSettings):

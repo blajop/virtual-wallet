@@ -1,12 +1,12 @@
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Optional
+from datetime import datetime
 import calendar
 
-from app.error_models.card_errors import CardDataError
+from app.error_models import CardDataError
 
 if TYPE_CHECKING:
-    from app.models.user import User
-from datetime import datetime
-from typing import Optional
+    from app.models import User
+
 from pydantic import BaseModel, conint, constr, validator
 from sqlmodel import Field, Relationship, SQLModel
 

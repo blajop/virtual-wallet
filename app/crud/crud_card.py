@@ -1,13 +1,9 @@
-from fastapi import HTTPException
 from sqlmodel import Session, or_, select
 from app import crud
 from app.crud.base import CRUDBase
-from app.error_models.card_errors import CardDataError, CardNotFoundError
-from app.models.card import Card, CardBase, CardCreate, CardShow
-from app.models.user import User
-from app.models.msg import Msg
+from app.error_models import CardDataError, CardNotFoundError
+from app.models import Card, CardBase, CardCreate, CardShow, User, Msg
 from app.utils import util_id, util_crypt
-from sqlalchemy import exc as sqlExc
 
 
 class CRUDCard(CRUDBase[Card, CardBase, CardCreate]):

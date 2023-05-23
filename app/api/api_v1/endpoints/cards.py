@@ -1,23 +1,9 @@
-from fastapi import (
-    APIRouter,
-    BackgroundTasks,
-    Depends,
-    HTTPException,
-    Response,
-)
+from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session
-from fastapi.responses import JSONResponse
-from fastapi.encoders import jsonable_encoder
-from app import crud
-import app
-from app import utils
-from app.api import deps
-from app.error_models.card_errors import CardDataError, CardNotFoundError
-from app.error_models.user_errors import DataTakenError
-from app.models.card import Card, CardCreate, CardShow
-from app.models.msg import Msg
-from app.models.user import User, UserBase, UserCreate
-from app.utils import util_mail
+
+from app.error_models import CardDataError, CardNotFoundError
+from app.models import Card, CardCreate, CardShow, Msg, User
+from app import crud, deps
 
 router = APIRouter()
 

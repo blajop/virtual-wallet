@@ -1,4 +1,2 @@
-from app import utils
-from app import core
-from app import crud
-from app.api import deps
+from app import utils, core, crud
+from .api import deps

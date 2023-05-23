@@ -1,7 +1,7 @@
-import copy
-from datetime import datetime, timedelta
+from datetime import datetime
 from sqlmodel import Session
-from app.models.transaction import Transaction
+
+from app.models import Transaction
 from app.utils import util_exchange, util_id
 from app.api.deps import get_db
 from app import crud

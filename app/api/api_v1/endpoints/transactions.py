@@ -1,16 +1,9 @@
-from fastapi import (
-    APIRouter,
-    BackgroundTasks,
-    Depends,
-    HTTPException,
-)
+from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session
-from app import crud
-from app.api import deps
-from app.crud import crud_transaction
-from app.error_models.transaction_errors import TransactionError
-from app.models.transaction import Transaction, TransactionCreate
-from app.models.user import User
+
+from app import crud, deps
+from app.error_models import TransactionError
+from app.models import User, Transaction, TransactionCreate
 
 
 router = APIRouter()

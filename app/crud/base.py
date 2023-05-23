@@ -1,7 +1,6 @@
 from typing import Generic, Optional, Type, TypeVar, List
 from pydantic import BaseModel
-from sqlmodel import SQLModel, select, or_
-from sqlalchemy.orm import Session
+from sqlmodel import SQLModel, select, Session
 from fastapi.encoders import jsonable_encoder
 
 ModelType = TypeVar("ModelType", bound=SQLModel)

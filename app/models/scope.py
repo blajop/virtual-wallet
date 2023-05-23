@@ -1,8 +1,8 @@
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Optional
 
 if TYPE_CHECKING:
-    from app.models.user import User
-from typing import Optional
+    from app.models import User
+
 from sqlmodel import Field, Relationship, SQLModel
 
 
