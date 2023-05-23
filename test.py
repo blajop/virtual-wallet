@@ -70,7 +70,7 @@
 # print(app.utils.util_id.datetime_from_id(a))
 
 
-from app.utils import util_id
+# from app.utils import util_id
 
-print(util_id.generate_id())
-print(util_id.datetime_from_id(7055597939821920257))
+# print(util_id.generate_id())
+# print(util_id.datetime_from_id(7055597939821920257))

@@ -29,7 +29,6 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
             db: Session
             id: str
             user: User model
-            Takes skip and limit pagination args which have default values.
         Returns:
             Transaction model | None
         """
@@ -162,136 +161,140 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
             raise TransactionError(
                 "You should pass either valid wallet or valid card sender"
             )
-        receiver_wallet_obj = crud.wallet.get(db, new_transaction.wallet_receiver)
 
         if sender_item_id == new_transaction.wallet_receiver:
             raise TransactionError("The sender and receiver wallets are the same")
-
-        # Here the money transfer between the items happens
-        self.money_transfer(
-            db,
-            sender_item=sender_item_obj,
-            receiver_wallet=receiver_wallet_obj,
-            currency=self.get_currency(db, currency_str=new_transaction.currency),
-            amount=new_transaction.amount,
-        )
 
         return super().create(
             db, obj_in=new_transaction, generated_id=util_id.generate_id()
         )
 
-    def money_transfer(
-        self,
-        db: Session,
-        *,
-        sender_item: Wallet | Card,
-        receiver_wallet: Wallet,
-        currency: Currency,
-        amount: float,
-    ) -> Msg:
+    def accept(
+        self, *, db: Session, transaction: Transaction
+    ) -> Msg | TransactionError:
+        if transaction.status == "success":
+            raise TransactionError("Already accepted")
+
+        msg = self._finalise(db=db, transaction=transaction)
+        transaction.status = "success"
+
+        db.commit()
+
+        return msg
+
+    def _finalise(
+        self, db: Session, *, transaction: Transaction
+    ) -> Msg | TransactionError:
         """
-        Transfers money in the following way Wallet | Card -> Wallet.
-        If the sender is a card, no change occurs with the card.
-        If the sender is a wallet, the amount passed is taken from their balance (exchanged if necessary).
-        The wallet receiver receives the amount passed added to their balance (exchanged if necessary).
-
-        The currencies table ignores the buy/sell exchange rate margin - same rate in all directions is used.
-
-        If different currencies arise between sender and receiver(not their currencies or non_USD),
-        they are exchanged on cross-USD rate.
-
-        Arguments:
-            db: Session
-            new_transaction: TransactionCreate model
-            user: User model
-        Returns:
-            Transaction : the created transaction.
+        Finalises a transaction, exchanging the amount between the wallets.
         """
-        # if the sender is a Wallet
-        if isinstance(sender_item, Wallet):
-            if not currency.currency == sender_item.currency:
-                sender_currency_amount = self.currency_exchange(
-                    db,
-                    fro=currency,
-                    to=self.get_currency(db, currency_str=sender_item.currency),
-                    amount=amount,
-                )
-                if sender_item.balance < sender_currency_amount:
-                    raise TransactionError(
-                        "You do not have enough balance in the sender Wallet in order to make the transfer"
-                    )
-            else:
-                sender_currency_amount = amount
+        sender: Wallet | Card = transaction.card_sen_obj or transaction.wallet_sen_obj
+        receiver: Wallet = transaction.wallet_rec_obj
 
-            if not currency.currency == receiver_wallet.currency:
-                receiver_currency_amount = self.currency_exchange(
-                    db,
-                    fro=currency,
-                    to=self.get_currency(db, currency_str=receiver_wallet.currency),
-                    amount=amount,
-                )
-            else:
-                receiver_currency_amount = amount
+        transaction_curr: Currency = self.get_currency(db, transaction.currency)
+        sender_curr: Currency = self.get_currency(db, sender.currency)
+        receiver_curr: Currency = self.get_currency(db, receiver.currency)
 
-            sender_item.balance -= sender_currency_amount
+        amount: float = transaction.amount
 
-            # logic for confirmation by the recipient
-
-            receiver_wallet.balance += receiver_currency_amount
-            db.commit()
-            return Msg(msg="Successfully executed transaction")
-
-        # if the sender is a Card
+        if transaction_curr == receiver_curr:
+            receiver_currency_amount = amount
         else:
-            if not currency.currency == receiver_wallet.currency:
-                receiver_currency_amount = self.currency_exchange(
-                    db,
-                    fro=currency,
-                    to=self.get_currency(db, currency_str=receiver_wallet.currency),
-                    amount=amount,
-                )
+            receiver_currency_amount = self.currency_exchange(
+                base=transaction_curr, to=receiver_curr, amount=amount
+            )
 
-            else:
-                receiver_currency_amount = amount
-
-                # logic for confirmation by the recipient
-
-            receiver_wallet.balance += receiver_currency_amount
+        if isinstance(sender, Card):
+            receiver.balance += receiver_currency_amount
             db.commit()
-
+            # Return when a card deposit
             return Msg(msg="Successfully executed transaction")
 
-    def get_currency(self, db: Session, *, currency_str: str):
-        """
-        Gets a Currency object from the DB.
+        # Transfer between wallets
+        if transaction_curr == sender_curr:
+            sender_currency_amount = amount
+        else:
+            sender_currency_amount = self.currency_exchange(
+                base=transaction_curr, to=sender_curr, amount=amount
+            )
+            if sender.balance < sender_currency_amount:
+                raise TransactionError(
+                    "You do not have enough balance in the sender Wallet in order to make the transfer"
+                )
 
-        Arguments:
-            db: Session
-            currency_str: str : representing the sought currency
-        Returns:
-            Currency model
-        """
-        currency_obj = db.exec(
+        sender.balance -= sender_currency_amount
+        receiver.balance += receiver_currency_amount
+
+        db.commit()
+
+        return Msg(msg="Successfully executed transaction")
+
+        # backup code bellow
+
+        ##
+        ##
+        ##
+
+        # if isinstance(sender, Wallet):
+        #     if transaction.currency == sender.currency:
+        #         sender_currency_amount = amount
+        #     else:
+        #         sender_currency_amount = self.currency_exchange(
+        #             db,
+        #             fro=transaction_curr,
+        #             to=sender_curr,
+        #             amount=amount,
+        #         )
+        #         if sender.balance < sender_currency_amount:
+        #             raise TransactionError(
+        #                 "You do not have enough balance in the sender Wallet in order to make the transfer"
+        #             )
+
+        #     if transaction_curr == receiver_curr:
+        #         receiver_currency_amount = amount
+        #     else:
+        #         receiver_currency_amount = self.currency_exchange(
+        #             db, fro=transaction_curr, to=receiver_curr, amount=amount
+        #         )
+
+        #     sender.balance -= sender_currency_amount
+        #     receiver_wallet.balance += receiver_currency_amount
+
+        #     db.commit()
+
+        #     return Msg(msg="Successfully executed transaction")
+
+        # # if the sender is a Card
+        # else:
+        #     if transaction_curr == receiver_curr:
+        #         receiver_currency_amount = amount
+        #     else:
+        #         receiver_currency_amount = self.currency_exchange(
+        #             db, fro=transaction_curr, to=receiver_curr, amount=amount
+        #         )
+
+        #     # logic for confirmation by the recipient
+
+        #     receiver_wallet.balance += receiver_currency_amount
+        #     db.commit()
+
+        #     return Msg(msg="Successfully executed transaction")
+
+        ##
+        ##
+        ##
+
+        # backup code above
+
+    def get_currency(self, db: Session, currency_str: str) -> Currency:
+        return db.exec(
             select(Currency).filter(Currency.currency == currency_str.upper())
         ).first()
-        return currency_obj
 
     def currency_exchange(
-        self, db: Session, *, fro: Currency, to: Currency, amount: float
+        self, *, base: Currency, to: Currency, amount: float
     ) -> float:
-        """
-        Exchanges amount from one currency to another.
-        If the currencies are USD and some other the exchange rate is direct.
-        If the currencies are both different from USD, they are exchanged via cross-USD rate.
-
-        Arguments:
-            db: Session
-            fro: Currency model : the currency of the passed amount
-            to: Currency model : the output amount in the "to" currency
-        Returns:
-            float
-        """
-        in_USD = amount / fro.rate
+        in_USD = amount / base.rate
         in_output = in_USD * to.rate
 
         return in_output

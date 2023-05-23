@@ -1,9 +1,11 @@
+from typing import Union
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session
 
 from app import crud, deps
 from app.error_models import TransactionError
 from app.models import User, Transaction, TransactionCreate
+from app.models.msg import Msg
 
 
 router = APIRouter()
@@ -67,3 +69,20 @@ def create_transaction(
         )
     except TransactionError as err:
         raise HTTPException(status_code=400, detail=err.args[0])
+
+
+@router.put("/{id}/confirm")
+def confirm_transaction(
+    id: str,
+    db: Session = Depends(deps.get_db),
+    logged_user: User = Depends(deps.get_current_user),
+):
+    transaction = crud.transaction.get(db, id, logged_user)
+
+    if not transaction:
+        raise HTTPException(status_code=404)
+
+    try:
+        crud.transaction.accept(db=db, transaction=transaction)
+    except TransactionError as e:
+        raise HTTPException(status_code=400, detail=e.args[0])
