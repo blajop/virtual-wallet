@@ -1,11 +1,10 @@
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Optional
 
 if TYPE_CHECKING:
     from app.models.user import User
 
-from typing import Optional
 from sqlmodel import Field, Relationship, SQLModel
-from pydantic import BaseModel, constr
+from pydantic import constr
 
 
 class UserWalletLink(SQLModel, table=True):

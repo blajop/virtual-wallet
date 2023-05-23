@@ -1,16 +1,13 @@
 from __future__ import annotations
 from typing import Optional
 from fastapi import HTTPException, Response
-from sqlmodel import Session, or_
-from app.crud.base import CRUDBase
-from app.core import security
-from sqlalchemy import select
+from sqlmodel import Session, or_, select
+
 from app import utils
 from app.core import security
-from app.error_models.user_errors import DataTakenError
-from app.models.msg import Msg
-from app.models.scope import Scope
-from app.models.user import User, UserBase, UserCreate, UserUpdate
+from app.crud.base import CRUDBase
+from app.error_models import DataTakenError
+from app.models import User, UserBase, UserCreate, UserUpdate, Scope, Msg
 
 
 class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):

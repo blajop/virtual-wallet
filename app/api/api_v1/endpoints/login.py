@@ -5,13 +5,11 @@ from fastapi import APIRouter, BackgroundTasks, Body, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from app import crud, models
-from app.api import deps
-from app.core import security
-from app.core.config import settings
+from app import crud, models, deps
+from app.core import security, settings
 from app.core.security import get_password_hash
-from app.error_models.user_errors import DataTakenError
-from app.models.user import User, UserBase, UserCreate, UserResetPass
+from app.error_models import DataTakenError
+from app.models import User, UserBase, UserCreate, UserResetPass
 from app.utils import util_mail
 
 router = APIRouter()

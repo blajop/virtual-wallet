@@ -4,20 +4,19 @@ from snowflake import SnowflakeGenerator, Snowflake
 from emails.template import JinjaTemplate
 from pathlib import Path
 from jose import jwt
+
 import requests
 import emails
 import random
 
 from sqlmodel import Session
-from app.core.config import settings
+from app.core import settings
 
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives import padding
 import base64
-import os
 
-from app.models.currency import Currency
-from app.models.user import User
+from app.models import Currency, User
 
 
 class EmailUtility:

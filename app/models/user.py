@@ -1,18 +1,16 @@
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Optional
 
 from fastapi import Body
 
 if TYPE_CHECKING:
-    from app.models.card import Card
-    from app.models.scope import Scope
-    from app.models.wallet import Wallet
+    from app.models import Card, Scope, Wallet
+
 
 from app.models.card import UserCardLink
 from app.models.wallet import UserWalletLink
 from app.models.scope import UserScopeLink
 
 from pydantic import BaseModel, EmailStr
-from typing import Optional
 from sqlmodel import SQLModel, Field, Relationship
 
 

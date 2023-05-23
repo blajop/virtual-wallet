@@ -1,12 +1,10 @@
 from typing import List
 from fastapi import HTTPException, Response
-from sqlmodel import Session
-from sqlmodel import select
+from sqlmodel import Session, select
+
 from app import utils
 from app.crud.base import CRUDBase
-from app.models.card import Card
-from app.models.user import User
-from app.models.wallet import Wallet, WalletCreate, WalletUpdate
+from app.models import Card, User, Wallet, WalletCreate, WalletUpdate
 
 
 class CRUDWallet(CRUDBase[Wallet, WalletCreate, WalletUpdate]):

@@ -1,15 +1,9 @@
 from typing import Optional
-from fastapi import (
-    APIRouter,
-    Depends,
-    HTTPException,
-    Response,
-)
+from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlmodel import Session
-from app.api import deps
-from app import crud
-from app.models.user import User
-from app.models.wallet import Wallet, WalletCreate
+
+from app import crud, deps
+from app.models import User, WalletCreate
 
 router = APIRouter()
 

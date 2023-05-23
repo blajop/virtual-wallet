@@ -1,1 +1,1 @@
-from . import config, security
+from .config import settings
