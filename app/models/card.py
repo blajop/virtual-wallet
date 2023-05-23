@@ -34,6 +34,9 @@ class Card(CardBase, table=True):
         link_model=UserCardLink,
     )
 
+    def __contains__(self, item: "User") -> bool:
+        return item in self.users
+
 
 class CardShow(SQLModel):
     number: constr(regex="^\d{16}$") = Field(unique=True)

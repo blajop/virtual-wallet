@@ -37,6 +37,9 @@ class Wallet(WalletBase, table=True):
         sa_relationship_kwargs=dict(primaryjoin="User.id==Wallet.owner_id")
     )  # lazy="joined" can be added here
 
+    def __contains__(self, item: "User") -> bool:
+        return item in self.users or item == self.owner
+
 
 class WalletUpdate(Wallet):
     # manages balance?

@@ -31,3 +31,7 @@ class Transaction(TransactionBase, table=True):
             primaryjoin="Wallet.id==Transaction.wallet_receiver"
         )
     )  # lazy="joined" can be added here
+
+
+class TransactionCreate(TransactionBase):
+    pass
