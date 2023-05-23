@@ -4,8 +4,11 @@ from sqlalchemy.orm import Session
 from sqlmodel import Session, or_, select
 from app import crud
 from app.crud.base import CRUDBase
-from app.error_models.transaction_errors import TransactionError
+from app.error_models.transaction_errors import (
+    TransactionError,
+)
 from app.models.card import Card, UserCardLink
+from app.models.currency import Currency
 from app.models.transaction import Transaction, TransactionBase, TransactionCreate
 from app.models.user import User
 from app.models.msg import Msg
@@ -67,36 +70,42 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
             return super().get_multi(db, skip=skip, limit=limit)
 
         else:
-            user_wallets_ids = (
-                db.exec(
-                    select(UserWalletLink.wallet_id).filter(
-                        user.id == UserWalletLink.user_id
-                    )
-                )
-                .unique()
-                .all()
-            )
-            user_wallets_ids.extend(
-                db.exec(select(Wallet.id).filter(user.id == Wallet.owner_id))
-                .unique()
-                .all()
-            )
-            user_cards_ids = (
-                db.exec(
-                    select(UserCardLink.card_id).filter(user.id == UserCardLink.user_id)
-                )
-                .unique()
-                .all()
-            )
-
+            # user_wallets_ids = (
+            #     db.exec(
+            #         select(UserWalletLink.wallet_id).filter(
+            #             user.id == UserWalletLink.user_id
+            #         )
+            #     )
+            #     .unique()
+            #     .all()
+            # )
+            # user_wallets_ids.extend(
+            #     db.exec(select(Wallet.id).filter(user.id == Wallet.owner_id))
+            #     .unique()
+            #     .all()
+            # )
+            # user_cards_ids = (
+            #     db.exec(
+            #         select(UserCardLink.card_id).filter(user.id == UserCardLink.user_id)
+            #     )
+            #     .unique()
+            #     .all()
+            # )
+            user_wallets_ids = crud.wallet.get_multi_by_owner(db, user) + user.wallets
+            print(user.wallets)
+            print(user.cards)
             return (
                 db.exec(
                     select(Transaction)
                     .filter(
                         or_(
-                            Transaction.card_sender.in_(user_cards_ids),
-                            Transaction.wallet_sender.in_(user_wallets_ids),
-                            Transaction.wallet_receiver.in_(user_wallets_ids),
+                            Transaction.card_sender.in_(c.id for c in user.cards),
+                            Transaction.wallet_sender.in_(
+                                w.id for w in user_wallets_ids
+                            ),
+                            Transaction.wallet_receiver.in_(
+                                w.id for w in user_wallets_ids
+                            ),
                         )
                     )
                     .offset(skip)
@@ -120,44 +129,189 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
     ) -> Transaction:
         """
         Creates a transaction.
+        - Option 1: Transfers money Card -> Wallet (depositing from card to a wallet -
+        ONLY card registered on the user's account to wallet), according to the transaction data
+        - Option 2: Wallet -> Wallet transer from a wallet in which the user is the owner | user,
+        according to the transaction data
+
+        If different currencies arise, they are exchanged on cross-USD rate.
 
         Arguments:
             db: Session
-            new_transaction: User model
-            Takes skip and limit pagination args which have default values.
+            new_transaction: TransactionCreate model
+            user: User model
         Returns:
-            list[Transaction]
+            Transaction : the created transaction.
         """
         user_wallets = crud.wallet.get_multi_by_owner(db, user) + user.wallets
 
         if (
-            sender_item := new_transaction.wallet_sender
+            sender_item_id := new_transaction.wallet_sender
         ) and not new_transaction.card_sender:
-            if sender_item not in [w.id for w in user_wallets]:
+            if sender_item_id not in [w.id for w in user_wallets]:
                 raise TransactionError(
-                    "The sender item passed is not in your wallets/cards"
+                    "The wallet sender passed is not in your associated wallets"
                 )
+            sender_item_obj: Wallet = crud.wallet.get(db, sender_item_id)
             new_transaction.card_sender = None
 
+        # Card -> Wallet (depositing) - only from user's registered card to
+        # wallet connected with the user
         elif (
-            sender_item := new_transaction.card_sender
+            sender_item_id := new_transaction.card_sender
         ) and not new_transaction.wallet_sender:
-            if sender_item not in [c.id for c in user.cards]:
+            if sender_item_id not in [c.id for c in user.cards]:
                 raise TransactionError(
-                    "The sender item passed is not in your wallets/cards"
+                    "The card sender passed is not in your registered cards"
                 )
+            if new_transaction.wallet_receiver not in (w.id for w in user_wallets):
+                raise TransactionError(
+                    "You can't deposit money to a wallet not connected with your acoount"
+                )
+            # the obtained Card is with the number and cvc deciphered, so we cipher them back straight away
+            sender_item_obj: Card = crud.card.get(db, sender_item_id)
+            sender_item_obj.number = util_crypt.encrypt(sender_item_obj.number)
+            sender_item_obj.cvc = util_crypt.encrypt(sender_item_obj.cvc)
             new_transaction.wallet_sender = None
 
         else:
             raise TransactionError(
                 "You should pass either valid wallet or valid card sender"
             )
+        receiver_wallet_obj = crud.wallet.get(db, new_transaction.wallet_receiver)
+
+        # Here the money transfer between the items happens
+        self.money_transfer(
+            db,
+            sender_item=sender_item_obj,
+            receiver_wallet=receiver_wallet_obj,
+            currency=self.get_currency(db, currency_str=new_transaction.currency),
+            amount=new_transaction.amount,
+        )
+
         try:
             return super().create(
                 db, obj_in=new_transaction, generated_id=util_id.generate_id()
             )
         except sqlExc.IntegrityError:
+            # the other sql error is prevented by the above code (a single sender item)
             raise TransactionError("The sender and receiver wallets are the same")
+
+    def money_transfer(
+        self,
+        db: Session,
+        *,
+        sender_item: Wallet | Card,
+        receiver_wallet: Wallet,
+        currency: Currency,
+        amount: float,
+    ) -> Msg:
+        """
+        Transfers money in the following way Wallet | Card -> Wallet.
+        If the sender is a card, no change occurs with the card.
+        If the sender is a wallet, the amount passed is taken from their balance (exchanged if necessary).
+        The wallet receiver receives the amount passed added to their balance (exchanged if necessary).
+
+        The currencies table ignores the buy/sell exchange rate margin - same rate in all directions is used.
+
+        If different currencies arise between sender and receiver(not their currencies or non_USD),
+        they are exchanged on cross-USD rate.
+
+        Arguments:
+            db: Session
+            new_transaction: TransactionCreate model
+            user: User model
+        Returns:
+            Transaction : the created transaction.
+        """
+        # if the sender is a Wallet
+        if isinstance(sender_item, Wallet):
+            if not currency.currency == sender_item.currency:
+                sender_currency_amount = self.currency_exchange(
+                    db,
+                    fro=currency,
+                    to=self.get_currency(db, currency_str=sender_item.currency),
+                    amount=amount,
+                )
+                if sender_item.balance < sender_currency_amount:
+                    raise TransactionError(
+                        "You do not have enough balance in the sender Wallet in order to make the transfer"
+                    )
+            else:
+                sender_currency_amount = amount
+
+            if not currency.currency == receiver_wallet.currency:
+                receiver_currency_amount = self.currency_exchange(
+                    db,
+                    fro=currency,
+                    to=self.get_currency(db, currency_str=receiver_wallet.currency),
+                    amount=amount,
+                )
+            else:
+                receiver_currency_amount = amount
+
+            sender_item.balance -= sender_currency_amount
+
+            # logic for confirmation by the recipient
+
+            receiver_wallet.balance += receiver_currency_amount
+            db.commit()
+            return Msg(msg="Successfully executed transaction")
+
+        # if the sender is a Card
+        else:
+            if not currency.currency == receiver_wallet.currency:
+                receiver_currency_amount = self.currency_exchange(
+                    db,
+                    fro=currency,
+                    to=self.get_currency(db, currency_str=receiver_wallet.currency),
+                    amount=amount,
+                )
+
+            else:
+                receiver_currency_amount = amount
+
+                # logic for confirmation by the recipient
+
+            receiver_wallet.balance += receiver_currency_amount
+            db.commit()
+
+            return Msg(msg="Successfully executed transaction")
+
+    def get_currency(self, db: Session, *, currency_str: str):
+        """
+        Gets a Currency object from the DB.
+
+        Arguments:
+            db: Session
+            currency_str: str : representing the sought currency
+        Returns:
+            Currency model
+        """
+        currency_obj = db.exec(
+            select(Currency).filter(Currency.currency == currency_str.upper())
+        ).first()
+        return currency_obj
+
+    def currency_exchange(
+        self, db: Session, *, fro: Currency, to: Currency, amount: float
+    ) -> float:
+        """
+        Exchanges amount from one currency to another.
+        If the currencies are USD and some other the exchange rate is direct.
+        If the currencies are both different from USD, they are exchanged via cross-USD rate.
+
+        Arguments:
+            db: Session
+            fro: Currency model : the currency of the passed amount
+            to: Currency model : the output amount in the "to" currency
+        Returns:
+            float
+        """
+        in_USD = amount / fro.rate
+        in_output = in_USD * to.rate
+
+        return in_output
 
 
 transaction = CRUDTransaction(Transaction)
