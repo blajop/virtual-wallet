@@ -15,6 +15,7 @@ from app.models import (
     Msg,
     Wallet,
     UserWalletLink,
+    Currency,
 )
 from app.utils import util_id, util_crypt
 
@@ -72,42 +73,18 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
             return super().get_multi(db, skip=skip, limit=limit)
 
         else:
-            # user_wallets_ids = (
-            #     db.exec(
-            #         select(UserWalletLink.wallet_id).filter(
-            #             user.id == UserWalletLink.user_id
-            #         )
-            #     )
-            #     .unique()
-            #     .all()
-            # )
-            # user_wallets_ids.extend(
-            #     db.exec(select(Wallet.id).filter(user.id == Wallet.owner_id))
-            #     .unique()
-            #     .all()
-            # )
-            # user_cards_ids = (
-            #     db.exec(
-            #         select(UserCardLink.card_id).filter(user.id == UserCardLink.user_id)
-            #     )
-            #     .unique()
-            #     .all()
-            # )
-            user_wallets_ids = crud.wallet.get_multi_by_owner(db, user) + user.wallets
-            print(user.wallets)
-            print(user.cards)
+            user_wallets_ids = [
+                w.id for w in crud.wallet.get_multi_by_owner(db, user)
+            ] + [w.id for w in user.wallets]
+
             return (
                 db.exec(
                     select(Transaction)
                     .filter(
                         or_(
                             Transaction.card_sender.in_(c.id for c in user.cards),
-                            Transaction.wallet_sender.in_(
-                                w.id for w in user_wallets_ids
-                            ),
-                            Transaction.wallet_receiver.in_(
-                                w.id for w in user_wallets_ids
-                            ),
+                            Transaction.wallet_sender.in_(user_wallets_ids),
+                            Transaction.wallet_receiver.in_(user_wallets_ids),
                         )
                     )
                     .offset(skip)
