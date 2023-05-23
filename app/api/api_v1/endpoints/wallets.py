@@ -127,7 +127,8 @@ def transfer_to_wallet(
     target: str,
     fcurr: Optional[str],
     tcurr: Optional[str],
-    confirm: bool = False,
+    confirm: Optional[bool],
+    interval: Optional[str],
     user: User = Depends(deps.get_user_from_path),
     db: Session = Depends(deps.get_db),
     logged_user: User = Depends(deps.get_current_user),
@@ -143,7 +144,9 @@ def transfer_to_wallet(
         tcurr - receiving wallet currency (BGN | EUR | USD ...)
         confirm - confirm currency exchange (True | False)
         user - sending user
+        interval - the interval of a recurring transaction (month | year)
     """
+
     if user != logged_user:
         raise HTTPException(
             status_code=403, detail="Cannot transfer from wallets that you don't own"
@@ -163,6 +166,9 @@ def transfer_to_wallet(
         raise HTTPException(status_code=400)
 
     # use exchange util to exchange the amount
+
+    if interval:
+        pass
 
     return crud.wallet.transfer(
         db=db, from_wallet=from_wallet, amount=amount, to_wallet=to_wallet
