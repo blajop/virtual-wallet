@@ -53,28 +53,33 @@ class CRUDWallet(CRUDBase[Wallet, WalletCreate, WalletUpdate]):
         db.refresh(wallet)
         return wallet
 
-    def deposit(self, db: Session, wallet: Wallet, amount: float, card: Card):
-        # if not card.confirm_balance(amount): bank logic
-        #    return Response(status_code=400, detail='nema pari :(')
-        wallet.balance += amount
-        db.add(wallet)
-        db.commit()
-        db.refresh(wallet)
-        return wallet
+    ### CODE BELLOW TO BE REMOVED
+    #
+    # def deposit(self, db: Session, wallet: Wallet, amount: float, card: Card):
+    #     # if not card.confirm_balance(amount): bank logic
+    #     #    return Response(status_code=400, detail='nema pari :(')
+    #     wallet.balance += amount
+    #     db.add(wallet)
+    #     db.commit()
+    #     db.refresh(wallet)
+    #     return wallet
 
-    def transfer(
-        self, db: Session, from_wallet: Wallet, amount: float, to_wallet: Wallet
-    ):
-        if from_wallet.balance < amount:
-            return Response(
-                status_code=400, content="Insufficient amount in your wallet."
-            )
-        to_wallet.balance += amount
-        from_wallet.balance -= amount
-        db.add(from_wallet)
-        db.commit()
-        db.refresh(from_wallet)
-        return from_wallet
+    # def transfer(
+    #     self, db: Session, from_wallet: Wallet, amount: float, to_wallet: Wallet
+    # ):
+    #     if from_wallet.balance < amount:
+    #         return Response(
+    #             status_code=400, content="Insufficient amount in your wallet."
+    #         )
+    #     to_wallet.balance += amount
+    #     from_wallet.balance -= amount
+    #     db.add(from_wallet)
+    #     db.commit()
+    #     db.refresh(from_wallet)
+    #     return from_wallet
+    #
+    #
+    ### CODE BELLOW TO BE REMOVED
 
 
 wallet = CRUDWallet(Wallet)
