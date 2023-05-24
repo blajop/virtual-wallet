@@ -44,6 +44,27 @@ def random_user(db: Session) -> User:
     return user
 
 
+def random_admin(db: Session) -> User:
+    user = UserCreate(
+        username=random_lower_string(8),
+        email=random_email(),
+        phone=random_phone(),
+        f_name=random_lower_string(8),
+        l_name=random_lower_string(8),
+        password="Passw0rd_1",
+    )
+
+    user = User.from_orm(user)
+    user.id = util_id.generate_id()
+    scope_2 = db.exec(select(Scope).where(Scope.id == 2)).first()
+    scope_3 = db.exec(select(Scope).where(Scope.id == 3)).first()
+    user.scopes.extend([scope_2, scope_3])
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
+
+
 def random_wallet(
     owner: User, currency: str, balance: int = 200, *, db: Session
 ) -> Wallet:
