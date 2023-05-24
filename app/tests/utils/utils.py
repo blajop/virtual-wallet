@@ -1,3 +1,4 @@
+from datetime import datetime
 import random
 import string
 from typing import Dict
@@ -6,10 +7,12 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session, select
 
 from app.core.config import settings
+from app.models.card import CardCreate, CardExpiry
 from app.models.scope import Scope
 from app.models.user import User, UserCreate
 from app.models.wallet import Wallet, WalletCreate
 from app.utils import util_id
+from fastapi.encoders import jsonable_encoder
 
 
 def random_lower_string(k) -> str:
@@ -20,11 +23,27 @@ def random_phone() -> str:
     return "".join(random.choices(string.digits, k=10))
 
 
+def random_cardnum() -> str:
+    return "".join(random.choices(string.digits, k=16))
+
+
 def random_email() -> str:
     return f"{random_lower_string(10)}@{random_lower_string(6)}.com"
 
 
-def random_user() -> UserCreate:
+def random_card(db: Session) -> User:
+    curr_year = datetime.now().year
+
+    card = CardCreate(
+        number=random_cardnum(),
+        expiry=jsonable_encoder(CardExpiry(mm="09", yyyy=str(curr_year + 1))),
+        holder="User Userov",
+        cvc="345",
+    )
+    return card
+
+
+def random_user(db: Session) -> User:
     user = UserCreate(
         username=random_lower_string(8),
         email=random_email(),
