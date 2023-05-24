@@ -36,6 +36,7 @@ class CRUDCard(CRUDBase[Card, CardBase, CardCreate]):
         found_card.number = util_crypt.decrypt(found_card.number)
         found_card.cvc = util_crypt.decrypt(found_card.cvc)
 
+        # for internal code reuse
         if not user:
             return found_card
 

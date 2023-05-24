@@ -45,16 +45,6 @@ def test_add_card_succeeds_when_userAndValidData(client: TestClient, user):
     app.dependency_overrides.clear()
 
 
-def test_add_card_succeeds_when_userAndValidData_(client: TestClient, user):
-    app.dependency_overrides[deps.get_current_user] = user
-
-    # data = response.json()
-
-    assert response.status_code == 200
-    # assert data["number"] == card_1.number
-    app.dependency_overrides.clear()
-
-
 def test_add_card_raises401_when_NotLoggedUser(client: TestClient, guest):
     app.dependency_overrides[deps.get_current_user] = guest
 
@@ -79,6 +69,8 @@ def test_add_card_raises400_when_sameCardNumberWithDiffData(client: TestClient, 
 
     assert response.status_code == 400
     assert data["detail"] == "This card # already exists with different credentials"
+
+    card_1.cvc = "345"
     app.dependency_overrides.clear()
 
 
@@ -105,6 +97,8 @@ def test_add_card_raises400_when_cardIsExpired(client: TestClient, user):
 
     assert response.status_code == 400
     assert data["detail"] == "Your card is expired"
+
+    card_1.expiry = jsonable_encoder(CardExpiry(mm="09", yyyy=str(curr_year + 1)))
     app.dependency_overrides.clear()
 
 
@@ -150,7 +144,7 @@ def test_get_card_raises404_when_cardExistsNotLoggedUser(
 
 
 def test_get_card_returnsCard_when_cardExistsAsssociatedWithUser(
-    client: TestClient, user, admin
+    client: TestClient, user
 ):
     app.dependency_overrides[deps.get_current_user] = user
 
