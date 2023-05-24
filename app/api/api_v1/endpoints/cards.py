@@ -14,9 +14,6 @@ def get_card(
     db: Session = Depends(deps.get_db),
     logged_user: User = Depends(deps.get_current_user),
 ):
-    if not logged_user:
-        raise HTTPException(status_code=401, detail="You should be logged in")
-
     result = crud.card.get(db, card_identifier, logged_user)
 
     if not result:
@@ -26,14 +23,22 @@ def get_card(
     return result
 
 
+@router.get("", response_model=list[Card])
+def get_cards(
+    db: Session = Depends(deps.get_db),
+    logged_user: User = Depends(deps.get_current_user),
+    skip: int = 0,
+    limit: int = 100,
+):
+    return crud.card.get_multi(db, skip=skip, limit=limit, user=logged_user)
+
+
 @router.post("", response_model=CardShow)
 def add_card(
     new_card: CardCreate,
     db: Session = Depends(deps.get_db),
     logged_user: User = Depends(deps.get_current_user),
 ):
-    if not logged_user:
-        raise HTTPException(status_code=401, detail="You should login first")
     try:
         return crud.card.add_card(db, logged_user, new_card)
     except CardDataError as err:
@@ -46,8 +51,6 @@ def admin_delete_card(
     db: Session = Depends(deps.get_db),
     logged_user: User = Depends(deps.get_current_user),
 ):
-    if not logged_user:
-        raise HTTPException(status_code=401, detail="You should login")
     if not crud.user.is_admin(logged_user):
         raise HTTPException(status_code=403, detail="Admin endpoint")
 
@@ -63,9 +66,6 @@ def deregister_card(
     db: Session = Depends(deps.get_db),
     logged_user: User = Depends(deps.get_current_user),
 ):
-    if not logged_user:
-        raise HTTPException(status_code=401, detail="You should login")
-
     try:
         crud.card.deregister_card(db, card_identifier, logged_user)
     except CardNotFoundError as err:

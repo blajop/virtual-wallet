@@ -1,3 +1,4 @@
+from typing import List
 from sqlmodel import Session, or_, select
 from app import crud
 from app.crud.base import CRUDBase
@@ -43,6 +44,28 @@ class CRUDCard(CRUDBase[Card, CardBase, CardCreate]):
 
         if user in found_card.users or crud.user.is_admin(user):
             return found_card
+
+    def get_multi(
+        self, db: Session, *, skip: int = 0, limit: int = 100, user: User
+    ) -> List[Card]:
+        if crud.user.is_admin(user):
+            result = super().get_multi(db, skip=skip, limit=limit)
+        else:
+            result = (
+                db.exec(
+                    select(Card)
+                    .offset(skip)
+                    .limit(limit)
+                    .filter(Card.id.in_(c.id for c in user.cards))
+                )
+                .unique()
+                .all()
+            )
+        for card in result:
+            card.number = util_crypt.decrypt(card.number)
+            card.cvc = util_crypt.decrypt(card.cvc)
+
+        return result
 
     def add_card(
         self, db: Session, user: User, new_card: CardCreate
