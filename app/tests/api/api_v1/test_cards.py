@@ -284,10 +284,8 @@ def test_adminDelete_card_works_when_allOk(
     )
     assert len(user_card_link) == 0
 
-    card_inDB: Card = session.exec(
-        select(Card).filter(Card.number == utils.util_crypt.encrypt(card.number))
-    ).first()
-    assert card_inDB is None
+    response = client.get(f"/api/v1/cards/{card.number}")
+    assert response.status_code == 404
 
 
 def test_deregister_card_returns404_when_cardDoeNotExist(
@@ -333,12 +331,11 @@ def test_deregister_card_works_when_cardHasMoreThanOneUser(
     # Act - admin deletes
     response = client.delete(f"/api/v1/cards/{card.number}")
 
+    assert response.status_code == 204
+
     card_inDB: Card = session.exec(
         select(Card).filter(Card.number == utils.util_crypt.encrypt(card.number))
     ).first()
-
-    assert response.status_code == 204
-    assert card_inDB is not None
     assert len(card_inDB.users) == 1
 
     # Prepare for user delete
@@ -354,12 +351,16 @@ def test_deregister_card_works_when_cardHasMoreThanOneUser(
     ).first()
 
     assert response.status_code == 204
-    assert card_inDB is not None
     assert len(card_inDB.users) == 1
+
+    app.dependency_overrides[deps.get_current_user] = admin
+
+    response = client.get(f"/api/v1/cards/{card.number}")
+    assert response.status_code == 200
 
 
 def test_deregister_card_works_when_cardHasOneUser(
-    session: Session, client: TestClient, user, card: CardCreate
+    session: Session, client: TestClient, admin, user, card: CardCreate
 ):
     app.dependency_overrides[deps.get_current_user] = user
     client.post("/api/v1/cards", json=jsonable_encoder(card))
@@ -382,7 +383,7 @@ def test_deregister_card_works_when_cardHasOneUser(
     )
     assert len(user_card_link) == 0
 
-    card_inDB: Card = session.exec(
-        select(Card).filter(Card.number == utils.util_crypt.encrypt(card.number))
-    ).first()
-    assert card_inDB is None
+    app.dependency_overrides[deps.get_current_user] = admin
+
+    response = client.get(f"/api/v1/cards/{card.number}")
+    assert response.status_code == 404

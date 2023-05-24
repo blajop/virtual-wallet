@@ -138,6 +138,7 @@ class CRUDCard(CRUDBase[Card, CardBase, CardCreate]):
         else:
             found_card.users.clear()
             db.delete(found_card)
+            db.commit()
 
     def remove(self, db: Session, card_identifier: str):
         """

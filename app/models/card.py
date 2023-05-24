@@ -64,7 +64,7 @@ class CardExpiry(BaseModel):
 
     @validator("mm")
     def validate_mm(cls, val: str):
-        val = val.strip("0")
+        val = val.lstrip("0")
         if 1 > int(val) > 12:
             raise ValueError("Invalid month entered")
         return val
