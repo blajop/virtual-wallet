@@ -18,7 +18,7 @@ from app.tests.utils.utils import random_user, random_admin
 from app.utils import util_id
 
 
-@pytest.fixture(name="session")
+@pytest.fixture(scope="session", name="session")
 def session_fixture():
     engine = create_engine(
         "sqlite://",
@@ -34,7 +34,7 @@ def session_fixture():
         yield session
 
 
-@pytest.fixture(name="guest")
+@pytest.fixture(scope="session", name="guest")
 def guest_fixture():
     def get_guest_override():
         return None
@@ -42,7 +42,7 @@ def guest_fixture():
     yield get_guest_override
 
 
-@pytest.fixture(name="user")
+@pytest.fixture(scope="session", name="user")
 def user_fixture(session: Session):
     user = session.exec(
         select(User).filter(User.username == settings.USER_TEST_USERNAME)
@@ -54,7 +54,7 @@ def user_fixture(session: Session):
     yield get_user_override
 
 
-@pytest.fixture(name="admin")
+@pytest.fixture(scope="session", name="admin")
 def admin_fixture(session: Session):
     admin = session.exec(
         select(User).filter(User.username == settings.ADMIN_TEST_USERNAME)
@@ -66,7 +66,7 @@ def admin_fixture(session: Session):
     yield get_admin_override
 
 
-@pytest.fixture(name="client")
+@pytest.fixture(scope="session", name="client")
 def client_fixture(session: Session):
     def get_session_override():
         return session
