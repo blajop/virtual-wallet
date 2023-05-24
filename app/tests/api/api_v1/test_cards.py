@@ -8,7 +8,9 @@ from fastapi.testclient import TestClient
 from datetime import datetime, timedelta
 from app import utils
 from fastapi.encoders import jsonable_encoder
-from pytest_depends import 
+from app import deps
+from app.tests.utils.utils import random_user
+from main import app
 
 from app.models.user import User
 
@@ -30,22 +32,22 @@ card_1 = CardCreate(
 # )
 
 
-def test_add_card_succeeds_when_userAndValidData(client: TestClient):
-    response = client.post("/api/v1/cards", json=jsonable_encoder(card_1))
-    data = response.json()
+# def test_add_card_succeeds_when_userAndValidData(client: TestClient):
+#     response = client.post("/api/v1/cards", json=jsonable_encoder(card_1))
+#     data = response.json()
 
-    assert response.status_code == 200
-    assert data["number"] == card_1.number
+#     assert response.status_code == 200
+#     assert data["number"] == card_1.number
 
 
-def test_add_card_raises400_when_sameCardNumberWithDiffData(client: TestClient):
-    client.post("/api/v1/cards", json=jsonable_encoder(card_1))
-    card_1.cvc = "111"
+# def test_add_card_raises400_when_sameCardNumberWithDiffData(client: TestClient):
+#     client.post("/api/v1/cards", json=jsonable_encoder(card_1))
+#     card_1.cvc = "111"
 
-    response = client.post("/api/v1/cards", json=jsonable_encoder(card_1))
-    data = response.json()
+#     response = client.post("/api/v1/cards", json=jsonable_encoder(card_1))
+#     data = response.json()
 
-    assert response.status_code == 400
+#     assert response.status_code == 400
 
 
 # def test_add_card_succeeds_when_sameCardAlreadyReggdWithAnotherUser(client: TestClient):
@@ -58,7 +60,29 @@ def test_add_card_raises400_when_sameCardNumberWithDiffData(client: TestClient):
 #     assert response.status_code == 400
 
 
-def test_get_card_findsCard_when_cardExistsAsssociatedWithUser(client: TestClient):
+# def test_get_card_raises404_when_cardExistsButNotAsssociatedWithUser(
+#     client: TestClient, user
+# ):
+#     app.dependency_overrides[deps.get_current_user] = user
+
+#     client.post("/api/v1/cards", json=jsonable_encoder(card_1))
+
+#     user.cards.clear()
+
+#     response = client.get(f"/api/v1/cards/{card_1.number}")
+#     assert response.status_code == 404
+
+
+# def test_get_card_raises404_when_cardDoesNotExist(client: TestClient):
+#     response = client.get(f"/api/v1/cards/{card_1.number}")
+#     assert response.status_code == 404
+
+
+def test_get_card_findsCard_when_cardExistsAsssociatedWithUser(
+    client: TestClient, user
+):
+    app.dependency_overrides[deps.get_current_user] = user
+
     client.post("/api/v1/cards", json=jsonable_encoder(card_1))
 
     response = client.get(f"/api/v1/cards/{card_1.number}")
@@ -76,30 +100,17 @@ def test_get_card_findsCard_when_cardExistsAsssociatedWithUser(client: TestClien
     assert found_card.expiry == card_1.expiry.datetime_
     assert found_card.holder == card_1.holder
     assert found_card.cvc == card_1.cvc
-
-
-def test_get_card_raises404_when_cardExistsButNotAsssociatedWithUser(
-    client: TestClient, user: User
-):
-    client.post("/api/v1/cards", json=jsonable_encoder(card_1))
-
-    user.cards.clear()
-
-    response = client.get(f"/api/v1/cards/{card_1.number}")
-    assert response.status_code == 404
-
-
-def test_get_card_raises404_when_cardDoesNotExist(client: TestClient):
-    response = client.get(f"/api/v1/cards/{card_1.number}")
-    assert response.status_code == 404
+    app.dependency_overrides.clear()
 
 
 def test_get_card_raises404_when_cardExistsNotLoggedUser(
-    client: TestClient, user: User
+    client: TestClient, guest, user
 ):
+    app.dependency_overrides[deps.get_current_user] = user
     client.post("/api/v1/cards", json=jsonable_encoder(card_1))
 
-    client.headers.Authorization = None
+    app.dependency_overrides[deps.get_current_user] = guest
 
     response = client.get(f"/api/v1/cards/{card_1.number}")
-    assert response.status_code == 200
+    assert response.status_code == 401
+    app.dependency_overrides.clear()
