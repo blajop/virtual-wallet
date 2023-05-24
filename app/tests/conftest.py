@@ -18,12 +18,10 @@ from app.tests.utils.utils import random_user, random_admin
 from app.utils import util_id
 
 
-@pytest.fixture(name="session")
-def session_fixture():
+@pytest.fixture()
+def session():
     engine = create_engine(
-        "sqlite://",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
+        "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
     )
     SQLModel.metadata.create_all(engine)
     with Session(engine) as session_init:
@@ -32,6 +30,18 @@ def session_fixture():
 
     with Session(engine) as session:
         yield session
+
+
+@pytest.fixture()
+def client(session: Session):
+    def get_db_override():
+        return session
+
+    app.dependency_overrides[deps.get_db] = get_db_override
+
+    client = TestClient(app)
+    yield client
+    app.dependency_overrides.clear()
 
 
 @pytest.fixture(name="guest")
@@ -64,18 +74,6 @@ def admin_fixture(session: Session):
         return admin
 
     yield get_admin_override
-
-
-@pytest.fixture(name="client")
-def client_fixture(session: Session):
-    def get_session_override():
-        return session
-
-    app.dependency_overrides[deps.get_db] = get_session_override
-
-    client = TestClient(app)
-    yield client
-    app.dependency_overrides.clear()
 
 
 def fill_scopes(session: Session):
