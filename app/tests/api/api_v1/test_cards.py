@@ -18,20 +18,8 @@ from app.models.user import User
 @pytest.fixture(name="card")
 def card_fixture(session: Session):
     curr_year = datetime.now().year
-    yield CardCreate(
-        number="1234567890123456",
-        expiry=jsonable_encoder(CardExpiry(mm="09", yyyy=str(curr_year + 1))),
-        holder="User Userov",
-        cvc="345",
-    )
+    yield random_card(session)
 
-
-# card_2 = CardCreate(
-#     number=6543210987654321,
-#     expiry=jsonable_encoder(CardExpiry(mm="10", yyyy=str(curr_year + 1))),
-#     holder="User Userov",
-#     cvc=345,
-# )
 
 # TEST POST ------------------------------------
 
@@ -58,7 +46,7 @@ def test_add_card_raises401_when_NotLoggedUser(
     data = response.json()
 
     assert response.status_code == 401
-    # assert data["detail"] == "You should login first"
+    assert data["detail"] == "You should login first"
 
     app.dependency_overrides.clear()
 

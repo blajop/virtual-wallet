@@ -44,16 +44,16 @@ def client(session: Session):
     app.dependency_overrides.clear()
 
 
-@pytest.fixture(name="guest")
-def guest_fixture():
+@pytest.fixture()
+def guest():
     def get_guest_override():
         return None
 
     yield get_guest_override
 
 
-@pytest.fixture(scope="session", name="user")
-def user_fixture(session: Session):
+@pytest.fixture()
+def user(session: Session):
     user = session.exec(
         select(User).filter(User.username == settings.USER_TEST_USERNAME)
     ).first()
@@ -64,8 +64,8 @@ def user_fixture(session: Session):
     yield get_user_override
 
 
-@pytest.fixture(scope="session", name="admin")
-def admin_fixture(session: Session):
+@pytest.fixture()
+def admin(session: Session):
     admin = session.exec(
         select(User).filter(User.username == settings.ADMIN_TEST_USERNAME)
     ).first()
