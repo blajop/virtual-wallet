@@ -1,8 +1,6 @@
-from unittest.mock import Mock
 from fastapi.testclient import TestClient
-from app.api import deps
 from app.models.user import User, UserBase
-from fastapi import BackgroundTasks
+from app.api import deps
 from main import app
 
 
