@@ -39,7 +39,7 @@ def guest_fixture():
     def get_guest_override():
         return None
 
-    return get_guest_override
+    yield get_guest_override
 
 
 @pytest.fixture(name="user")
@@ -51,7 +51,7 @@ def user_fixture(session: Session):
     def get_user_override():
         return user
 
-    return get_user_override
+    yield get_user_override
 
 
 @pytest.fixture(name="admin")
@@ -63,7 +63,7 @@ def admin_fixture(session: Session):
     def get_admin_override():
         return admin
 
-    return get_admin_override
+    yield get_admin_override
 
 
 @pytest.fixture(name="client")
