@@ -76,7 +76,7 @@ class CRUDCard(CRUDBase[Card, CardBase, CardCreate]):
                     "This card # already exists with different credentials"
                 )
             if user in found_card.users:
-                return CardDataError("You already have this card")
+                raise CardDataError("You already have this card")
             found_card.number = util_crypt.encrypt(found_card.number)
             found_card.cvc = util_crypt.encrypt(found_card.cvc)
             card_orm = found_card
@@ -87,7 +87,7 @@ class CRUDCard(CRUDBase[Card, CardBase, CardCreate]):
         if found_card:
             db.add(card_orm)
         db.commit()
-        # db.refresh(card_orm)
+        # db.refresh(card_orm) # breaks the session of the tests and not needed in code for now
         return CardShow(
             number=util_crypt.decrypt(card_orm.number),
             expiry=card_orm.expiry.strftime("%m/%y"),
