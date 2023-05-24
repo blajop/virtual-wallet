@@ -35,12 +35,18 @@ class Settings(BaseSettings):
     CURRENCY_REQUEST_URL = Field(default="", env="CURRENCY_REQUEST_URL")
 
     # TESTING
+    ADMIN_TEST_FNAME: str = "Admin"
+    ADMIN_TEST_LNAME: str = "Adminov"
     ADMIN_TEST_USERNAME: str = "adminUser"
     ADMIN_TEST_PASSWORD: str = "AdminPass_1"
     ADMIN_TEST_EMAIL: str = "adminUser@example.com"
+    ADMIN_TEST_PHONE: str = "1234567890"
+    USER_TEST_FNAME: str = "User"
+    USER_TEST_LNAME: str = "Userov"
     USER_TEST_USERNAME: str = "normalUser"
     USER_TEST_PASSWORD: str = "UserPass_1"
     USER_TEST_EMAIL: str = "normalUser@example.com"
+    USER_TEST_PHONE: str = "0987654321"
 
     class Config:
         env_file = ".env"

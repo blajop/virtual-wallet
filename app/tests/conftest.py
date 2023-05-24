@@ -14,7 +14,7 @@ from app.models.user import User, UserCreate
 from app.core.security import get_password_hash
 
 
-from app.tests.utils.utils import random_user
+from app.tests.utils.utils import random_user, random_admin
 from app.utils import util_id
 
 
@@ -34,21 +34,44 @@ def session_fixture():
         yield session
 
 
+@pytest.fixture(name="guest")
+def guest_fixture():
+    def get_guest_override():
+        return None
+
+    return get_guest_override
+
+
 @pytest.fixture(name="user")
 def user_fixture(session: Session):
-    yield random_user(session)
-
-
-@pytest.fixture(name="client")
-def client_fixture(session: Session, user: User):
-    def get_session_override():
-        return session
+    user = session.exec(
+        select(User).filter(User.username == settings.USER_TEST_USERNAME)
+    ).first()
 
     def get_user_override():
         return user
 
+    return get_user_override
+
+
+@pytest.fixture(name="admin")
+def admin_fixture(session: Session):
+    admin = session.exec(
+        select(User).filter(User.username == settings.ADMIN_TEST_USERNAME)
+    ).first()
+
+    def get_admin_override():
+        return admin
+
+    return get_admin_override
+
+
+@pytest.fixture(name="client")
+def client_fixture(session: Session):
+    def get_session_override():
+        return session
+
     app.dependency_overrides[deps.get_db] = get_session_override
-    app.dependency_overrides[deps.get_current_user] = get_user_override
 
     client = TestClient(app)
     yield client
@@ -72,11 +95,27 @@ def fill_basic_users(session: Session):
         scope_a = session.exec(select(Scope).filter(Scope.id == 3)).first()
         scope_u = session.exec(select(Scope).filter(Scope.id == 2)).first()
 
-        admin = random_user(session)
+        admin = User(
+            username=settings.ADMIN_TEST_USERNAME,
+            email=settings.ADMIN_TEST_EMAIL,
+            phone=settings.ADMIN_TEST_PHONE,
+            f_name=settings.ADMIN_TEST_FNAME,
+            l_name=settings.ADMIN_TEST_LNAME,
+            id=util_id.generate_id(),
+            password=get_password_hash(settings.ADMIN_TEST_PASSWORD),
+        )
         admin.scopes.append(scope_u)
         admin.scopes.append(scope_a)
 
-        user = random_user(session)
+        user = User(
+            username=settings.USER_TEST_USERNAME,
+            email=settings.USER_TEST_EMAIL,
+            phone=settings.USER_TEST_PHONE,
+            f_name=settings.USER_TEST_FNAME,
+            l_name=settings.USER_TEST_LNAME,
+            id=util_id.generate_id(),
+            password=get_password_hash(settings.USER_TEST_PASSWORD),
+        )
         user.scopes.append(scope_u)
 
         session.add_all([admin, user])
