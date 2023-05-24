@@ -17,10 +17,6 @@ def get_users(
 
 @router.get("/profile", response_model=User)
 def profile_info(logged_user: User = Depends(deps.get_current_user)):
-    if not logged_user:
-        raise HTTPException(
-            status_code=401, detail="You must be logged in to see your profile"
-        )
     return logged_user
 
 

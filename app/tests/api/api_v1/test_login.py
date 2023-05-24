@@ -3,7 +3,8 @@ from unittest.mock import Mock
 from fastapi import Depends, HTTPException
 from pydantic import parse_obj_as
 import pytest
-from sqlmodel import Session
+from sqlmodel import Session, select
+from app import crud
 from app.api import deps
 from app.tests.utils.utils import random_user
 from main import app
@@ -109,18 +110,25 @@ def test_recover_password(client: TestClient):
     assert no_user.status_code == 404
 
 
-def test_reset_password(client: TestClient):
-    old_password = get_password_hash(settings.ADMIN_TEST_PASSWORD)
+def test_reset_password(client: TestClient, session: Session):
+    user = session.exec(
+        select(User).where(User.username == settings.ADMIN_TEST_USERNAME)
+    ).first()
+    old_password = user.password
 
     new_pass = UserResetPass(
         new_password="new_passw0rD", verify_password="new_passw0rD"
     )
 
-    token = util_mail.generate_email_link_token(email=settings.ADMIN_TEST_EMAIL)
+    token = util_mail.generate_email_link_token(email=user.email)
 
     # success
     response = client.post(f"/api/v1/reset-password?token={token}", json=js(new_pass))
+    user_after = session.exec(
+        select(User).where(User.username == settings.ADMIN_TEST_USERNAME)
+    ).first()
     assert response.status_code == 200
+    assert old_password != user_after.password
 
     # user with such email not found
     token_for_non_existent_user = util_mail.generate_email_link_token(
