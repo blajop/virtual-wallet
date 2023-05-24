@@ -43,7 +43,7 @@ def random_card(db: Session) -> CardCreate:
     return card
 
 
-def random_user() -> User:
+def random_user() -> UserCreate:
     user = UserCreate(
         username=random_lower_string(8),
         email=random_email(),
