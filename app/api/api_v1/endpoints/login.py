@@ -59,12 +59,10 @@ def sign_up(
         raise HTTPException(status_code=409, detail=err.args[0])
 
     # referrer should lose a refer spot in his UserSettings
-    referrer_mail = util_mail.verify_email_link_token(referrer)
-    referrer = crud.user.get(db, identifier=referrer_mail)
-    # if not more spots, dont give them money
     if referrer:
-        #  add each other as friends and fund their accounts 20 USD
-        pass
+        referrer_mail = util_mail.verify_email_link_token(referrer)
+        referrer = crud.user.get(db, identifier=referrer_mail)
+    # if not more spots, dont give them money
 
     background_tasks.add_task(
         util_mail.send_new_account_email,
@@ -110,10 +108,10 @@ def recover_password(
 
 
 # the frontend needs to come here
-@router.post("/reset-password/", response_model=models.Msg)
+@router.post("/reset-password", response_model=models.Msg)
 def reset_password(
     info: UserResetPass,
-    token: str = Body(...),
+    token: str = ...,
     db: Session = Depends(deps.get_db),
 ) -> Any:
     """

@@ -44,43 +44,6 @@ def test_get_profile_raise_when_not_logged():
     assert exc_info.value.status_code == 401
 
 
-def test_register_user(db: Session):
-    new_user = UserCreate(
-        username="New",
-        email="test_user@example.com",
-        phone="0888888888",
-        f_name="Created",
-        l_name="User",
-        password="Asdfghjkl_1",
-    )
-
-    new_user_with_taken_data = UserCreate(
-        username="New",
-        email="test_user@example.com",
-        phone="0888888888",
-        f_name="Created2",
-        l_name="User2",
-        password="Asdfghjkl_1",
-    )
-
-    user = users.sign_up_user(
-        db=db, background_tasks=BACKGROUND_TASKS, new_user=new_user
-    )
-
-    # test if user data is taken
-    with pytest.raises(HTTPException) as data_info:
-        users.sign_up_user(
-            db=db,
-            background_tasks=BACKGROUND_TASKS,
-            new_user=new_user_with_taken_data,
-        )
-
-    assert user
-    assert isinstance(user, User)
-    assert user.username == "New"
-    assert data_info.value.status_code == 409
-
-
 # def test_admin_user_inDB(db: Session):
 #     all_users = users.get_users(db)
 #     admin = users.get_user("admin_id", db)

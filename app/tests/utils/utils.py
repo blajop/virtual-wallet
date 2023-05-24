@@ -24,7 +24,7 @@ def random_email() -> str:
     return f"{random_lower_string(10)}@{random_lower_string(6)}.com"
 
 
-def random_user(db: Session) -> User:
+def random_user() -> UserCreate:
     user = UserCreate(
         username=random_lower_string(8),
         email=random_email(),
@@ -34,6 +34,7 @@ def random_user(db: Session) -> User:
         password="Passw0rd_1",
     )
 
+    return user
     user = User.from_orm(user)
     user.id = util_id.generate_id()
     scope = db.exec(select(Scope).where(Scope.id == 2)).first()
@@ -41,10 +42,9 @@ def random_user(db: Session) -> User:
     db.add(user)
     db.commit()
     db.refresh(user)
-    return user
 
 
-def random_admin(db: Session) -> User:
+def random_admin() -> UserCreate:
     user = UserCreate(
         username=random_lower_string(8),
         email=random_email(),
@@ -54,6 +54,7 @@ def random_admin(db: Session) -> User:
         password="Passw0rd_1",
     )
 
+    return user
     user = User.from_orm(user)
     user.id = util_id.generate_id()
     scope_2 = db.exec(select(Scope).where(Scope.id == 2)).first()
@@ -62,7 +63,6 @@ def random_admin(db: Session) -> User:
     db.add(user)
     db.commit()
     db.refresh(user)
-    return user
 
 
 def random_wallet(

@@ -53,8 +53,8 @@ def guest_fixture():
 
 
 @pytest.fixture(name="user")
-def user_fixture(session: Session):
-    user = session.exec(
+def user_fixture(session: Session) -> User:
+    user: User = session.exec(
         select(User).filter(User.username == settings.USER_TEST_USERNAME)
     ).first()
 
