@@ -24,7 +24,7 @@ def get_card(
     return result
 
 
-@router.post("", response_model=CardShow | Msg)
+@router.post("", response_model=CardShow)
 def add_card(
     new_card: CardCreate,
     db: Session = Depends(deps.get_db),

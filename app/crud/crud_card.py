@@ -52,7 +52,7 @@ class CRUDCard(CRUDBase[Card, CardBase, CardCreate]):
             db: Session
             user: User model
         Returns:
-            CardShow model | Msg
+            CardShow model
         Raises:
             CardDataError
 
@@ -76,7 +76,7 @@ class CRUDCard(CRUDBase[Card, CardBase, CardCreate]):
                     "This card # already exists with different credentials"
                 )
             if user in found_card.users:
-                return Msg(msg="You already have this card")
+                return CardDataError("You already have this card")
             found_card.number = util_crypt.encrypt(found_card.number)
             found_card.cvc = util_crypt.encrypt(found_card.cvc)
             card_orm = found_card
