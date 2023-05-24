@@ -171,6 +171,62 @@ def test_get_card_returns404_when_CardExistsNotAsssociatedWithUser(
 # TEST GET ALL ------------------------------------
 
 
+def test_get_cards_returnsEmptyList_when_NoCards(client: TestClient, admin, user):
+    app.dependency_overrides[deps.get_current_user] = admin
+    response = client.get(f"/api/v1/cards")
+    data = response.json()
+    assert data == []
+
+    app.dependency_overrides[deps.get_current_user] = user
+    response = client.get(f"/api/v1/cards")
+    data = response.json()
+    assert data == []
+
+
+def test_get_cards_showsAllCards_when_user(
+    session: Session, client: TestClient, admin, user
+):
+    card_1 = random_card(session)
+    card_2 = random_card(session)
+    card_3 = random_card(session)
+
+    app.dependency_overrides[deps.get_current_user] = admin
+    client.post("/api/v1/cards", json=jsonable_encoder(card_1))
+
+    app.dependency_overrides[deps.get_current_user] = user
+    client.post("/api/v1/cards", json=jsonable_encoder(card_2))
+    client.post("/api/v1/cards", json=jsonable_encoder(card_3))
+
+    # Act - user
+    response = client.get(f"/api/v1/cards")
+    data = response.json()
+    assert len(data) == 2
+    for obj in data:
+        assert obj["number"] in [card_2.number, card_3.number]
+
+
+def test_get_cards_showsAllCards_when_Admin(
+    session: Session, client: TestClient, admin, user
+):
+    card_1 = random_card(session)
+    card_2 = random_card(session)
+    card_3 = random_card(session)
+
+    app.dependency_overrides[deps.get_current_user] = user
+    client.post("/api/v1/cards", json=jsonable_encoder(card_2))
+    client.post("/api/v1/cards", json=jsonable_encoder(card_3))
+
+    app.dependency_overrides[deps.get_current_user] = admin
+    client.post("/api/v1/cards", json=jsonable_encoder(card_1))
+
+    # Act - admin
+    response = client.get(f"/api/v1/cards")
+    data = response.json()
+    assert len(data) == 3
+    for obj in data:
+        assert obj["number"] in [card_1.number, card_2.number, card_3.number]
+
+
 # TEST DELETE ------------------------------------
 
 
