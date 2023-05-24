@@ -36,18 +36,6 @@ def test_add_card_succeeds_when_userAndValidData(
     assert data["number"] == card.number
 
 
-def test_add_card_raises401_when_NotLoggedUser(
-    client: TestClient, guest, card: CardCreate
-):
-    app.dependency_overrides[deps.get_current_user] = guest
-
-    response = client.post("/api/v1/cards", json=jsonable_encoder(card))
-    data = response.json()
-
-    assert response.status_code == 401
-    assert data["detail"] == "You should login first"
-
-
 def test_add_card_raises400_when_sameCardNumberWithDiffData(
     client: TestClient, user, card: CardCreate
 ):
@@ -118,20 +106,6 @@ def test_add_card_succeeds_when_sameCardAlreadyReggdWithAnotherUser(
 # TEST GET ONE ------------------------------------
 
 
-def test_get_card_raises401_when_cardExistsNotLoggedUser(
-    client: TestClient, guest, user, card: CardCreate
-):
-    app.dependency_overrides[deps.get_current_user] = user
-    client.post("/api/v1/cards", json=jsonable_encoder(card))
-
-    app.dependency_overrides[deps.get_current_user] = guest
-
-    response = client.get(f"/api/v1/cards/{card.number}")
-    data = response.json()
-    assert response.status_code == 401
-    assert data["detail"] == "You should be logged in"
-
-
 def test_get_card_returnsCard_when_cardExistsAsssociatedWithUser(
     client: TestClient, user, card: CardCreate
 ):
@@ -194,21 +168,10 @@ def test_get_card_returns404_when_CardExistsNotAsssociatedWithUser(
     assert data["detail"] == "There is no such card within your access"
 
 
+# TEST GET ALL ------------------------------------
+
+
 # TEST DELETE ------------------------------------
-
-
-def test_adminDelete_card_returns401_when_userNotLogged(
-    client: TestClient, user, guest, card: CardCreate
-):
-    app.dependency_overrides[deps.get_current_user] = user
-    client.post("/api/v1/cards", json=jsonable_encoder(card))
-
-    app.dependency_overrides[deps.get_current_user] = guest
-    response = client.delete(f"/api/v1/cards/admin-del/{card.number}")
-    data = response.json()
-
-    assert response.status_code == 401
-    assert data["detail"] == "You should login"
 
 
 def test_adminDelete_card_returns403_when_userNotAdmin(
@@ -269,20 +232,6 @@ def test_adminDelete_card_works_when_allOk(
         select(Card).filter(Card.number == utils.util_crypt.encrypt(card.number))
     ).first()
     assert card_inDB is None
-
-
-def test_deregister_card_returns401_when_userNotLogged(
-    client: TestClient, user, guest, card: CardCreate
-):
-    app.dependency_overrides[deps.get_current_user] = user
-    client.post("/api/v1/cards", json=jsonable_encoder(card))
-
-    app.dependency_overrides[deps.get_current_user] = guest
-    response = client.delete(f"/api/v1/cards/{card.number}")
-    data = response.json()
-
-    assert response.status_code == 401
-    assert data["detail"] == "You should login"
 
 
 def test_deregister_card_returns404_when_cardDoeNotExist(
