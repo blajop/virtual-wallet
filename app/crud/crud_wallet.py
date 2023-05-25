@@ -2,7 +2,7 @@ from typing import List
 from fastapi import HTTPException, Response
 from sqlmodel import Session, select
 
-from app import utils
+from app import crud, utils
 from app.crud.base import CRUDBase
 from app.models import Card, User, Wallet, WalletCreate, WalletUpdate
 
@@ -48,9 +48,21 @@ class CRUDWallet(CRUDBase[Wallet, WalletCreate, WalletUpdate]):
 
     def invite_user(self, db: Session, wallet: Wallet, user: User):
         wallet.users.append(user)
+
         db.add(wallet)
         db.commit()
         db.refresh(wallet)
+
+        return wallet
+
+    def kick_user(self, db: Session, wallet: Wallet, user_to_remove: str):
+        user_to_remove = crud.user.get(db=db, identifier=user_to_remove)
+        wallet.users.remove(user_to_remove)
+
+        db.add(wallet)
+        db.commit()
+        db.refresh(wallet)
+
         return wallet
 
     ### CODE BELLOW TO BE REMOVED
