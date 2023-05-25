@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from typing import Union
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session
@@ -17,9 +18,15 @@ def get_transactions(
     limit: int = 100,
     db: Session = Depends(deps.get_db),
     logged_user: User = Depends(deps.get_current_user),
+    f_start_datetime: datetime = datetime.now() - timedelta(weeks=4.0),
+    f_end_datetime: datetime = datetime.now(),
+    f_recipient: str = None,
+    f_direction: str = "all",
+    sort_by: str = "date",
+    sort: str = "asc",
 ):
-    if not logged_user:
-        raise HTTPException(status_code=401, detail="You should be logged in")
+    # transactions filtered by period, recipient,
+    # and direction (incoming or outgoing) and sort them by amount and date.
 
     return crud.transaction.get_multi(db, skip=skip, limit=limit, user=logged_user)
 
@@ -50,6 +57,7 @@ def create_transaction(
     of the request, and the other removed/null.
     If the transaction is not recurring, the recurring field should be
     removed/null.
+    If the spending category should be default, the field should be removed from the body.
 
     Arguments:
         new_transaction: TransactionCreate model
@@ -59,8 +67,7 @@ def create_transaction(
     Returns:
         Transaction
     """
-    if not logged_user:
-        raise HTTPException(status_code=401, detail="You should be logged in")
+
     try:
         return crud.transaction.create(
             db, new_transaction=new_transaction, user=logged_user
