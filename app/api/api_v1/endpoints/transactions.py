@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from typing import Union
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session
@@ -17,7 +18,16 @@ def get_transactions(
     limit: int = 100,
     db: Session = Depends(deps.get_db),
     logged_user: User = Depends(deps.get_current_user),
+    f_start_datetime: datetime = datetime.now() - timedelta(weeks=4.0),
+    f_end_datetime: datetime = datetime.now(),
+    f_recipient: str = None,
+    f_direction: str = "all",
+    sort_by: str = "date",
+    sort: str = "asc",
 ):
+    # transactions filtered by period, recipient,
+    # and direction (incoming or outgoing) and sort them by amount and date.
+
     return crud.transaction.get_multi(db, skip=skip, limit=limit, user=logged_user)
 
 
