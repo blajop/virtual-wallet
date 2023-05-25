@@ -10,7 +10,7 @@ from app import crud, deps
 
 from app.core.config import settings
 from app.models.scope import Scope
-from app.models.user import User, UserCreate
+from app.models.user import User, UserCreate, UserSettings
 from app.core.security import get_password_hash
 
 
@@ -116,7 +116,13 @@ def fill_basic_users(session: Session):
         )
         user.scopes.append(scope_u)
 
-        session.add_all([admin, user])
+        usersettings = UserSettings(id=util_id.generate_id(), user_id=user.id)
+        adminsettings = UserSettings(id=util_id.generate_id(), user_id=admin.id)
+
+        user.user_settings_obj = usersettings
+        user.user_settings_obj = adminsettings
+
+        session.add_all([admin, user, usersettings, adminsettings])
         session.commit()
 
 
