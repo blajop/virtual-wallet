@@ -30,8 +30,6 @@ def get_transaction(
     db: Session = Depends(deps.get_db),
     logged_user: User = Depends(deps.get_current_user),
 ):
-    if not logged_user:
-        raise HTTPException(status_code=401, detail="You should be logged in")
     result = crud.transaction.get(db, id, logged_user)
     if not result:
         raise HTTPException(

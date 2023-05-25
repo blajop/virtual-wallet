@@ -14,7 +14,7 @@ from app.models.user import User, UserCreate
 from app.core.security import get_password_hash
 
 
-from app.tests.utils.utils import random_user, random_admin
+from app.tests.utils.utils import random_usercreate, random_admin
 from app.utils import util_id
 
 

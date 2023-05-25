@@ -6,7 +6,7 @@ import pytest
 from sqlmodel import Session, select
 from app import crud
 from app.api import deps
-from app.tests.utils.utils import random_user
+from app.tests.utils.utils import random_usercreate
 from main import app
 from app.models.user import User, UserCreate, UserResetPass
 from app.api.api_v1.endpoints import users, login
@@ -69,9 +69,9 @@ def test_refer_friend(client: TestClient, user):
 
 
 def test_register_user(client: TestClient):
-    new_user = random_user()
+    new_user = random_usercreate()
 
-    another_user = random_user()
+    another_user = random_usercreate()
     another_user.username = new_user.username
     # success
     response = client.post(f"/api/v1/signup", json=js(new_user))

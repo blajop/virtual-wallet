@@ -32,7 +32,7 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
         Returns:
             Transaction model | None
         """
-        found_transaction = super().get(db, id)
+        found_transaction: Transaction = super().get(db, id)
 
         if not found_transaction:
             return None
