@@ -8,6 +8,7 @@ from app.core import security
 from app.crud.base import CRUDBase
 from app.error_models import DataTakenError
 from app.models import User, UserBase, UserCreate, UserUpdate, Scope, Msg
+from app.models.user import UserSettings
 
 
 class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
@@ -24,11 +25,28 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             DataTakenError: Username/Email/Phone number already taken
         """
         if not self.user_data_taken(db, user=new_user):
+            # Create the user object
             user_orm = User.from_orm(new_user)
             user_orm.id = utils.util_id.generate_id()
             user_orm.password = security.get_password_hash(user_orm.password)
             scope = db.scalar(select(Scope).filter(Scope.id == 2))
             user_orm.scopes.append(scope)
+
+            db.add(user_orm)
+            db.commit()
+            db.refresh(user_orm)
+
+            # Generate the user settings
+            settings_id = utils.util_id.generate_id()
+            settings = UserSettings(
+                id=settings_id,
+                user_id=user_orm.id,
+                default_wallet_id=None,
+                avatar_id=None,
+                email_confirmed=False,
+            )
+
+            user_orm.user_settings_obj = settings
 
         db.add(user_orm)
         db.commit()
