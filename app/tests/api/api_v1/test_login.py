@@ -92,11 +92,11 @@ def test_register_user(client: TestClient):
 def test_verify_mail(client: TestClient, user):
     user: User = user()
     verify_token = util_mail.generate_email_link_token(user.email)
-    assert user.email_confirmed == False
+    assert user.user_settings_obj.email_confirmed == False
     response = client.get(f"/api/v1/verify/{verify_token}")
 
     assert response.status_code == 200
-    assert user.email_confirmed == True
+    assert user.user_settings_obj.email_confirmed == True
 
     response = client.get(f"/api/v1/verify/fake_token")
     assert response.status_code == 404

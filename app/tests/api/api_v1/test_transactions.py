@@ -39,6 +39,7 @@ def test_get_transaction_returnsTransaction_when_existingAndUserIsSenderWalletOw
     session.add_all([wallet_s, wallet_r])
 
     transaction_1 = TransactionCreate(
+        sending_user=wallet_s.owner.id,
         wallet_sender=wallet_s.id,
         wallet_receiver=wallet_r.id,
         currency="BGN",
@@ -57,6 +58,7 @@ def test_get_transaction_returnsTransaction_when_existingAndUserIsSenderWalletOw
     # Assert
     assert response.status_code == 200
     assert data["id"] == transaction_1_id
+    assert data["sending_user"] == wallet_s.owner.id
     assert data["wallet_sender"] == wallet_s.id
     assert data["wallet_receiver"] == wallet_r.id
     assert data["currency"] == "BGN"
@@ -74,6 +76,7 @@ def test_get_transaction_returnsTransaction_when_existingAndUserIsReceiverWallet
     session.add_all([wallet_s, wallet_r])
 
     transaction_1 = TransactionCreate(
+        sending_user=wallet_s.owner.id,
         wallet_sender=wallet_s.id,
         wallet_receiver=wallet_r.id,
         currency="BGN",
@@ -93,6 +96,7 @@ def test_get_transaction_returnsTransaction_when_existingAndUserIsReceiverWallet
     # Assert
     assert response.status_code == 200
     assert data["id"] == transaction_1_id
+    assert data["sending_user"] == wallet_s.owner.id
     assert data["wallet_sender"] == wallet_s.id
     assert data["wallet_receiver"] == wallet_r.id
     assert data["currency"] == "BGN"
@@ -115,6 +119,7 @@ def test_get_transaction_returnsTransaction_when_existingAndUserIsReceiverWallet
     session.add_all([wallet_s, wallet_r])
 
     transaction_1 = TransactionCreate(
+        sending_user=wallet_s.owner.id,
         wallet_sender=wallet_s.id,
         wallet_receiver=wallet_r.id,
         currency="BGN",
@@ -134,6 +139,7 @@ def test_get_transaction_returnsTransaction_when_existingAndUserIsReceiverWallet
     # Assert
     assert response.status_code == 200
     assert data["id"] == transaction_1_id
+    assert data["sending_user"] == wallet_s.owner.id
     assert data["wallet_sender"] == wallet_s.id
     assert data["wallet_receiver"] == wallet_r.id
     assert data["currency"] == "BGN"

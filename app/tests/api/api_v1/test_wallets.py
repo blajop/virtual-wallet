@@ -60,7 +60,8 @@ def test_create_wallets(client: TestClient, user, admin, session: Session):
 def test_create_get_wallet_leech(client: TestClient, user, session: Session):
     app.dependency_overrides[deps.get_current_user] = user
     user1: User = user()
-    wallet: Wallet = random_wallet(user1, "BGN", db=session)
+    wallet: Wallet = random_wallet(user1, "BGN")
+    session.add(wallet)
 
     leech: User = User.from_orm(random_usercreate())
 
