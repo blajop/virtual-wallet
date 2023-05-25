@@ -52,11 +52,17 @@ target-version = ['py39']
 max-line-length = 88
 
 
-[tool.pytest.ini_options]
-pythonpath = [
-  "."
-]
 
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+addopts = "--cov=app/api --cov=app/crud --cov-report=term --cov-report=html"
+
+[tool.coverage.run]
+omit = [
+    "*/__init__.py",
+    "app/api/deps.py"
+]
 
 
 
