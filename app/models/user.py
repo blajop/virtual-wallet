@@ -25,7 +25,7 @@ class UserBase(SQLModel):
     phone: str = Field(regex="^\d{10}$", unique=True)
     f_name: str
     l_name: str
-    user_settings: Optional[str] = Field(foreign_key="user_settings.id", unique=True)
+    user_settings_id: Optional[str] = Field(foreign_key="user_settings.id", unique=True)
 
 
 class UserCreate(UserBase):
@@ -64,7 +64,9 @@ class User(UserBase, table=True):
     email_confirmed: bool = Field(default=False)
 
     user_settings_obj: "UserSettings" = Relationship(
-        sa_relationship_kwargs=dict(primaryjoin="UserSettings.id==User.user_settings")
+        sa_relationship_kwargs=dict(
+            primaryjoin="UserSettings.id==User.user_settings_id"
+        )
     )
 
     scopes: Optional[List["Scope"]] = Relationship(
@@ -107,7 +109,7 @@ class UserSettings(SQLModel, table=True):
     user_obj: "User" = Relationship(
         sa_relationship_kwargs=dict(primaryjoin="User.id==UserSettings.user_id")
     )
-    default_wallet_obj: "Wallet" = Relationship(
+    default_wallet_obj: Optional["Wallet"] = Relationship(
         sa_relationship_kwargs=dict(
             primaryjoin="Wallet.id==UserSettings.default_wallet_id"
         )
