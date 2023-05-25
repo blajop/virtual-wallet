@@ -103,6 +103,7 @@ class UserSettings(SQLModel, table=True):
     default_wallet_id: Optional[str] = Field(default=None, foreign_key="wallets.id")
     email_confirmed: bool = Field(default=False)
     avatar_id: Optional[str] = Field(default=None)
+    referrals_left: int = Field(default=5)
 
     user_obj: "User" = Relationship(
         sa_relationship_kwargs=dict(primaryjoin="User.id==UserSettings.user_id")
