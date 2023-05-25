@@ -25,7 +25,6 @@ class UserBase(SQLModel):
     phone: str = Field(regex="^\d{10}$", unique=True)
     f_name: str
     l_name: str
-    user_settings_id: Optional[str] = Field(foreign_key="user_settings.id", unique=True)
 
 
 class UserCreate(UserBase):
@@ -61,7 +60,7 @@ class User(UserBase, table=True):
     __tablename__ = "users"
     id: Optional[str] = Field(primary_key=True)
     password: str
-    email_confirmed: bool = Field(default=False)
+    user_settings_id: Optional[str] = Field(foreign_key="user_settings.id", unique=True)
 
     user_settings_obj: "UserSettings" = Relationship(
         sa_relationship_kwargs=dict(

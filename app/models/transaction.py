@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from pydantic import constr
 from sqlmodel import Field, Relationship, SQLModel
 from app.models.card import Card
@@ -14,6 +14,9 @@ class TransactionBase(SQLModel):
     currency: constr(regex="^(USD|EUR|BGN|CAD|AUD|CHF|CNY|JPY|GBP|NOK)$")
     amount: float
     recurring: Optional[constr(regex="^month|year")] = Field(default=None)
+    spending_category_id: Optional[int] = Field(
+        default=1, foreign_key="spending_categories.id"
+    )
 
 
 class Transaction(TransactionBase, table=True):
@@ -21,6 +24,12 @@ class Transaction(TransactionBase, table=True):
     id: Optional[str] = Field(primary_key=True)
     status: Optional[constr(regex="^pending|success|cancelled$")] = Field(
         default="pending"
+    )
+
+    spending_category_obj: "SpendingCategory" = Relationship(
+        sa_relationship_kwargs=dict(
+            primaryjoin="Transaction.spending_category_id==SpendingCategory.id"
+        )
     )
 
     sending_user_obj: "User" = Relationship(
@@ -44,3 +53,15 @@ class Transaction(TransactionBase, table=True):
 
 class TransactionCreate(TransactionBase):
     pass
+
+
+class SpendingCategory(SQLModel, table=True):
+    __tablename__ = "spending_categories"
+    id: Optional[int] = Field(primary_key=True)
+    name: str = Field(unique=True)
+
+    transactions: List["Transaction"] = Relationship(
+        sa_relationship_kwargs=dict(
+            primaryjoin="Transaction.spending_category_id==SpendingCategory.id"
+        )
+    )
