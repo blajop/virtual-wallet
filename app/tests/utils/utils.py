@@ -13,6 +13,7 @@ from app.models.user import User, UserCreate
 from app.models.wallet import Wallet, WalletCreate
 from app.utils import util_id
 from fastapi.encoders import jsonable_encoder
+from app.core.security import get_password_hash
 
 
 def random_lower_string(k) -> str:
@@ -43,7 +44,7 @@ def random_card(db: Session) -> CardCreate:
     return card
 
 
-def random_user() -> UserCreate:
+def random_usercreate() -> UserCreate:
     user = UserCreate(
         username=random_lower_string(8),
         email=random_email(),
@@ -54,13 +55,20 @@ def random_user() -> UserCreate:
     )
 
     return user
-    user = User.from_orm(user)
-    user.id = util_id.generate_id()
-    scope = db.exec(select(Scope).where(Scope.id == 2)).first()
-    user.scopes.append(scope)
-    db.add(user)
-    db.commit()
-    db.refresh(user)
+
+
+def random_usermodel() -> User:
+    user = User(
+        id=util_id.generate_id(),
+        username=random_lower_string(8),
+        email=random_email(),
+        phone=random_phone(),
+        f_name=random_lower_string(8),
+        l_name=random_lower_string(8),
+        password=get_password_hash("Passw0rd_1"),
+    )
+
+    return user
 
 
 def random_admin() -> UserCreate:
@@ -74,30 +82,18 @@ def random_admin() -> UserCreate:
     )
 
     return user
-    user = User.from_orm(user)
-    user.id = util_id.generate_id()
-    scope_2 = db.exec(select(Scope).where(Scope.id == 2)).first()
-    scope_3 = db.exec(select(Scope).where(Scope.id == 3)).first()
-    user.scopes.extend([scope_2, scope_3])
-    db.add(user)
-    db.commit()
-    db.refresh(user)
 
 
-def random_wallet(
-    owner: User, currency: str, balance: int = 200, *, db: Session
-) -> Wallet:
+def random_wallet(owner: User, currency: str, balance: int = 200) -> Wallet:
     wallet = WalletCreate(
         currency=currency,
     )
     wallet = Wallet.from_orm(wallet)
     wallet.id = util_id.generate_id()
     wallet.owner = owner
-    wallet.owner_id = owner.id
+    wallet.balance = balance
+    # wallet.owner_id = owner.id
 
-    db.add(wallet)
-    db.commit()
-    db.refresh(wallet)
     return wallet
 
 
