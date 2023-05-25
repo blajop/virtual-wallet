@@ -89,3 +89,20 @@ class User(UserBase, table=True):
 
     # 'lazy':"joined" can be added here
     # avatar: Optional[str] = None
+
+
+class UserSettings(SQLModel, table=True):
+    __tablename__ = "user_settings"
+    user_id: str = Field(foreign_key="users.id", primary_key=True)
+    default_wallet_id: str = Field(foreign_key="wallets.id")
+    email_confirmed: bool = Field(default=False)
+    avatar_id: str
+
+    user_obj: "User" = Relationship(
+        sa_relationship_kwargs=dict(primaryjoin="User.id==UserSettings.user_id")
+    )
+    default_wallet_obj: "Wallet" = Relationship(
+        sa_relationship_kwargs=dict(
+            primaryjoin="Wallet.id==UserSettings.default_wallet_id"
+        )
+    )
