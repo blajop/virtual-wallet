@@ -12,7 +12,9 @@ from app.models.user import UserSettings
 
 
 class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
-    def create(self, db: Session, new_user: UserCreate) -> User | DataTakenError:
+    def create(
+        self, db: Session, new_user: UserCreate, referrer: User | None
+    ) -> User | DataTakenError:
         """
         Registers a new user.
 
@@ -41,9 +43,6 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             settings = UserSettings(
                 id=settings_id,
                 user_id=user_orm.id,
-                default_wallet_id=None,
-                avatar_id=None,
-                email_confirmed=False,
             )
 
             user_orm.user_settings_obj = settings
@@ -51,6 +50,20 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         db.add(user_orm)
         db.commit()
         db.refresh(user_orm)
+        # check referrer for referrals left. deduct if available and send both money
+        # seperate in another func and call it here
+        if referrer:
+            if referrer.user_settings_obj.referrals_left > 0:
+                referrer.user_settings_obj.referrals_left - 1
+                # get the currency of main wallet
+                # figure out what do if no wallets/no main wallet.
+                # referrer should be asked to create a wallet when he send a referral link
+                # just store money in the user account? maybe start with a default wallet?
+                #
+                # perform the transaction
+                referrer.user_settings_obj.default_wallet_obj.balance + 20
+                # a default wallet needs to be created upon registration if we choose that approach
+                user_orm.user_settings_obj.default_wallet_obj + 20
 
         return user_orm
 

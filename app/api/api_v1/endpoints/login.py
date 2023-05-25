@@ -53,16 +53,15 @@ def sign_up(
     referrer: Optional[str] = None,
     db: Session = Depends(deps.get_db),
 ):
-    try:
-        registered_user = crud.user.create(db, new_user)
-    except DataTakenError as err:
-        raise HTTPException(status_code=409, detail=err.args[0])
-
     # referrer should lose a refer spot in his UserSettings
     if referrer:
         referrer_mail = util_mail.verify_email_link_token(referrer)
         referrer = crud.user.get(db, identifier=referrer_mail)
     # if not more spots, dont give them money
+    try:
+        registered_user = crud.user.create(db, new_user, referrer)
+    except DataTakenError as err:
+        raise HTTPException(status_code=409, detail=err.args[0])
 
     background_tasks.add_task(
         util_mail.send_new_account_email,
