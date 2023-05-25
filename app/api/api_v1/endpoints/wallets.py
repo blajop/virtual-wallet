@@ -109,6 +109,26 @@ def invite_wallet_leeches(
     return crud.wallet.invite_user(db, wallet, leech_user).__dict__
 
 
+@router.delete("/{wallet_id}/leeches/{id}", status_code=204)
+def kick_wallet_leech(
+    wallet_id: str,
+    user_to_kick: str,
+    user: User = Depends(deps.get_user_from_path),
+    db: Session = Depends(deps.get_db),
+    logged_user: User = Depends(deps.get_current_user),
+):
+    if user != logged_user:
+        raise HTTPException(
+            status_code=403, detail="Cannot kick users from wallets that you don't own"
+        )
+
+    wallet = crud.wallet.get_by_owner(db, user, wallet_id)
+    if not wallet:
+        raise HTTPException(status_code=404, detail="No such wallet owned")
+
+    return crud.wallet.kick_user(db=db, wallet=wallet, user_to_remove=user_to_kick)
+
+
 ### CODE BELLOW TO BE REMOVED
 #
 # @router.post("/{wallet_id}/deposit")
