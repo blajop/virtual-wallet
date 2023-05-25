@@ -77,8 +77,10 @@ def sign_up(
 def verify_email(token, db: Session = Depends(deps.get_db)):
     user_email = util_mail.verify_email_link_token(token)
     user = crud.user.get(db, user_email)
+
     if not user:
         raise HTTPException(status_code=404, detail="Token user not found")
+
     return crud.user.confirm_email(db, db_obj=user)
 
 

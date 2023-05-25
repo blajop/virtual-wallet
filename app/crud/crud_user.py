@@ -74,9 +74,10 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         return super().update(db, db_obj=db_obj, obj_in=update_data)
 
     def confirm_email(self, db: Session, *, db_obj: User):
-        db_obj.email_confirmed = True
+        db_obj.user_settings_obj.email_confirmed = True
         db.add(db_obj)
         db.commit()
+
         return Msg(msg="You successfully verified your email")
 
     def authenticate(
