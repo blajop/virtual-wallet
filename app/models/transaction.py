@@ -3,9 +3,11 @@ from pydantic import constr
 from sqlmodel import Field, Relationship, SQLModel
 from app.models.card import Card
 from app.models.wallet import Wallet
+from app.models.user import User
 
 
 class TransactionBase(SQLModel):
+    sending_user: str = Field(foreign_key="users.id")
     wallet_sender: Optional[str] = Field(default=None, foreign_key="wallets.id")
     card_sender: Optional[str] = Field(default=None, foreign_key="cards.id")
     wallet_receiver: str = Field(foreign_key="wallets.id")
@@ -19,6 +21,10 @@ class Transaction(TransactionBase, table=True):
     id: Optional[str] = Field(primary_key=True)
     status: Optional[constr(regex="^pending|success|cancelled$")] = Field(
         default="pending"
+    )
+
+    sending_user_obj: "User" = Relationship(
+        sa_relationship_kwargs=dict(primaryjoin="User.id==Transaction.sending_user")
     )
 
     card_sen_obj: Optional["Card"] = Relationship(
