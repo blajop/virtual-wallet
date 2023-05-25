@@ -8,7 +8,7 @@ from app.models.scope import Scope
 from app.models.user import User, UserCreate
 from app import crud
 from app.models.wallet import Wallet, WalletCreate
-from app.tests.utils.utils import random_user, random_wallet
+from app.tests.utils.utils import random_usercreate, random_wallet
 from fastapi.testclient import TestClient
 from main import app
 from fastapi.encoders import jsonable_encoder as js
@@ -19,7 +19,7 @@ from app.utils import util_id
 def test_create_wallets(client: TestClient, user, admin, session: Session):
     app.dependency_overrides[deps.get_current_user] = user
     user1: User = user()
-    user2: User = User.from_orm(random_user())
+    user2: User = User.from_orm(random_usercreate())
 
     # Add another user for testing purposes
     user2.id = util_id.generate_id()
@@ -62,7 +62,7 @@ def test_create_get_wallet_leech(client: TestClient, user, session: Session):
     user1: User = user()
     wallet: Wallet = random_wallet(user1, "BGN", db=session)
 
-    leech: User = User.from_orm(random_user())
+    leech: User = User.from_orm(random_usercreate())
 
     # Create leech user
     leech.id = util_id.generate_id()

@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from app import utils
 from fastapi.encoders import jsonable_encoder
 from app import deps
-from app.tests.utils.utils import random_user, random_card
+from app.tests.utils.utils import random_usercreate, random_card
 from main import app
 
 from app.models.user import User
