@@ -96,7 +96,7 @@ class UserSettings(SQLModel, table=True):
     user_id: str = Field(foreign_key="users.id", primary_key=True)
     default_wallet_id: str = Field(foreign_key="wallets.id")
     email_confirmed: bool = Field(default=False)
-    avatar_id: str
+    avatar_id: Optional[str] = Field(default=None)
 
     user_obj: "User" = Relationship(
         sa_relationship_kwargs=dict(primaryjoin="User.id==UserSettings.user_id")
