@@ -7,7 +7,6 @@ from app.models.user import User
 
 
 class TransactionBase(SQLModel):
-    sending_user: str = Field(foreign_key="users.id")
     wallet_sender: Optional[str] = Field(default=None, foreign_key="wallets.id")
     card_sender: Optional[str] = Field(default=None, foreign_key="cards.id")
     wallet_receiver: str = Field(foreign_key="wallets.id")
@@ -21,6 +20,7 @@ class TransactionBase(SQLModel):
 
 class Transaction(TransactionBase, table=True):
     __tablename__ = "transactions"
+    sending_user: Optional[str] = Field(default=None, foreign_key="users.id")
     id: Optional[str] = Field(primary_key=True)
     status: Optional[constr(regex="^pending|success|cancelled$")] = Field(
         default="pending"

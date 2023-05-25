@@ -24,6 +24,9 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
     def get(self, db: Session, id: str, user: User) -> Transaction:
         """
         Returns a transaction by id.
+        Admin can get any transaction.
+        A normal user can get only a transaction he is the sender of,
+        or such that transfers money to a wallet he is owner or user of.
 
         Arguments:
             db: Session
@@ -46,7 +49,7 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
 
         if (
             crud.user.is_admin(user)
-            or (user in sender_item)
+            or (found_transaction.sending_user == user.id)
             or (user in receiver_wallet)
         ):
             return found_transaction
@@ -58,8 +61,8 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
         """
         Returns all transactions accessible to the passed user.
         If the user is admin, he can see all transactions in the app.
-        If the user is a normal user, he can see all transactions with cards/wallets
-        which he owns or uses.
+        If the user is a normal user, he can see all transactions to wallets
+        which he owns or uses, and transactions he is the sender of.
 
         Arguments:
             db: Session
@@ -165,9 +168,12 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
         if sender_item_id == new_transaction.wallet_receiver:
             raise TransactionError("The sender and receiver wallets are the same")
 
-        return super().create(
+        transaction = super().create(
             db, obj_in=new_transaction, generated_id=util_id.generate_id()
         )
+        transaction.sending_user = user.id
+        db.commit()
+        return transaction
 
     def accept(
         self, *, db: Session, transaction: Transaction

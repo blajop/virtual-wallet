@@ -60,7 +60,6 @@ class User(UserBase, table=True):
     __tablename__ = "users"
     id: Optional[str] = Field(primary_key=True)
     password: str
-
     user_settings: Optional[str] = Field(foreign_key="user_settings.id", unique=True)
 
     user_settings_obj: "UserSettings" = Relationship(

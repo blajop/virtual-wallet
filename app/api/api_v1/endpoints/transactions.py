@@ -18,9 +18,6 @@ def get_transactions(
     db: Session = Depends(deps.get_db),
     logged_user: User = Depends(deps.get_current_user),
 ):
-    if not logged_user:
-        raise HTTPException(status_code=401, detail="You should be logged in")
-
     return crud.transaction.get_multi(db, skip=skip, limit=limit, user=logged_user)
 
 
@@ -50,6 +47,7 @@ def create_transaction(
     of the request, and the other removed/null.
     If the transaction is not recurring, the recurring field should be
     removed/null.
+    If the spending category should be default, the field should be removed from the body.
 
     Arguments:
         new_transaction: TransactionCreate model
@@ -59,8 +57,7 @@ def create_transaction(
     Returns:
         Transaction
     """
-    if not logged_user:
-        raise HTTPException(status_code=401, detail="You should be logged in")
+
     try:
         return crud.transaction.create(
             db, new_transaction=new_transaction, user=logged_user
