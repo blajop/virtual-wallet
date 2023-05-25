@@ -64,7 +64,9 @@ class User(UserBase, table=True):
     user_settings: Optional[str] = Field(foreign_key="user_settings.id", unique=True)
 
     user_settings_obj: "UserSettings" = Relationship(
-        sa_relationship_kwargs=dict(primaryjoin="UserSettings.id==User.user_settings")
+        sa_relationship_kwargs=dict(
+            primaryjoin="UserSettings.id==User.user_settings_id"
+        )
     )
 
     scopes: Optional[List["Scope"]] = Relationship(
