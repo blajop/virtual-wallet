@@ -100,7 +100,7 @@ class UserSettings(SQLModel, table=True):
     __tablename__ = "user_settings"
     id: Optional[str] = Field(primary_key=True)
     user_id: str = Field(foreign_key="users.id", unique=True)
-    default_wallet_id: str = Field(foreign_key="wallets.id")
+    default_wallet_id: Optional[str] = Field(default=None, foreign_key="wallets.id")
     email_confirmed: bool = Field(default=False)
     avatar_id: Optional[str] = Field(default=None)
 
