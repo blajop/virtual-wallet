@@ -108,7 +108,7 @@ def recover_password(
 
 
 # the frontend needs to come here
-@router.post("/reset-password", response_model=models.Msg)
+@router.put("/reset-password", response_model=models.Msg)
 def reset_password(
     info: UserResetPass,
     token: str = ...,

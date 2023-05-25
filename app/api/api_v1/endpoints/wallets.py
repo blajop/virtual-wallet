@@ -36,6 +36,26 @@ def create_wallet(
     return crud.wallet.create(db, user, new_wallet)
 
 
+@router.delete("/{wallet_id}", status_code=204)
+def remove_wallet(
+    wallet_id: str,
+    user: User = Depends(deps.get_user_from_path),
+    db: Session = Depends(deps.get_db),
+    logged_user: User = Depends(deps.get_current_user),
+):
+    wallet = crud.wallet.get(db=db, id=wallet_id)
+
+    if not wallet:
+        raise HTTPException(status_code=404, detail="No such wallet!")
+
+    if user != logged_user or logged_user != wallet.owner:
+        raise HTTPException(status_code=403, detail="Can only delete your own wallets!")
+
+    crud.wallet.remove(db=db, id=wallet_id)
+
+    return Response(status_code=204)
+
+
 @router.get("/{wallet_id}/leeches")
 def get_wallet_leeches(
     wallet_id: str,
@@ -172,23 +192,3 @@ def invite_wallet_leeches(
 #
 #
 ### CODE ABOVE TO BE REMOVED
-
-
-@router.delete("/{wallet_id}")
-def delete_wallet(
-    wallet_id: str,
-    user: User = Depends(deps.get_user_from_path),
-    db: Session = Depends(deps.get_db),
-    logged_user: User = Depends(deps.get_current_user),
-):
-    wallet = crud.wallet.get(db=db, id=wallet_id)
-
-    if not wallet:
-        raise HTTPException(status_code=404, detail="No such wallet!")
-
-    if user != logged_user or logged_user != wallet.owner:
-        raise HTTPException(status_code=403, detail="Can only delete your own wallets!")
-
-    crud.wallet.remove(db=db, id=wallet_id)
-
-    return Response(status_code=204)

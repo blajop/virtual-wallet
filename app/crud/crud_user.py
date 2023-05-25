@@ -99,5 +99,33 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
 
         return Response(status_code=200)
 
+    def add_friend(self, *, user: User, db: Session, friend: str):
+        friend: User = self.get(db=db, identifier=friend)
+
+        if friend in user.friends:
+            return None
+
+        user.friends.append(friend)
+
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+        return friend
+
+    def remove_friend(self, *, user: User, db: Session, friend: str):
+        friend: User = self.get(db=db, identifier=friend)
+
+        if friend not in user.friends:
+            return None
+
+        user.friends.remove(friend)
+
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+        return user
+
 
 user = CRUDUser(User)
