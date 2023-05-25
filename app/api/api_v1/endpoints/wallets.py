@@ -109,7 +109,7 @@ def invite_wallet_leeches(
     return crud.wallet.invite_user(db, wallet, leech_user).__dict__
 
 
-@router.delete("/{wallet_id}/leeches/{id}", status_code=204)
+@router.delete("/{wallet_id}/leeches/{user_to_kick}", status_code=204)
 def kick_wallet_leech(
     wallet_id: str,
     user_to_kick: str,
