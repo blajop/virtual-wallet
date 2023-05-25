@@ -60,10 +60,10 @@ def test_refer_friend(client: TestClient, user):
     app.dependency_overrides[deps.get_current_user] = user
     new_email = "testrefermail@gmail.com"
     existing_email = settings.USER_TEST_EMAIL
-
+    # success
     response = client.post(f"/api/v1/refer?email={new_email}")
     assert response.status_code == 200
-
+    #
     response = client.post(f"/api/v1/refer?email={existing_email}")
     assert response.status_code == 400
 
@@ -123,7 +123,7 @@ def test_reset_password(client: TestClient, session: Session):
     token = util_mail.generate_email_link_token(email=user.email)
 
     # success
-    response = client.post(f"/api/v1/reset-password?token={token}", json=js(new_pass))
+    response = client.put(f"/api/v1/reset-password?token={token}", json=js(new_pass))
     user_after = session.exec(
         select(User).where(User.username == settings.ADMIN_TEST_USERNAME)
     ).first()
@@ -134,13 +134,13 @@ def test_reset_password(client: TestClient, session: Session):
     token_for_non_existent_user = util_mail.generate_email_link_token(
         email="notRegistered@example.com"
     )
-    response_for_non_registered = client.post(
+    response_for_non_registered = client.put(
         f"/api/v1/reset-password?token={token_for_non_existent_user}", json=js(new_pass)
     )
     assert response_for_non_registered.status_code == 404
 
     # broken token
-    response_broken_token = client.post(
+    response_broken_token = client.put(
         f"/api/v1/reset-password?token=as324fdsaa", json=js(new_pass)
     )
     assert response_broken_token.status_code == 400
@@ -149,7 +149,7 @@ def test_reset_password(client: TestClient, session: Session):
     not_match = UserResetPass(
         new_password="new_passw0rD", verify_password="N0t_matching"
     )
-    response_broken_token = client.post(
+    response_broken_token = client.put(
         f"/api/v1/reset-password?token=as324fdsaa", json=js(not_match)
     )
     assert response_broken_token.status_code == 400
