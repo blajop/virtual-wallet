@@ -54,9 +54,15 @@ class CRUDCard(CRUDBase[Card, CardBase, CardCreate]):
         return None
 
     def get_multi(
-        self, db: Session, *, skip: int = 0, limit: int = 100, user: User
+        self,
+        db: Session,
+        *,
+        skip: int = 0,
+        limit: int = 100,
+        user: Optional[User] = None,
+        admin_r: bool = False,
     ) -> List[Card]:
-        if crud.user.is_admin(user):
+        if admin_r:
             result = super().get_multi(db, skip=skip, limit=limit)
         else:
             result = (

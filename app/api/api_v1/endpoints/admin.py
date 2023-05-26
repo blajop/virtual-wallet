@@ -73,6 +73,16 @@ def get_card(
     return result
 
 
+@admin_router.get("/cards", response_model=list[Card])
+def get_cards(
+    db: Session = Depends(deps.get_db),
+    logged_user: User = Depends(deps.get_admin),
+    skip: int = 0,
+    limit: int = 100,
+):
+    return crud.card.get_multi(db, skip=skip, limit=limit, admin_r=True)
+
+
 @admin_router.delete("/cards/admin-del/{card_identifier}", status_code=204)
 def admin_delete_card(
     card_identifier,
