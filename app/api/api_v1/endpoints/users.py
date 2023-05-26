@@ -1,9 +1,11 @@
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, File, HTTPException, Response, UploadFile
 from sqlmodel import Session
 
 from app import crud, deps
+from app.error_models.user_errors import FileError
 from app.models import User, UserBase, UserUpdate
+from app.models.msg import Msg
 
 router = APIRouter()
 
@@ -97,3 +99,20 @@ def remove_friend(
         )
 
     return Response(status_code=204)
+
+
+@router.post("/{identifier}/avatar", response_model=Msg, status_code=201)
+def add_friend(
+    user: User = Depends(deps.get_user_from_path),
+    db: Session = Depends(deps.get_db),
+    logged_user: User = Depends(deps.get_current_user),
+    file: UploadFile = File(...),
+) -> Msg | HTTPException:
+    if user != logged_user:
+        raise HTTPException(
+            status_code=403, detail="You cannot set avatar to other user's profile!"
+        )
+    try:
+        return crud.user.add_avatar(user=logged_user, file=file)
+    except FileError as err:
+        raise HTTPException(status_code=400, detail=err.args[0])
