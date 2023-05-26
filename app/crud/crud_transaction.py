@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
-from typing import List
-from sqlmodel import Session, String, cast, or_, select, desc, func, DateTime
+from typing import List, Optional, Union
+from sqlmodel import Session, String, cast, or_, select, desc, func, DateTime, asc
 from sqlalchemy import exc as sqlExc
 
 
@@ -23,38 +23,23 @@ from app.utils import util_id, util_crypt
 
 
 class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase]):
-    def get(self, db: Session, id: str, user: User) -> Transaction:
-        """
-        Returns a transaction by id.
-        Admin can get any transaction.
-        A normal user can get only a transaction he is the sender of,
-        or such that transfers money to a wallet he is owner or user of.
-
-        Arguments:
-            db: Session
-            id: str
-            user: User model
-        Returns:
-            Transaction model | None
-        """
+    def get(
+        self, db: Session, id: str, user: User, *, admin_r: bool = False
+    ) -> Transaction:
         found_transaction: Transaction = super().get(db, id)
 
         if not found_transaction:
             return None
 
-        sender_item: Wallet | Card = (
-            found_transaction.wallet_sen_obj
-            if found_transaction.wallet_sen_obj
-            else found_transaction.card_sen_obj
-        )
         receiver_wallet = found_transaction.wallet_rec_obj
 
         if (
-            crud.user.is_admin(user)
+            admin_r
             or (found_transaction.sending_user == user.id)
             or (user in receiver_wallet)
         ):
             return found_transaction
+
         return None
 
     def get_multi(
@@ -63,91 +48,57 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
         *,
         skip: int = 0,
         limit: int = 100,
-        user: User,
-        f_start_datetime: datetime = datetime.now() - timedelta(weeks=4.0),
-        f_end_datetime: datetime = datetime.now(),
-        f_recipient: str = None,
-        f_direction: str = "all",
+        user: Optional[User],
+        from_date: datetime = datetime.now() - timedelta(weeks=4.0),
+        to_date: datetime = datetime.now(),
+        recipient: str = None,
+        direction: str = "all",
         sort_by: str = "date",
         sort: str = "asc",
+        admin_r: bool = False,
     ) -> List[Transaction]:
-        """
-        Returns all transactions accessible to the passed user.
-        If the user is admin, he can see all transactions in the app.
-        If the user is a normal user, he can see all transactions to wallets
-        which he owns or uses, and transactions he is the sender of.
+        if user:
+            user_wallets_ids = [
+                w.id for w in crud.wallet.get_multi_by_owner(db, user)
+            ] + [w.id for w in user.wallets]
 
-        Arguments:
-            db: Session
-            user: User model
-            Takes skip and limit pagination args which have default values.
-            Takes period & recipient & direction filter params.
-            Takes sort_by param.
-        Returns:
-            list[Transaction]
-        """
-
-        # TBD : Search to be implemented with filtering
-        if crud.user.is_admin(user):
-            selectable = select(Transaction).filter(
-                Transaction.created < f_end_datetime,
-                Transaction.created > f_start_datetime,
-                Transaction.wallet_receiver == f_recipient if f_recipient else True,
-                Transaction.sending_user == user.id if f_direction == "out" else True,
-                Transaction.sending_user != user.id if f_direction == "in" else True,
+        selectable = (
+            select(Transaction)
+            .filter(
+                or_(
+                    (Transaction.sending_user == user.id) if user else True,
+                    (Transaction.wallet_receiver.in_(user_wallets_ids))
+                    if user
+                    else True,
+                )
             )
-            if sort == "asc":
-                return (
-                    db.exec(
-                        selectable.order_by(
-                            Transaction.amount
-                            if sort_by == "amount"
-                            else Transaction.created
-                        )
-                        .offset(skip)
-                        .limit(limit)
+            .filter(
+                Transaction.created > from_date,
+                Transaction.created < to_date,
+                (Transaction.wallet_receiver == recipient) if recipient else True,
+                (Transaction.sending_user == user.id)
+                if ((direction == "out") and user)
+                else True,
+                (Transaction.sending_user != user.id)
+                if ((direction == "in") and user)
+                else True,
+            )
+        )
+        return (
+            db.exec(
+                selectable.order_by(
+                    (desc if (sort == "desc") else asc)(
+                        Transaction.amount
+                        if sort_by == "amount"
+                        else Transaction.created
                     )
-                    .unique()
-                    .all()
                 )
-
-            if sort == "desc":
-                return (
-                    db.exec(
-                        selectable.order_by(
-                            desc(
-                                Transaction.amount
-                                if sort_by == "amount"
-                                else Transaction.created
-                            )
-                        )
-                        .offset(skip)
-                        .limit(limit)
-                    )
-                    .unique()
-                    .all()
-                )
-
-        # # TBD : Search to be implemented with filtering
-        # else:
-        #     user_wallets_ids = [
-        #         w.id for w in crud.wallet.get_multi_by_owner(db, user)
-        #     ] + [w.id for w in user.wallets]
-
-        #     return
-
-        #         .filter(
-        #             or_(
-        #                 Transaction.sending_user == user.id,
-        #                 Transaction.wallet_receiver.in_(user_wallets_ids),
-        #             )
-        #         )
-        #         .offset(skip)
-        #         .limit(limit)
-        #     )
-        #     .unique()
-        #     .all()
-        # )
+                .offset(skip)
+                .limit(limit)
+            )
+            .unique()
+            .all()
+        )
 
     def get_recurring(self, db: Session):
         transactions = (

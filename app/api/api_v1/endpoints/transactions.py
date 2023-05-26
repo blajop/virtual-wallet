@@ -12,31 +12,28 @@ from app.models.msg import Msg
 router = APIRouter()
 
 
-@router.get("")  # , response_model=list[Transaction]
+@router.get("", response_model=list[Transaction])
 def get_transactions(
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(deps.get_db),
     logged_user: User = Depends(deps.get_current_user),
-    f_start_datetime: datetime = datetime.now() - timedelta(weeks=4.0),
-    f_end_datetime: datetime = datetime.now(),
-    f_recipient: str = None,
-    f_direction: str = "all",
+    from_date: datetime = datetime.now() - timedelta(weeks=4.0),
+    to_date: datetime = datetime.now(),
+    recipient: str = None,
+    direction: str = "all",
     sort_by: str = "date",
     sort: str = "asc",
 ):
-    # transactions filtered by period, recipient,
-    # and direction (incoming or outgoing) and sort them by amount and date.
-
     return crud.transaction.get_multi(
         db,
         skip=skip,
         limit=limit,
         user=logged_user,
-        f_start_datetime=f_start_datetime,
-        f_end_datetime=f_end_datetime,
-        f_recipient=f_recipient,
-        f_direction=f_direction,
+        from_date=from_date,
+        to_date=to_date,
+        recipient=recipient,
+        direction=direction,
         sort_by=sort_by,
         sort=sort,
     )
@@ -62,23 +59,6 @@ def create_transaction(
     db: Session = Depends(deps.get_db),
     logged_user: User = Depends(deps.get_current_user),
 ):
-    """
-    Used to create a new transaction.
-    One of the two wallet_sender | card_sender should be passed in the body
-    of the request, and the other removed/null.
-    If the transaction is not recurring, the recurring field should be
-    removed/null.
-    If the spending category should be default, the field should be removed from the body.
-
-    Arguments:
-        new_transaction: TransactionCreate model
-        db: Session
-        logged_user: User model
-
-    Returns:
-        Transaction
-    """
-
     try:
         return crud.transaction.create(
             db, new_transaction=new_transaction, user=logged_user
