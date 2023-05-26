@@ -11,6 +11,8 @@ class UserWalletLink(SQLModel, table=True):
     __tablename__ = "shared_wallets"
     user_id: str = Field(foreign_key="users.id", primary_key=True)
     wallet_id: str = Field(foreign_key="wallets.id", primary_key=True)
+    can_deposit: bool = Field(default=True)
+    can_send: bool = Field(default=True)
 
 
 class WalletCreate(SQLModel):
