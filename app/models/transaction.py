@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional, List
 from pydantic import BaseModel, constr
 from sqlmodel import Field, Relationship, SQLModel
@@ -25,6 +26,8 @@ class Transaction(TransactionBase, table=True):
     spending_category_id: Optional[int] = Field(
         default=1, foreign_key="spending_categories.id"
     )
+    created: Optional[datetime] = Field(default=None)
+    updated: Optional[datetime] = Field(default=None)
 
     spending_category_obj: "SpendingCategory" = Relationship(
         back_populates="transactions",
