@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from typing import List
-from sqlmodel import Session, String, cast, or_, select, desc, func
+from sqlmodel import Session, String, cast, or_, select, desc, func, DateTime
 from sqlalchemy import exc as sqlExc
 
 
@@ -20,11 +20,6 @@ from app.models import (
     Currency,
 )
 from app.utils import util_id, util_crypt
-from snowflake import SnowflakeGenerator, Snowflake
-
-
-def datetime_from_id(id: str) -> datetime:
-    return Snowflake.parse(int(id)).datetime
 
 
 class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase]):
@@ -95,43 +90,43 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
         # TBD : Search to be implemented with filtering
         if crud.user.is_admin(user):
             selectable = select(Transaction).filter(
-                datetime_from_id(Transaction.id) < f_end_datetime,
+                Transaction.created < f_end_datetime,
+                Transaction.created > f_start_datetime,
                 Transaction.wallet_receiver == f_recipient if f_recipient else True,
                 Transaction.sending_user == user.id if f_direction == "out" else True,
                 Transaction.sending_user != user.id if f_direction == "in" else True,
             )
-            return db.exec(selectable).unique().all()
-        #     if sort == "asc":
-        #         return (
-        #             db.exec(
-        #                 selectable.order_by(
-        #                     Transaction.amount
-        #                     if sort_by == "amount"
-        #                     else util_id.datetime_from_id(Transaction.id)
-        #                 )
-        #                 .offset()
-        #                 .limit()
-        #             )
-        #             .unique()
-        #             .all()
-        #         )
+            if sort == "asc":
+                return (
+                    db.exec(
+                        selectable.order_by(
+                            Transaction.amount
+                            if sort_by == "amount"
+                            else Transaction.created
+                        )
+                        .offset(skip)
+                        .limit(limit)
+                    )
+                    .unique()
+                    .all()
+                )
 
-        #     if sort == "desc":
-        #         return (
-        #             db.exec(
-        #                 selectable.order_by(
-        #                     desc(
-        #                         Transaction.amount
-        #                         if sort_by == "amount"
-        #                         else util_id.datetime_from_id(Transaction.id)
-        #                     )
-        #                 )
-        #                 .offset()
-        #                 .limit()
-        #             )
-        #             .unique()
-        #             .all()
-        #         )
+            if sort == "desc":
+                return (
+                    db.exec(
+                        selectable.order_by(
+                            desc(
+                                Transaction.amount
+                                if sort_by == "amount"
+                                else Transaction.created
+                            )
+                        )
+                        .offset(skip)
+                        .limit(limit)
+                    )
+                    .unique()
+                    .all()
+                )
 
         # # TBD : Search to be implemented with filtering
         # else:
@@ -228,6 +223,7 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
             db, obj_in=new_transaction, generated_id=util_id.generate_id()
         )
         transaction.sending_user = user.id
+        transaction.created = transaction.updated = datetime.now()
         db.commit()
         return transaction
 

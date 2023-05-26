@@ -12,7 +12,7 @@ from app.models.msg import Msg
 router = APIRouter()
 
 
-@router.get("", response_model=list[Transaction])
+@router.get("")  # , response_model=list[Transaction]
 def get_transactions(
     skip: int = 0,
     limit: int = 100,
@@ -28,7 +28,18 @@ def get_transactions(
     # transactions filtered by period, recipient,
     # and direction (incoming or outgoing) and sort them by amount and date.
 
-    return crud.transaction.get_multi(db, skip=skip, limit=limit, user=logged_user)
+    return crud.transaction.get_multi(
+        db,
+        skip=skip,
+        limit=limit,
+        user=logged_user,
+        f_start_datetime=f_start_datetime,
+        f_end_datetime=f_end_datetime,
+        f_recipient=f_recipient,
+        f_direction=f_direction,
+        sort_by=sort_by,
+        sort=sort,
+    )
 
 
 @router.get("/{id}", response_model=Transaction)
