@@ -1,14 +1,18 @@
 from __future__ import annotations
 from typing import Optional
-from fastapi import HTTPException, Response
+from fastapi import File, HTTPException, Response, UploadFile
 from sqlmodel import Session, or_, select
 
 from app import utils
 from app.core import security
 from app.crud.base import CRUDBase
 from app.error_models import DataTakenError
+from app.error_models.user_errors import FileError
 from app.models import User, UserBase, UserCreate, UserUpdate, Scope, Msg
 from app.models.user import UserSettings
+
+import os
+from PIL import Image
 
 
 class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
@@ -158,6 +162,19 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         db.refresh(user)
 
         return user
+
+    def add_avatar(self, *, user: User, file: UploadFile) -> Msg | FileError:
+        cwd = os.getcwd()
+        try:
+            with Image.open(file.file, mode="r") as img:
+                img.save(
+                    os.path.join(cwd, f"app/static/avatars/{user.id}.jpg"),
+                    format="JPEG",
+                )
+            return Msg(msg="Successfully uploaded avatar!")
+        except OSError as err:
+            print(err)
+            raise FileError("Cannot convert and upload file")
 
 
 user = CRUDUser(User)
