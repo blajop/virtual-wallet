@@ -14,6 +14,7 @@ class TransactionBase(SQLModel):
     currency: constr(regex="^(USD|EUR|BGN|CAD|AUD|CHF|CNY|JPY|GBP|NOK)$")
     amount: float
     recurring: Optional[constr(regex="^month|year")] = Field(default=None)
+    detail: Optional[str] = Field(default=None)
 
 
 class Transaction(TransactionBase, table=True):
