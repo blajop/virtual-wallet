@@ -244,7 +244,7 @@ def test_adminDelete_card_returns404_when_cardNotExisting(
 ):
     app.dependency_overrides[deps.get_admin] = admin
 
-    response = client.delete(f"/api/v1/admin/cards/admin-del/{card.number}")
+    response = client.delete(f"/api/v1/admin/cards/{card.number}")
     data = response.json()
 
     assert response.status_code == 404
