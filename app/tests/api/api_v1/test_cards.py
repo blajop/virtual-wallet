@@ -130,14 +130,14 @@ def test_get_card_returnsCard_when_cardExistsAsssociatedWithUser(
     assert found_card.cvc == card.cvc
 
 
-def test_get_card_returnsCard_when_userAdminCardExistsNotAsssociatedWithUser(
+def test_get_card_returnsCard_when_viaAdminEndpointCardExistsNotAsssociatedWithAdmin(
     client: TestClient, admin, user, card: CardCreate
 ):
     app.dependency_overrides[deps.get_current_user] = user
     client.post("/api/v1/cards", json=jsonable_encoder(card))
 
-    app.dependency_overrides[deps.get_current_user] = admin
-    response = client.get(f"/api/v1/cards/{card.number}")
+    app.dependency_overrides[deps.get_admin] = admin
+    response = client.get(f"/api/v1/admin/cards/{card.number}")
     data = response.json()
 
     assert response.status_code == 200
@@ -183,7 +183,7 @@ def test_get_cards_returnsEmptyList_when_NoCards(client: TestClient, admin, user
     assert data == []
 
 
-def test_get_cards_showsAllCards_when_user(
+def test_get_cards_showsAllCards_when_viaUserEndpoint(
     session: Session, client: TestClient, admin, user
 ):
     card_1 = random_card(session)
@@ -204,8 +204,15 @@ def test_get_cards_showsAllCards_when_user(
     for obj in data:
         assert obj["number"] in [card_2.number, card_3.number]
 
+    # Act - admin
+    app.dependency_overrides[deps.get_current_user] = admin
+    response = client.get(f"/api/v1/cards")
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]["number"] == card_1.number
 
-def test_get_cards_showsAllCards_when_Admin(
+
+def test_get_cards_showsAllCards_when_viaAdminEndpoint(
     session: Session, client: TestClient, admin, user
 ):
     card_1 = random_card(session)
@@ -219,8 +226,10 @@ def test_get_cards_showsAllCards_when_Admin(
     app.dependency_overrides[deps.get_current_user] = admin
     client.post("/api/v1/cards", json=jsonable_encoder(card_1))
 
+    app.dependency_overrides[deps.get_admin] = admin
+
     # Act - admin
-    response = client.get(f"/api/v1/cards")
+    response = client.get(f"/api/v1/admin/cards")
     data = response.json()
     assert len(data) == 3
     for obj in data:
@@ -230,25 +239,12 @@ def test_get_cards_showsAllCards_when_Admin(
 # TEST DELETE ------------------------------------
 
 
-def test_adminDelete_card_returns403_when_userNotAdmin(
-    client: TestClient, user, card: CardCreate
-):
-    app.dependency_overrides[deps.get_current_user] = user
-    client.post("/api/v1/cards", json=jsonable_encoder(card))
-
-    response = client.delete(f"/api/v1/cards/admin-del/{card.number}")
-    data = response.json()
-
-    assert response.status_code == 403
-    assert data["detail"] == "Admin endpoint"
-
-
 def test_adminDelete_card_returns404_when_cardNotExisting(
     client: TestClient, admin, card: CardCreate
 ):
-    app.dependency_overrides[deps.get_current_user] = admin
+    app.dependency_overrides[deps.get_admin] = admin
 
-    response = client.delete(f"/api/v1/cards/admin-del/{card.number}")
+    response = client.delete(f"/api/v1/admin/cards/admin-del/{card.number}")
     data = response.json()
 
     assert response.status_code == 404
@@ -267,13 +263,13 @@ def test_adminDelete_card_works_when_allOk(
     card_inDB: Card = session.exec(
         select(Card).filter(Card.number == utils.util_crypt.encrypt(card.number))
     ).first()
-
     assert len(card_inDB.users) == 2
-
     card_db_id = card_inDB.id
 
+    app.dependency_overrides[deps.get_admin] = admin
+
     # Act
-    response = client.delete(f"/api/v1/cards/admin-del/{card.number}")
+    response = client.delete(f"/api/v1/admin/cards/{card.number}")
 
     assert response.status_code == 204
 
@@ -284,7 +280,7 @@ def test_adminDelete_card_works_when_allOk(
     )
     assert len(user_card_link) == 0
 
-    response = client.get(f"/api/v1/cards/{card.number}")
+    response = client.get(f"/api/v1/admin/cards/{card.number}")
     assert response.status_code == 404
 
 
@@ -328,7 +324,7 @@ def test_deregister_card_works_when_cardHasMoreThanOneUser(
     ).first()
     assert len(card_inDB.users) == 2
 
-    # Act - admin deletes
+    # Act - admin deletes via user endpoint
     response = client.delete(f"/api/v1/cards/{card.number}")
 
     assert response.status_code == 204
@@ -337,23 +333,8 @@ def test_deregister_card_works_when_cardHasMoreThanOneUser(
         select(Card).filter(Card.number == utils.util_crypt.encrypt(card.number))
     ).first()
     assert len(card_inDB.users) == 1
-
-    # Prepare for user delete
-    client.post("/api/v1/cards", json=jsonable_encoder(card))
 
     app.dependency_overrides[deps.get_current_user] = user
-
-    # Act - user deletes
-    response = client.delete(f"/api/v1/cards/{card.number}")
-
-    card_inDB: Card = session.exec(
-        select(Card).filter(Card.number == utils.util_crypt.encrypt(card.number))
-    ).first()
-
-    assert response.status_code == 204
-    assert len(card_inDB.users) == 1
-
-    app.dependency_overrides[deps.get_current_user] = admin
 
     response = client.get(f"/api/v1/cards/{card.number}")
     assert response.status_code == 200
