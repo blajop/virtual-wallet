@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from sqlmodel import Session, or_, select
 from app import crud
 from app.crud.base import CRUDBase
@@ -10,9 +10,15 @@ from app.utils import util_id, util_crypt
 
 class CRUDCard(CRUDBase[Card, CardBase, CardCreate]):
     # Called with user arg from the router, internally used with 2 args.
-    def get(self, db: Session, card_identifier: str, user: User = None) -> Card | None:
+    def get(
+        self,
+        db: Session,
+        card_identifier: str,
+        user: Optional[User] = None,
+        admin_r: bool = False,
+    ) -> Card | None:
         """
-        Gets a card available to the passed user (registered for his account or any card for user admin).
+        Gets a card available to the passed user (registered for his account or any card for admin_r=True).
         Note: The output is a Card object with plain text number and cvc,
         so before updating it in the DB, they should be encrypted back.
 
@@ -39,11 +45,13 @@ class CRUDCard(CRUDBase[Card, CardBase, CardCreate]):
         found_card.cvc = util_crypt.decrypt(found_card.cvc)
 
         # for internal code reuse
-        if not user:
+        if (not user) and (not admin_r):
             return found_card
 
-        if user in found_card.users or crud.user.is_admin(user):
+        if admin_r or (user in found_card.users):
             return found_card
+
+        return None
 
     def get_multi(
         self, db: Session, *, skip: int = 0, limit: int = 100, user: User

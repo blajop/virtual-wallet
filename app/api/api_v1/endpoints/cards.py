@@ -45,9 +45,6 @@ def add_card(
         raise HTTPException(status_code=400, detail=err.args[0])
 
 
-
-
-
 @router.delete("/{card_identifier}", status_code=204)
 def deregister_card(
     card_identifier,

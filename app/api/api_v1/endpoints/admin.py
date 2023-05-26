@@ -7,6 +7,7 @@ from app import crud, deps
 from app.error_models import TransactionError
 from app.error_models.card_errors import CardNotFoundError
 from app.models import User, Transaction, TransactionCreate
+from app.models.card import Card
 from app.models.msg import Msg
 
 
@@ -57,6 +58,19 @@ def get_transactions(
         sort=sort,
         admin_r=True,
     )
+
+
+@admin_router.get("/cards/{card_identifier}", response_model=Card)
+def get_card(
+    card_identifier: str,
+    db: Session = Depends(deps.get_db),
+    logged_user: User = Depends(deps.get_admin),
+):
+    result = crud.card.get(db, card_identifier, admin_r=True)
+
+    if not result:
+        raise HTTPException(status_code=404, detail="There is no such card")
+    return result
 
 
 @admin_router.delete("/cards/admin-del/{card_identifier}", status_code=204)
