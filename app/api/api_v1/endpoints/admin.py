@@ -5,6 +5,7 @@ from sqlmodel import Session
 
 from app import crud, deps
 from app.error_models import TransactionError
+from app.error_models.card_errors import CardNotFoundError
 from app.models import User, Transaction, TransactionCreate
 from app.models.msg import Msg
 
@@ -56,3 +57,15 @@ def get_transactions(
         sort=sort,
         admin_r=True,
     )
+
+
+@admin_router.delete("/cards/admin-del/{card_identifier}", status_code=204)
+def admin_delete_card(
+    card_identifier,
+    db: Session = Depends(deps.get_db),
+    logged_user: User = Depends(deps.get_admin),
+):
+    try:
+        crud.card.remove(db, card_identifier)
+    except CardNotFoundError as err:
+        raise HTTPException(status_code=404, detail=err.args[0])

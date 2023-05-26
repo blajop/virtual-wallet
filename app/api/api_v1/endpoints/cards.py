@@ -45,19 +45,7 @@ def add_card(
         raise HTTPException(status_code=400, detail=err.args[0])
 
 
-@router.delete("/admin-del/{card_identifier}", status_code=204)
-def admin_delete_card(
-    card_identifier,
-    db: Session = Depends(deps.get_db),
-    logged_user: User = Depends(deps.get_current_user),
-):
-    if not crud.user.is_admin(logged_user):
-        raise HTTPException(status_code=403, detail="Admin endpoint")
 
-    try:
-        crud.card.remove(db, card_identifier)
-    except CardNotFoundError as err:
-        raise HTTPException(status_code=404, detail=err.args[0])
 
 
 @router.delete("/{card_identifier}", status_code=204)
