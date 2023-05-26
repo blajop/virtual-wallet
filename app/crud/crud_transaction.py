@@ -141,6 +141,21 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
             sender_item_obj: Wallet = crud.wallet.get(db, sender_item_id)
             new_transaction.card_sender = None
 
+            if new_transaction.currency == sender_item_obj.currency:
+                sender_currency_amount = new_transaction.amount
+            else:
+                sender_curr = self.get_currency(db, sender_item_obj.currency)
+                transaction_curr = self.get_currency(db, new_transaction.currency)
+                sender_currency_amount = self.currency_exchange(
+                    base=transaction_curr,
+                    to=sender_curr,
+                    amount=new_transaction.amount,
+                )
+                if sender_item_obj.balance < sender_currency_amount:
+                    raise TransactionError(
+                        "You do not have enough balance in the sender Wallet in order to make the transfer"
+                    )
+
         # Card -> Wallet (depositing) - only from user's registered card to
         # wallet connected with the user
 
@@ -226,10 +241,6 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
             sender_currency_amount = self.currency_exchange(
                 base=transaction_curr, to=sender_curr, amount=amount
             )
-            if sender.balance < sender_currency_amount:
-                raise TransactionError(
-                    "You do not have enough balance in the sender Wallet in order to make the transfer"
-                )
 
         sender.balance -= sender_currency_amount
         receiver.balance += receiver_currency_amount
