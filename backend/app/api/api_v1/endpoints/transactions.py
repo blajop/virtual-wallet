@@ -79,6 +79,6 @@ def confirm_transaction(
         raise HTTPException(status_code=404)
 
     try:
-        crud.transaction.accept(db=db, transaction=transaction)
+        crud.transaction.accept(db=db, transaction=transaction, user=logged_user)
     except TransactionError as e:
         raise HTTPException(status_code=400, detail=e.args[0])
