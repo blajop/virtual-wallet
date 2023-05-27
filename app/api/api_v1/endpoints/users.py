@@ -102,9 +102,8 @@ def remove_friend(
 
 
 @router.post("/{identifier}/avatar", response_model=Msg, status_code=201)
-def add_friend(
+def add_avatar(
     user: User = Depends(deps.get_user_from_path),
-    db: Session = Depends(deps.get_db),
     logged_user: User = Depends(deps.get_current_user),
     file: UploadFile = File(...),
 ) -> Msg | HTTPException:
