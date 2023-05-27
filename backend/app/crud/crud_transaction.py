@@ -150,10 +150,10 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
                     to=sender_curr,
                     amount=new_transaction.amount,
                 )
-                if sender_item_obj.balance < sender_currency_amount:
-                    raise TransactionError(
-                        "You do not have enough balance in the sender Wallet in order to make the transfer"
-                    )
+            if sender_item_obj.balance < sender_currency_amount:
+                raise TransactionError(
+                    "You do not have enough balance in the sender Wallet in order to make the transfer"
+                )
 
         # Card -> Wallet (depositing) - only from user's registered card to
         # wallet connected with the user
@@ -193,21 +193,29 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
         return transaction
 
     def accept(
-        self, *, db: Session, transaction: Transaction
+        self, *, db: Session, transaction: Transaction, user: User
     ) -> Msg | TransactionError:
+        user_wallets_ids = [w.id for w in crud.wallet.get_multi_by_owner(db, user)] + [
+            w.id for w in user.wallets
+        ]
+
+        if transaction.wallet_receiver not in user_wallets_ids:
+            raise TransactionError(
+                "You are  not associated with the wallet receiver of the transaction"
+            )
+
         if transaction.status == "success":
             raise TransactionError("Already accepted")
 
         msg = self._finalise(db=db, transaction=transaction)
         transaction.status = "success"
+        transaction.updated = datetime.now()
 
         db.commit()
 
         return msg
 
-    def _finalise(
-        self, db: Session, *, transaction: Transaction
-    ) -> Msg | TransactionError:
+    def _finalise(self, db: Session, *, transaction: Transaction) -> Msg:
         """
         Finalises a transaction, exchanging the amount between the wallets.
         """
