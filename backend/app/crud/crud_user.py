@@ -167,7 +167,20 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         cwd = os.getcwd()
         try:
             with Image.open(file.file, mode="r") as img:
-                img.save(
+                # Calculate the size of the square
+                size = min(img.size)
+
+                # Crop the image to a square
+                left = (img.width - size) // 2
+                top = 0
+                right = left + size
+                bottom = size
+                cropped_img = img.crop((left, top, right, bottom))
+
+                # Resize the img
+                resized_img = cropped_img.resize((600, 600))
+
+                resized_img.save(
                     os.path.join(cwd, f"app/static/avatars/{user.id}.jpg"),
                     format="JPEG",
                 )

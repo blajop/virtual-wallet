@@ -18,6 +18,17 @@ def get_users(
     return crud.user.get_multi(db)
 
 
+@router.post("/profile/avatar", response_model=Msg, status_code=201)
+def add_avatar(
+    logged_user: User = Depends(deps.get_current_user),
+    file: UploadFile = File(...),
+) -> Msg | HTTPException:
+    try:
+        return crud.user.add_avatar(user=logged_user, file=file)
+    except FileError as err:
+        raise HTTPException(status_code=400, detail=err.args[0])
+
+
 @router.get("/profile", response_model=User)
 def profile_info(logged_user: User = Depends(deps.get_current_user)):
     return logged_user
@@ -99,20 +110,3 @@ def remove_friend(
         )
 
     return Response(status_code=204)
-
-
-@router.post("/{identifier}/avatar", response_model=Msg, status_code=201)
-def add_friend(
-    user: User = Depends(deps.get_user_from_path),
-    db: Session = Depends(deps.get_db),
-    logged_user: User = Depends(deps.get_current_user),
-    file: UploadFile = File(...),
-) -> Msg | HTTPException:
-    if user != logged_user:
-        raise HTTPException(
-            status_code=403, detail="You cannot set avatar to other user's profile!"
-        )
-    try:
-        return crud.user.add_avatar(user=logged_user, file=file)
-    except FileError as err:
-        raise HTTPException(status_code=400, detail=err.args[0])
