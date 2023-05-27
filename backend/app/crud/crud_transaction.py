@@ -150,10 +150,10 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
                     to=sender_curr,
                     amount=new_transaction.amount,
                 )
-                if sender_item_obj.balance < sender_currency_amount:
-                    raise TransactionError(
-                        "You do not have enough balance in the sender Wallet in order to make the transfer"
-                    )
+            if sender_item_obj.balance < sender_currency_amount:
+                raise TransactionError(
+                    "You do not have enough balance in the sender Wallet in order to make the transfer"
+                )
 
         # Card -> Wallet (depositing) - only from user's registered card to
         # wallet connected with the user

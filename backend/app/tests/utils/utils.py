@@ -32,7 +32,7 @@ def random_email() -> str:
     return f"{random_lower_string(10)}@{random_lower_string(6)}.com"
 
 
-def random_card(db: Session) -> CardCreate:
+def random_card() -> CardCreate:
     curr_year = datetime.now().year
 
     card = CardCreate(

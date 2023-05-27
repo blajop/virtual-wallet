@@ -16,9 +16,8 @@ from app.models.user import User
 
 
 @pytest.fixture(name="card")
-def card_fixture(session: Session):
-    curr_year = datetime.now().year
-    yield random_card(session)
+def card_fixture():
+    yield random_card()
 
 
 # TEST POST ------------------------------------
@@ -186,9 +185,9 @@ def test_get_cards_returnsEmptyList_when_NoCards(client: TestClient, admin, user
 def test_get_cards_showsAllCards_when_viaUserEndpoint(
     session: Session, client: TestClient, admin, user
 ):
-    card_1 = random_card(session)
-    card_2 = random_card(session)
-    card_3 = random_card(session)
+    card_1 = random_card()
+    card_2 = random_card()
+    card_3 = random_card()
 
     app.dependency_overrides[deps.get_current_user] = admin
     client.post("/api/v1/cards", json=jsonable_encoder(card_1))
@@ -215,9 +214,9 @@ def test_get_cards_showsAllCards_when_viaUserEndpoint(
 def test_get_cards_showsAllCards_when_viaAdminEndpoint(
     session: Session, client: TestClient, admin, user
 ):
-    card_1 = random_card(session)
-    card_2 = random_card(session)
-    card_3 = random_card(session)
+    card_1 = random_card()
+    card_2 = random_card()
+    card_3 = random_card()
 
     app.dependency_overrides[deps.get_current_user] = user
     client.post("/api/v1/cards", json=jsonable_encoder(card_2))
