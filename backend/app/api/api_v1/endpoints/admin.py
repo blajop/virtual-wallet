@@ -9,11 +9,38 @@ from app.error_models.card_errors import CardNotFoundError
 from app.models import User, Transaction, TransactionCreate
 from app.models.card import Card
 from app.models.msg import Msg
+from app.models.user import UserUpdate
+from app.models.wallet import Wallet
 
 
 admin_router = APIRouter()
 
 
+#  USER
+@admin_router.get("/admin/{identifier}", response_model=User)
+def get_user(
+    identifier: str,
+    db: Session = Depends(deps.get_db),
+    logged_user: User = Depends(deps.get_admin),
+):
+    user = crud.user.get(db, identifier)
+
+    if not user:
+        raise HTTPException(status_code=404)
+    return user
+
+
+@admin_router.put("/admin/{identifier}", response_model=UserUpdate)
+def get_user(
+    updated_info: UserUpdate,
+    user: User = Depends(deps.get_user_from_path),
+    db: Session = Depends(deps.get_db),
+    logged_user: User = Depends(deps.get_admin),
+):
+    return crud.user.update(db=db, db_obj=user, obj_in=updated_info)
+
+
+# TRANSACTIONS
 @admin_router.get("/transactions/{id}", response_model=Transaction)
 def get_transaction(
     id: str,
@@ -56,10 +83,10 @@ def get_transactions(
         direction=direction,
         sort_by=sort_by,
         sort=sort,
-        admin_r=True,
     )
 
 
+# CARDS
 @admin_router.get("/cards/{card_identifier}", response_model=Card)
 def get_card(
     card_identifier: str,
@@ -93,3 +120,23 @@ def admin_delete_card(
         crud.card.remove(db, card_identifier)
     except CardNotFoundError as err:
         raise HTTPException(status_code=404, detail=err.args[0])
+
+
+# WALLETS
+@admin_router.get("/wallets", response_model=list[Wallet])
+def get_wallets(
+    db: Session = Depends(deps.get_db),
+    logged_user: User = Depends(deps.get_admin),
+    skip: int = 0,
+    limit: int = 100,
+):
+    return crud.wallet.get_multi(db, skip=skip, limit=limit)
+
+
+@admin_router.get("/wallets/{identifier}", response_model=list[Wallet])
+def get_wallets_for_user(
+    user: User = Depends(deps.get_user_from_path),
+    db: Session = Depends(deps.get_db),
+    logged_user: User = Depends(deps.get_admin),
+):
+    return crud.wallet.get_multi_by_owner(db, user)

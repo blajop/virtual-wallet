@@ -55,7 +55,6 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
         direction: str = "all",
         sort_by: str = "date",
         sort: str = "asc",
-        admin_r: bool = False,
     ) -> List[Transaction]:
         if user:
             user_wallets_ids = [

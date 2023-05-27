@@ -5,6 +5,7 @@ from sqlmodel import Session, select
 from app import crud, utils
 from app.crud.base import CRUDBase
 from app.models import Card, User, Wallet, WalletCreate, WalletUpdate
+from app.models.wallet import UserWalletLink
 
 
 class CRUDWallet(CRUDBase[Wallet, WalletCreate, WalletUpdate]):
@@ -65,33 +66,33 @@ class CRUDWallet(CRUDBase[Wallet, WalletCreate, WalletUpdate]):
 
         return wallet
 
-    ### CODE BELLOW TO BE REMOVED
-    #
-    # def deposit(self, db: Session, wallet: Wallet, amount: float, card: Card):
-    #     # if not card.confirm_balance(amount): bank logic
-    #     #    return Response(status_code=400, detail='nema pari :(')
-    #     wallet.balance += amount
-    #     db.add(wallet)
-    #     db.commit()
-    #     db.refresh(wallet)
-    #     return wallet
+    def toggle_deposit(self, db: Session, wallet: Wallet, leech: User):
+        link_model: UserWalletLink = db.exec(
+            select(UserWalletLink).where(
+                UserWalletLink.user_id == leech.id,
+                UserWalletLink.wallet_id == wallet.id,
+            )
+        ).first()
+        link_model.can_deposit = not link_model.can_deposit
+        db.add(link_model)
+        db.commit()
+        db.refresh(link_model)
 
-    # def transfer(
-    #     self, db: Session, from_wallet: Wallet, amount: float, to_wallet: Wallet
-    # ):
-    #     if from_wallet.balance < amount:
-    #         return Response(
-    #             status_code=400, content="Insufficient amount in your wallet."
-    #         )
-    #     to_wallet.balance += amount
-    #     from_wallet.balance -= amount
-    #     db.add(from_wallet)
-    #     db.commit()
-    #     db.refresh(from_wallet)
-    #     return from_wallet
-    #
-    #
-    ### CODE BELLOW TO BE REMOVED
+        return link_model
+
+    def toggle_send(self, db: Session, wallet: Wallet, leech: User):
+        link_model: UserWalletLink = db.exec(
+            select(UserWalletLink).where(
+                UserWalletLink.user_id == leech.id,
+                UserWalletLink.wallet_id == wallet.id,
+            )
+        ).first()
+        link_model.can_send = not link_model.can_send
+        db.add(link_model)
+        db.commit()
+        db.refresh(link_model)
+
+        return link_model
 
 
 wallet = CRUDWallet(Wallet)
