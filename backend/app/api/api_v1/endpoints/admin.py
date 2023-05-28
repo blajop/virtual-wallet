@@ -6,6 +6,7 @@ from sqlmodel import Session
 from app import crud, deps
 from app.error_models import TransactionError
 from app.error_models.card_errors import CardNotFoundError
+from app.error_models.user_errors import FileError
 from app.models import User, Transaction, TransactionCreate
 from app.models.card import Card
 from app.models.msg import Msg
@@ -17,7 +18,7 @@ admin_router = APIRouter()
 
 
 #  USER
-@admin_router.get("/admin/{identifier}", response_model=User)
+@admin_router.get("/users/{identifier}", response_model=User)
 def get_user(
     identifier: str,
     db: Session = Depends(deps.get_db),
@@ -30,7 +31,7 @@ def get_user(
     return user
 
 
-@admin_router.put("/admin/{identifier}", response_model=UserUpdate)
+@admin_router.put("/users/{identifier}", response_model=UserUpdate)
 def get_user(
     updated_info: UserUpdate,
     user: User = Depends(deps.get_user_from_path),
@@ -38,6 +39,17 @@ def get_user(
     logged_user: User = Depends(deps.get_admin),
 ):
     return crud.user.update(db=db, db_obj=user, obj_in=updated_info)
+
+
+@admin_router.delete("/users/{identifier}/avatar", status_code=204)
+def delete_avatar(
+    user: User = Depends(deps.get_user_from_path),
+    logged_user: User = Depends(deps.get_admin),
+):
+    try:
+        return crud.user.delete_avatar(user)
+    except FileError as err:
+        raise HTTPException(status_code=404, detail=err.args[0])
 
 
 # TRANSACTIONS

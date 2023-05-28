@@ -29,6 +29,16 @@ def add_avatar(
         raise HTTPException(status_code=400, detail=err.args[0])
 
 
+@router.delete("/profile/avatar", status_code=204)
+def delete_avatar(
+    logged_user: User = Depends(deps.get_current_user),
+):
+    try:
+        return crud.user.delete_avatar(logged_user)
+    except FileError as err:
+        raise HTTPException(status_code=404, detail=err.args[0])
+
+
 @router.get("/profile", response_model=User)
 def profile_info(logged_user: User = Depends(deps.get_current_user)):
     return logged_user

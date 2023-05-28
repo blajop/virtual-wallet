@@ -189,5 +189,15 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             print(err)
             raise FileError("Cannot convert and upload file")
 
+    def delete_avatar(self, user: User) -> Msg | FileError:
+        cwd = os.getcwd()
+        exp_file_path = os.path.join(cwd, f"app/static/avatars/{user.id}.jpg")
+        if not os.path.exists(exp_file_path):
+            raise FileError("There is no uploaded avatar.")
+
+        os.remove(exp_file_path)
+
+        return Msg(msg="Successfully deleted avatar!")
+
 
 user = CRUDUser(User)
