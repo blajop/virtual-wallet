@@ -17,6 +17,11 @@ from main import app
 
 from app.models.user import User
 
+
+def datetime_to_str(time: datetime):
+    return time.strftime("%Y-%m-%dT%H:%M:%S.000000")
+
+
 # TEST POST ------------------------------------
 
 
@@ -25,7 +30,7 @@ def test_post_transaction_returns400_when_senderWalletNotInUsersWalls(
 ):
     # Arrange
     wallet_s = random_wallet(user(), "BGN")
-    wallet_r = random_wallet(admin(), "EUR")
+    wallet_r = random_wallet(admin(), "BGN")
     user_3 = random_usermodel()
     user_4 = random_usermodel()
     session.add_all([wallet_s, wallet_r, user_3, user_4])
@@ -91,7 +96,7 @@ def test_post_transaction_returns400_when_senderCardNotInUsersCards(
 ):
     # Arrange
     card_s = random_card()
-    wallet_r = random_wallet(admin(), "EUR")
+    wallet_r = random_wallet(admin(), "BGN")
     session.add(wallet_r)
 
     app.dependency_overrides[deps.get_current_user] = admin
@@ -112,12 +117,12 @@ def test_post_transaction_returns400_when_senderCardNotInUsersCards(
     )
 
 
-def test_post_transaction_returns400_when_senderCardInUsersCardsButWallerReceiverNotUsers(
+def test_post_transaction_returns400_when_senderCardInUsersCardsButWalletReceiverNotUsers(
     session: Session, client: TestClient, admin, user
 ):
     # Arrange
     card_s = random_card()
-    wallet_r = random_wallet(admin(), "EUR")
+    wallet_r = random_wallet(admin(), "BGN")
     session.add(wallet_r)
 
     app.dependency_overrides[deps.get_current_user] = user
@@ -225,8 +230,6 @@ def test_postAndConfirm_transaction_work_when_allOkWithCrossExchange(
     wallet_r = random_wallet(admin(), "EUR", balance=100)
     session.add_all([wallet_s, wallet_r, currency_EUR, currency_BGN, currency_USD])
 
-    app.dependency_overrides[deps.get_current_user] = user
-
     # Should fail with both params passed
     transaction_1 = TransactionCreate(
         wallet_sender=wallet_s.id,
@@ -236,6 +239,7 @@ def test_postAndConfirm_transaction_work_when_allOkWithCrossExchange(
     )
 
     # Create the transaction
+    app.dependency_overrides[deps.get_current_user] = user
     response = client.post(
         f"/api/v1/transactions", json=jsonable_encoder(transaction_1)
     )
@@ -257,6 +261,7 @@ def test_postAndConfirm_transaction_work_when_allOkWithCrossExchange(
     assert transaction_inDB.status == "pending"
 
     # Act - confirm the transaction
+    app.dependency_overrides[deps.get_current_user] = admin
     response = client.put(f"/api/v1/transactions/{transaction_id}/confirm")
     data = response.json()
     assert response.status_code == 200
@@ -275,17 +280,95 @@ def test_confirm_transaction_returns404_when_noSuchTransaction(
 ):
     app.dependency_overrides[deps.get_current_user] = user
 
+    transaction_id = utils.util_id.generate_id()
+
     # Act - confirm the transaction
-    response = client.put("/api/v1/transactions/7067750323622031361/confirm")
+    response = client.put(f"/api/v1/transactions/{transaction_id}/confirm")
 
     assert response.status_code == 404
 
 
-# TEST GET ------------------------------------
+def test_confirm_transaction_returns400_when_transactionAlreadyConfirmed(
+    session: Session, client: TestClient, user, admin
+):
+    # Arrange
+    currency_EUR = Currency(currency="EUR", rate=0.9)
+    currency_BGN = Currency(currency="BGN", rate=1.8)
+    currency_USD = Currency(currency="USD", rate=1)
+    wallet_s = random_wallet(user(), "BGN", balance=100)
+    wallet_r = random_wallet(admin(), "EUR", balance=100)
+    session.add_all([wallet_s, wallet_r, currency_EUR, currency_BGN, currency_USD])
+
+    app.dependency_overrides[deps.get_current_user] = user
+
+    # Should fail with both params passed
+    transaction_1 = TransactionCreate(
+        wallet_sender=wallet_s.id,
+        wallet_receiver=wallet_r.id,
+        currency="BGN",
+        amount=50,
+    )
+
+    # Create the transaction
+    response = client.post(
+        f"/api/v1/transactions", json=jsonable_encoder(transaction_1)
+    )
+    transaction_id = response.json()["id"]
+
+    app.dependency_overrides[deps.get_current_user] = admin
+    # Confirm it once and update the status to 'success'
+    response = client.put(f"/api/v1/transactions/{transaction_id}/confirm")
+    data = response.json()
+    assert response.status_code == 200
+
+    # Confirm it again and 400 should be returned
+    response = client.put(f"/api/v1/transactions/{transaction_id}/confirm")
+    data = response.json()
+    assert response.status_code == 400
+    data["detail"] == "Already accepted"
+
+
+def test_confirm_transaction_returns400_when_confirmationIsAttemptedByNonReceiverUser(
+    session: Session, client: TestClient, user, admin
+):
+    # Arrange
+    currency_EUR = Currency(currency="EUR", rate=0.9)
+    currency_BGN = Currency(currency="BGN", rate=1.8)
+    currency_USD = Currency(currency="USD", rate=1)
+    wallet_s = random_wallet(user(), "BGN", balance=100)
+    wallet_r = random_wallet(admin(), "EUR", balance=100)
+    session.add_all([wallet_s, wallet_r, currency_EUR, currency_BGN, currency_USD])
+
+    app.dependency_overrides[deps.get_current_user] = user
+
+    # Should fail with both params passed
+    transaction_1 = TransactionCreate(
+        wallet_sender=wallet_s.id,
+        wallet_receiver=wallet_r.id,
+        currency="BGN",
+        amount=50,
+    )
+
+    # Create the transaction
+    response = client.post(
+        f"/api/v1/transactions", json=jsonable_encoder(transaction_1)
+    )
+    transaction_id = response.json()["id"]
+
+    # Confirm it by non-receiving user and 400 should be returned
+    response = client.put(f"/api/v1/transactions/{transaction_id}/confirm")
+    data = response.json()
+    assert response.status_code == 403
+    data[
+        "detail"
+    ] == "You are not associated with the wallet receiver of the transaction"
+
+
+# TEST GET-ONE ------------------------------------
 
 
 def test_get_transaction_returns404_when_notExistingTransaction(
-    session: Session, client: TestClient, admin, user
+    client: TestClient, user
 ):
     app.dependency_overrides[deps.get_current_user] = user
 
@@ -297,16 +380,15 @@ def test_get_transaction_returns404_when_notExistingTransaction(
     assert data["detail"] == "There is no such transaction within your access"
 
 
-def test_get_transaction_returnsTransaction_when_existingAndUserIsSenderWalletOwner(
+def test_get_transaction_returnsTransaction_when_existingAndUserIsSender(
     session: Session, client: TestClient, user, admin
 ):
     # Arrange
     wallet_s = random_wallet(user(), "BGN")
-    wallet_r = random_wallet(admin(), "EUR")
+    wallet_r = random_wallet(admin(), "BGN")
     session.add_all([wallet_s, wallet_r])
 
     transaction_1 = TransactionCreate(
-        sending_user=wallet_s.owner.id,
         wallet_sender=wallet_s.id,
         wallet_receiver=wallet_r.id,
         currency="BGN",
@@ -325,25 +407,25 @@ def test_get_transaction_returnsTransaction_when_existingAndUserIsSenderWalletOw
     # Assert
     assert response.status_code == 200
     assert data["id"] == transaction_1_id
-    assert data["sending_user"] == wallet_s.owner.id
+    assert data["sending_user"] == user().id
     assert data["wallet_sender"] == wallet_s.id
     assert data["wallet_receiver"] == wallet_r.id
     assert data["currency"] == "BGN"
     assert data["amount"] == 120
     assert data["recurring"] == None
     assert data["status"] == "pending"
+    assert data["spending_category_id"] == 1
 
 
-def test_get_transaction_returnsTransaction_when_existingAndUserIsReceiverWalletOwner(
+def test_get_transaction_returnsTransaction_when_existingAndUserIsOwnerReceiverWallet(
     session: Session, client: TestClient, user, admin
 ):
     # Arrange
     wallet_s = random_wallet(admin(), "BGN")
-    wallet_r = random_wallet(user(), "EUR")
+    wallet_r = random_wallet(user(), "BGN")
     session.add_all([wallet_s, wallet_r])
 
     transaction_1 = TransactionCreate(
-        sending_user=wallet_s.owner.id,
         wallet_sender=wallet_s.id,
         wallet_receiver=wallet_r.id,
         currency="BGN",
@@ -355,38 +437,32 @@ def test_get_transaction_returnsTransaction_when_existingAndUserIsReceiverWallet
     data = response.json()
     transaction_1_id = data["id"]
 
-    app.dependency_overrides[deps.get_current_user] = user
     # Act
+    app.dependency_overrides[deps.get_current_user] = user
     response = client.get(f"/api/v1/transactions/{transaction_1_id}")
     data = response.json()
 
     # Assert
     assert response.status_code == 200
     assert data["id"] == transaction_1_id
-    assert data["sending_user"] == wallet_s.owner.id
-    assert data["wallet_sender"] == wallet_s.id
-    assert data["wallet_receiver"] == wallet_r.id
-    assert data["currency"] == "BGN"
-    assert data["amount"] == 120
-    assert data["recurring"] == None
-    assert data["status"] == "pending"
 
 
-def test_get_transaction_returnsTransaction_when_existingAndUserIsReceiverWalletParticipant(
+def test_get_transaction_returnsTransaction_when_existingAndUserIsParticipantInReceiverWallet(
     session: Session, client: TestClient, user, admin
 ):
     # Arrange
-    owner_wallet_2 = random_usermodel()
-    session.add(owner_wallet_2)
-
     wallet_s = random_wallet(admin(), "BGN")
-    wallet_r = random_wallet(owner_wallet_2, "EUR")
-    wallet_r.users.append(user())
+    wallet_r = random_wallet(user(), "BGN")
+    user_3 = random_usermodel()
+    session.add_all([wallet_s, wallet_r, user_3])
 
-    session.add_all([wallet_s, wallet_r])
+    app.dependency_overrides[deps.get_current_user] = user
+    client.post(
+        f"/api/v1/users/{user().id}/wallets/{wallet_r.id}/leeches?leech={user_3.id}"
+    )
+    assert len(wallet_r.users) == 1
 
     transaction_1 = TransactionCreate(
-        sending_user=wallet_s.owner.id,
         wallet_sender=wallet_s.id,
         wallet_receiver=wallet_r.id,
         currency="BGN",
@@ -395,21 +471,511 @@ def test_get_transaction_returnsTransaction_when_existingAndUserIsReceiverWallet
 
     app.dependency_overrides[deps.get_current_user] = admin
     response = client.post("/api/v1/transactions", json=jsonable_encoder(transaction_1))
+
     data = response.json()
     transaction_1_id = data["id"]
 
-    app.dependency_overrides[deps.get_current_user] = user
     # Act
+    app.dependency_overrides[deps.get_current_user] = lambda: user_3
     response = client.get(f"/api/v1/transactions/{transaction_1_id}")
     data = response.json()
 
     # Assert
     assert response.status_code == 200
     assert data["id"] == transaction_1_id
-    assert data["sending_user"] == wallet_s.owner.id
-    assert data["wallet_sender"] == wallet_s.id
-    assert data["wallet_receiver"] == wallet_r.id
-    assert data["currency"] == "BGN"
-    assert data["amount"] == 120
-    assert data["recurring"] == None
-    assert data["status"] == "pending"
+
+
+def test_get_transaction_returns404_when_existingAndUserNotAssociated(
+    session: Session, client: TestClient, user, admin
+):
+    # Arrange
+    user_3 = random_usermodel()
+    wallet_s = random_wallet(user(), "BGN")
+    wallet_r = random_wallet(user_3, "BGN")
+    session.add_all([wallet_s, wallet_r, user_3])
+
+    transaction_1 = TransactionCreate(
+        wallet_sender=wallet_s.id,
+        wallet_receiver=wallet_r.id,
+        currency="BGN",
+        amount=120,
+    )
+
+    app.dependency_overrides[deps.get_current_user] = user
+    response = client.post("/api/v1/transactions", json=jsonable_encoder(transaction_1))
+    data = response.json()
+    transaction_1_id = data["id"]
+
+    # Act
+    app.dependency_overrides[deps.get_current_user] = admin
+    response = client.get(f"/api/v1/transactions/{transaction_1_id}")
+    data = response.json()
+
+    # Assert
+    assert response.status_code == 404
+    assert data["detail"] == "There is no such transaction within your access"
+
+
+def test_get_transaction_returnsTransaction_when_notAssociatedAndViaAdminPanel(
+    session: Session, client: TestClient, user, admin
+):
+    # Arrange
+    user_3 = random_usermodel()
+    wallet_s = random_wallet(user(), "BGN")
+    wallet_r = random_wallet(user_3, "BGN")
+    session.add_all([wallet_s, wallet_r, user_3])
+
+    transaction_1 = TransactionCreate(
+        wallet_sender=wallet_s.id,
+        wallet_receiver=wallet_r.id,
+        currency="BGN",
+        amount=120,
+    )
+
+    app.dependency_overrides[deps.get_current_user] = user
+    response = client.post("/api/v1/transactions", json=jsonable_encoder(transaction_1))
+    data = response.json()
+    transaction_1_id = data["id"]
+
+    # Act
+    app.dependency_overrides[deps.get_admin] = admin
+    response = client.get(f"/api/v1/admin/transactions/{transaction_1_id}")
+    data = response.json()
+
+    # Assert
+    assert response.status_code == 200
+    assert data["id"] == transaction_1_id
+
+
+def test_get_transaction_returns404_when_notExistingTransactionViaAdminPanel(
+    session: Session, client: TestClient, user, admin
+):
+    # Arrange
+    user_3 = random_usermodel()
+    wallet_s = random_wallet(user(), "BGN")
+    wallet_r = random_wallet(user_3, "BGN")
+    session.add_all([wallet_s, wallet_r, user_3])
+
+    transaction_1_id = utils.util_id.generate_id()
+
+    # Act
+    app.dependency_overrides[deps.get_admin] = admin
+    response = client.get(f"/api/v1/admin/transactions/{transaction_1_id}")
+    data = response.json()
+
+    # Assert
+    assert response.status_code == 404
+    assert data["detail"] == "There is no such transaction"
+
+
+# TEST GET-MULTI ------------------------------------
+
+# VIA ADMIN PANEL
+
+
+def test_get_transactions_showsCorrectly_when_viaAdminPanelSortAmount(
+    session: Session, client: TestClient, user, admin
+):
+    # Arrange
+    user_3 = random_usermodel()
+    wallet_1 = random_wallet(user(), "BGN")
+    wallet_2 = random_wallet(admin(), "BGN")
+    wallet_3 = random_wallet(user_3, "BGN")
+    session.add_all([wallet_1, wallet_2, wallet_3, user_3])
+
+    transaction_1 = TransactionCreate(
+        wallet_sender=wallet_1.id,
+        wallet_receiver=wallet_2.id,
+        currency="BGN",
+        amount=5,
+    )
+    app.dependency_overrides[deps.get_current_user] = user
+    response = client.post("/api/v1/transactions", json=jsonable_encoder(transaction_1))
+    data = response.json()
+    transaction_1_id = data["id"]
+
+    transaction_2 = TransactionCreate(
+        wallet_sender=wallet_2.id,
+        wallet_receiver=wallet_1.id,
+        currency="BGN",
+        amount=10,
+    )
+    app.dependency_overrides[deps.get_current_user] = admin
+    response = client.post("/api/v1/transactions", json=jsonable_encoder(transaction_2))
+    data = response.json()
+    transaction_2_id = data["id"]
+
+    transaction_3 = TransactionCreate(
+        wallet_sender=wallet_3.id,
+        wallet_receiver=wallet_2.id,
+        currency="BGN",
+        amount=20,
+    )
+    app.dependency_overrides[deps.get_current_user] = lambda: user_3
+    response = client.post("/api/v1/transactions", json=jsonable_encoder(transaction_3))
+    data = response.json()
+    transaction_3_id = data["id"]
+
+    transaction_4 = TransactionCreate(
+        wallet_sender=wallet_1.id,
+        wallet_receiver=wallet_3.id,
+        currency="BGN",
+        amount=30,
+    )
+    app.dependency_overrides[deps.get_current_user] = user
+    response = client.post("/api/v1/transactions", json=jsonable_encoder(transaction_4))
+    data = response.json()
+    transaction_4_id = data["id"]
+
+    # TEST THE SORT_BY AMOUNT AND ASC & DESC
+    # Act 1
+    app.dependency_overrides[deps.get_admin] = admin
+    response = client.get(
+        "/api/v1/admin/transactions",
+        params=QueryParams(
+            {
+                "from_date": datetime_to_str(datetime.now() - timedelta(minutes=1)),
+                "to_date": datetime_to_str(datetime.now() + timedelta(minutes=1)),
+                "sort_by": "amount",
+            }
+        ),
+    )
+    data = response.json()
+
+    # Assert
+    assert response.status_code == 200
+    assert len(data) == 4
+    assert data[0]["id"] == transaction_1_id
+    assert data[1]["id"] == transaction_2_id
+    assert data[2]["id"] == transaction_3_id
+    assert data[3]["id"] == transaction_4_id
+
+    # Act 2
+    app.dependency_overrides[deps.get_admin] = admin
+    response = client.get(
+        "/api/v1/admin/transactions",
+        params=QueryParams(
+            {
+                "from_date": datetime_to_str(datetime.now() - timedelta(minutes=1)),
+                "to_date": datetime_to_str(datetime.now() + timedelta(minutes=1)),
+                "sort_by": "amount",
+                "sort": "desc",
+            }
+        ),
+    )
+    data = response.json()
+
+    # Assert
+    assert response.status_code == 200
+    assert len(data) == 4
+    assert data[0]["id"] == transaction_4_id
+    assert data[1]["id"] == transaction_3_id
+    assert data[2]["id"] == transaction_2_id
+    assert data[3]["id"] == transaction_1_id
+
+
+def test_get_transactions_showsCorrectly_when_viaAdminPanelRecipientFilter(
+    session: Session, client: TestClient, user, admin
+):
+    # Arrange
+    user_3 = random_usermodel()
+    wallet_1 = random_wallet(user(), "BGN")
+    wallet_2 = random_wallet(admin(), "BGN")
+    wallet_3 = random_wallet(user_3, "BGN")
+    session.add_all([wallet_1, wallet_2, wallet_3, user_3])
+
+    transaction_1 = TransactionCreate(
+        wallet_sender=wallet_1.id,
+        wallet_receiver=wallet_2.id,
+        currency="BGN",
+        amount=5,
+    )
+    app.dependency_overrides[deps.get_current_user] = user
+    response = client.post("/api/v1/transactions", json=jsonable_encoder(transaction_1))
+    data = response.json()
+    transaction_1_id = data["id"]
+
+    transaction_2 = TransactionCreate(
+        wallet_sender=wallet_2.id,
+        wallet_receiver=wallet_1.id,
+        currency="BGN",
+        amount=10,
+    )
+    app.dependency_overrides[deps.get_current_user] = admin
+    response = client.post("/api/v1/transactions", json=jsonable_encoder(transaction_2))
+    data = response.json()
+    transaction_2_id = data["id"]
+
+    transaction_3 = TransactionCreate(
+        wallet_sender=wallet_3.id,
+        wallet_receiver=wallet_2.id,
+        currency="BGN",
+        amount=20,
+    )
+    app.dependency_overrides[deps.get_current_user] = lambda: user_3
+    response = client.post("/api/v1/transactions", json=jsonable_encoder(transaction_3))
+    data = response.json()
+    transaction_3_id = data["id"]
+
+    transaction_4 = TransactionCreate(
+        wallet_sender=wallet_1.id,
+        wallet_receiver=wallet_3.id,
+        currency="BGN",
+        amount=30,
+    )
+    app.dependency_overrides[deps.get_current_user] = user
+    response = client.post("/api/v1/transactions", json=jsonable_encoder(transaction_4))
+    data = response.json()
+    transaction_4_id = data["id"]
+
+    # TEST THE SORT_BY AMOUNT AND ASC & DESC
+    # Act
+    app.dependency_overrides[deps.get_admin] = admin
+    response = client.get(
+        "/api/v1/admin/transactions",
+        params=QueryParams(
+            {
+                "from_date": datetime_to_str(datetime.now() - timedelta(minutes=1)),
+                "to_date": datetime_to_str(datetime.now() + timedelta(minutes=1)),
+                "sort_by": "amount",
+                "recipient": wallet_2.id,
+            }
+        ),
+    )
+    data = response.json()
+
+    # Assert
+    assert response.status_code == 200
+    assert len(data) == 2
+    assert data[0]["id"] == transaction_1_id
+    assert data[1]["id"] == transaction_3_id
+
+
+# VIA ADMIN PANEL WITH USER PARAM
+
+
+def test_get_transactions_showsCorrectly_when_viaAdminPanelWithUserParam(
+    session: Session, client: TestClient, user, admin
+):
+    # Arrange
+    user_3 = random_usermodel()
+    wallet_1 = random_wallet(user(), "BGN")
+    wallet_2 = random_wallet(admin(), "BGN")
+    wallet_3 = random_wallet(user_3, "BGN")
+    session.add_all([wallet_1, wallet_2, wallet_3, user_3])
+
+    transaction_1 = TransactionCreate(
+        wallet_sender=wallet_1.id,
+        wallet_receiver=wallet_2.id,
+        currency="BGN",
+        amount=5,
+    )
+    app.dependency_overrides[deps.get_current_user] = user
+    response = client.post("/api/v1/transactions", json=jsonable_encoder(transaction_1))
+    data = response.json()
+    transaction_1_id = data["id"]
+
+    transaction_2 = TransactionCreate(
+        wallet_sender=wallet_2.id,
+        wallet_receiver=wallet_1.id,
+        currency="BGN",
+        amount=10,
+    )
+    app.dependency_overrides[deps.get_current_user] = admin
+    response = client.post("/api/v1/transactions", json=jsonable_encoder(transaction_2))
+    data = response.json()
+    transaction_2_id = data["id"]
+
+    transaction_3 = TransactionCreate(
+        wallet_sender=wallet_3.id,
+        wallet_receiver=wallet_2.id,
+        currency="BGN",
+        amount=20,
+    )
+    app.dependency_overrides[deps.get_current_user] = lambda: user_3
+    response = client.post("/api/v1/transactions", json=jsonable_encoder(transaction_3))
+    data = response.json()
+    transaction_3_id = data["id"]
+
+    transaction_4 = TransactionCreate(
+        wallet_sender=wallet_1.id,
+        wallet_receiver=wallet_3.id,
+        currency="BGN",
+        amount=30,
+    )
+    app.dependency_overrides[deps.get_current_user] = user
+    response = client.post("/api/v1/transactions", json=jsonable_encoder(transaction_4))
+    data = response.json()
+    transaction_4_id = data["id"]
+
+    # Act
+    app.dependency_overrides[deps.get_admin] = admin
+    response = client.get(
+        "/api/v1/admin/transactions",
+        params=QueryParams(
+            {
+                "from_date": datetime_to_str(datetime.now() - timedelta(minutes=1)),
+                "to_date": datetime_to_str(datetime.now() + timedelta(minutes=1)),
+                "sort_by": "amount",
+                "user": user_3.id,
+            }
+        ),
+    )
+    data = response.json()
+
+    # Assert
+    assert response.status_code == 200
+    assert len(data) == 2
+    assert data[0]["id"] == transaction_3_id
+    assert data[1]["id"] == transaction_4_id
+
+
+# VIA USER PANEL
+
+
+def test_get_transactions_showsCorrectly_when_viaUserPanel(
+    session: Session, client: TestClient, user, admin
+):
+    # Arrange
+    user_3 = random_usermodel()
+    wallet_1 = random_wallet(user(), "BGN")
+    wallet_2 = random_wallet(admin(), "BGN")
+    wallet_3 = random_wallet(user_3, "BGN")
+    session.add_all([wallet_1, wallet_2, wallet_3, user_3])
+
+    transaction_1 = TransactionCreate(
+        wallet_sender=wallet_1.id,
+        wallet_receiver=wallet_2.id,
+        currency="BGN",
+        amount=5,
+    )
+    app.dependency_overrides[deps.get_current_user] = user
+    response = client.post("/api/v1/transactions", json=jsonable_encoder(transaction_1))
+    data = response.json()
+    transaction_1_id = data["id"]
+
+    transaction_2 = TransactionCreate(
+        wallet_sender=wallet_2.id,
+        wallet_receiver=wallet_1.id,
+        currency="BGN",
+        amount=10,
+    )
+    app.dependency_overrides[deps.get_current_user] = admin
+    response = client.post("/api/v1/transactions", json=jsonable_encoder(transaction_2))
+    data = response.json()
+    transaction_2_id = data["id"]
+
+    transaction_3 = TransactionCreate(
+        wallet_sender=wallet_3.id,
+        wallet_receiver=wallet_2.id,
+        currency="BGN",
+        amount=20,
+    )
+    app.dependency_overrides[deps.get_current_user] = lambda: user_3
+    response = client.post("/api/v1/transactions", json=jsonable_encoder(transaction_3))
+    data = response.json()
+    transaction_3_id = data["id"]
+
+    transaction_4 = TransactionCreate(
+        wallet_sender=wallet_1.id,
+        wallet_receiver=wallet_3.id,
+        currency="BGN",
+        amount=30,
+    )
+    app.dependency_overrides[deps.get_current_user] = user
+    response = client.post("/api/v1/transactions", json=jsonable_encoder(transaction_4))
+    data = response.json()
+    transaction_4_id = data["id"]
+
+    # Act 1 - USER
+    app.dependency_overrides[deps.get_current_user] = user
+    response = client.get(
+        "/api/v1/transactions",
+        params=QueryParams(
+            {
+                "from_date": datetime_to_str(datetime.now() - timedelta(minutes=1)),
+                "to_date": datetime_to_str(datetime.now() + timedelta(minutes=1)),
+            }
+        ),
+    )
+    data = response.json()
+
+    # Assert
+    assert response.status_code == 200
+    assert len(data) == 3
+    for el in data:
+        assert el["id"] in (
+            transaction_1_id,
+            transaction_2_id,
+            transaction_4_id,
+        )
+
+    # Add user_3 as leech to wallet_1
+    app.dependency_overrides[deps.get_user_from_path] = user
+    client.post(
+        f"/api/v1/users/{user().id}/wallets/{wallet_1.id}/leeches?leech={user_3.id}"
+    )
+    assert len(wallet_1.users) == 1
+
+    # Act 2 USER_3
+    app.dependency_overrides[deps.get_current_user] = lambda: user_3
+    response = client.get(
+        "/api/v1/transactions",
+        params=QueryParams(
+            {
+                "from_date": datetime_to_str(datetime.now() - timedelta(minutes=1)),
+                "to_date": datetime_to_str(datetime.now() + timedelta(minutes=1)),
+            }
+        ),
+    )
+    data = response.json()
+
+    # Assert
+    assert response.status_code == 200
+    assert len(data) == 3
+    for el in data:
+        assert el["id"] in (
+            transaction_2_id,
+            transaction_3_id,
+            transaction_4_id,
+        )
+
+    # Act 3 - USER_3 OUT
+    app.dependency_overrides[deps.get_current_user] = lambda: user_3
+    response = client.get(
+        "/api/v1/transactions",
+        params=QueryParams(
+            {
+                "from_date": datetime_to_str(datetime.now() - timedelta(minutes=1)),
+                "to_date": datetime_to_str(datetime.now() + timedelta(minutes=1)),
+                "direction": "out",
+            }
+        ),
+    )
+    data = response.json()
+
+    # Assert
+    assert response.status_code == 200
+    assert len(data) == 1
+    for el in data:
+        assert el["id"] in (transaction_3_id,)
+
+    # Act 4 - USER_3 IN
+    app.dependency_overrides[deps.get_current_user] = lambda: user_3
+    response = client.get(
+        "/api/v1/transactions",
+        params=QueryParams(
+            {
+                "from_date": datetime_to_str(datetime.now() - timedelta(minutes=1)),
+                "to_date": datetime_to_str(datetime.now() + timedelta(minutes=1)),
+                "direction": "in",
+            }
+        ),
+    )
+    data = response.json()
+
+    # Assert
+    assert response.status_code == 200
+    assert len(data) == 2
+    for el in data:
+        assert el["id"] in (transaction_2_id, transaction_4_id)
