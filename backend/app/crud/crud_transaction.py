@@ -7,6 +7,7 @@ from sqlalchemy import exc as sqlExc
 from app import crud
 from app.crud.base import CRUDBase
 from app.error_models import TransactionError
+from app.error_models.transaction_errors import TransactionPermissionError
 from app.models import (
     Card,
     UserCardLink,
@@ -200,8 +201,8 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
         ]
 
         if transaction.wallet_receiver not in user_wallets_ids:
-            raise TransactionError(
-                "You are  not associated with the wallet receiver of the transaction"
+            raise TransactionPermissionError(
+                "You are not associated with the wallet receiver of the transaction"
             )
 
         if transaction.status == "success":

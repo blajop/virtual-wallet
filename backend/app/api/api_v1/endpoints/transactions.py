@@ -5,6 +5,7 @@ from sqlmodel import Session
 
 from app import crud, deps
 from app.error_models import TransactionError
+from app.error_models.transaction_errors import TransactionPermissionError
 from app.models import User, Transaction, TransactionCreate
 from app.models.msg import Msg
 
@@ -79,6 +80,9 @@ def confirm_transaction(
         raise HTTPException(status_code=404)
 
     try:
-        crud.transaction.accept(db=db, transaction=transaction, user=logged_user)
-    except TransactionError as e:
-        raise HTTPException(status_code=400, detail=e.args[0])
+        try:
+            crud.transaction.accept(db=db, transaction=transaction, user=logged_user)
+        except TransactionPermissionError as err:
+            raise HTTPException(status_code=403, detail=err.args[0])
+    except TransactionError as err:
+        raise HTTPException(status_code=400, detail=err.args[0])
