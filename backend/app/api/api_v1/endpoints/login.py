@@ -53,6 +53,7 @@ def sign_up(
     referrer: Optional[str] = None,
     db: Session = Depends(deps.get_db),
 ):
+    print(new_user)
     # referrer should lose a refer spot in his UserSettings
     if referrer:
         referrer_mail = util_mail.verify_email_link_token(referrer)

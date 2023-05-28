@@ -32,6 +32,7 @@ def _check_recurring_payments():
             # generate a new transaction
             new_transaction = Transaction.from_orm(transaction)
             new_transaction.id = util_id.generate_id()
+            # change new_transaction dates
 
             transaction.recurring = None
 
