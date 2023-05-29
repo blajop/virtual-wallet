@@ -15,10 +15,12 @@ import AlertTitle from "@mui/material/AlertTitle";
 const steps = ["New User", "Two", "Aide"];
 
 export default function RegisterStepper() {
-  const { form, render } = Register();
-  const pages = [render, <Home />];
-  const [dataCheck, setDataCheck] = useState(false);
   const [alert, setAlert] = useState(false);
+  const [alertMsg, setAlertMsg] = useState("");
+  const { form, render } = Register({
+    wrongInputMsg: alertMsg,
+  });
+  const pages = [render, <Home />];
   const [activeStep, setActiveStep] = useState(0);
   const [activePage, setActivePage] = useState(0);
 
@@ -30,18 +32,17 @@ export default function RegisterStepper() {
         .then((response) => {
           console.log(response.data);
           if (response.status === 200) {
-            setDataCheck(true);
-            console.log(form);
+            setActiveStep((prevActiveStep) => prevActiveStep + 1);
+            setActivePage((prevActivePage) => prevActivePage + 1);
+            setAlert(false);
+            setAlertMsg("");
           }
         })
         .catch((err: AxiosError) => {
-          console.log(err.response.data);
           setAlert(true);
+          setAlertMsg(err.response.data["detail"]);
         });
     }
-
-    // setActiveStep((prevActiveStep) => prevActiveStep + 1);
-    // setActivePage((prevActivePage) => prevActivePage + 1);
   };
   // BACK BUTTON HANDLER
   const handleBack = () => {
@@ -90,9 +91,15 @@ export default function RegisterStepper() {
             </Button>
           </Box>
           <Collapse in={alert}>
-            <Alert severity="error">
+            <Alert
+              severity="error"
+              onClose={() => {
+                setAlert(false);
+                setAlertMsg("");
+              }}
+            >
               <AlertTitle>
-                <strong>Data Taken!</strong>
+                <strong>{alertMsg}</strong>
               </AlertTitle>
             </Alert>
           </Collapse>

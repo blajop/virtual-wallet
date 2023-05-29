@@ -6,7 +6,12 @@ import TextField from "@mui/material/TextField";
 import { Fragment, useState } from "react";
 import axios from "axios";
 
-export default function Register() {
+interface Props {
+  wrongInputMsg: string;
+}
+
+export default function Register(props: Props) {
+  let wrongInput: string = props.wrongInputMsg;
   const [form, setForm] = useState({
     username: "",
     f_name: "",
@@ -49,7 +54,6 @@ export default function Register() {
           <div className="w-[350px] justify-center gap-[10px] rounded p-[40px] bg-blue-50 flex flex-col">
             <TextField
               required
-              id="outlined-required"
               name="f_name"
               label="First name"
               autoComplete="none"
@@ -57,7 +61,6 @@ export default function Register() {
             />
             <TextField
               required
-              id="outlined-required"
               name="l_name"
               label="Last name"
               autoComplete="none"
@@ -66,18 +69,18 @@ export default function Register() {
 
             <TextField
               required
-              id="outlined-required"
               label="Email"
               name="email"
               autoComplete="email"
+              error={wrongInput === "Email is already taken"}
               onChange={handleInput}
             />
             <TextField
               required
-              id="outlined-required"
               label="Phone number"
               name="phone"
               autoComplete="phone"
+              error={wrongInput === "Phone number is already taken"}
               onChange={handleInput}
             />
           </div>
@@ -85,15 +88,15 @@ export default function Register() {
           <div className="w-[350px] justify-center gap-[10px] rounded p-[40px] bg-blue-50 flex flex-col">
             <TextField
               required
-              id="outlined-required"
               label="Username"
               name="username"
+              error={wrongInput === "Username is already taken"}
               onChange={handleInput}
+              autocomplete=""
             />
 
             <TextField
               required
-              id="outlined-password-input"
               label="Password"
               type="password"
               name="password"
@@ -103,7 +106,6 @@ export default function Register() {
 
             <TextField
               required
-              id="outlined-password-input"
               label="Confirm password"
               type="password"
               autoComplete="new-password"
