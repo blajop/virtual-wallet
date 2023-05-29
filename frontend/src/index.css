@@ -19,8 +19,18 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  
 }
 
+html::-webkit-scrollbar {
+  display: none;
+}
+.wawa::-webkit-scrollbar {
+  display: none;
+}
 body {
   margin: 0;
 }

@@ -19,10 +19,28 @@ const pages = [
 ];
 
 interface HeaderProps {
-  children: React.ReactNode;
+  children: React.ReactElement;
 }
 
 function Header(props: HeaderProps) {
+  const [showLogo, setShowLogo] = React.useState(true);
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY;
+      if (scrollPosition > 0) {
+        setShowLogo(false);
+      } else {
+        setShowLogo(true);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(
     null
   );
@@ -38,20 +56,20 @@ function Header(props: HeaderProps) {
   return (
     <>
       <AppBar
-        position="fixed"
+        position="sticky"
         sx={{
           boxShadow: "none",
           borderBottom: "solid 1px black",
           backgroundColor: "white",
+          // mixBlendMode: "difference",
         }}
       >
-        <Container maxWidth="md">
+        <Container maxWidth="lg">
           <Toolbar disableGutters>
             <Typography
               variant="h6"
               noWrap
               component="a"
-              href="/"
               sx={{
                 mr: 2,
                 display: { xs: "none", md: "flex" },
@@ -62,7 +80,25 @@ function Header(props: HeaderProps) {
                 textDecoration: "none",
               }}
             >
-              <Logo size={"h-[2rem]"} />
+              <NavLink
+                to="/"
+                style={{ textDecoration: "none", color: "white" }}
+              >
+                {showLogo ? (
+                  <Logo
+                    size={"h-[2rem] top-[1rem] invert mix-blend-difference"}
+                  />
+                ) : (
+                  <>
+                    <Logo size={"h-[2rem] top-[1rem]  mix-blend-difference"} />
+                    <Logo
+                      size={
+                        "h-[2rem] top-[1rem] fixed invert mix-blend-difference"
+                      }
+                    />
+                  </>
+                )}
+              </NavLink>
             </Typography>
 
             <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
@@ -106,7 +142,6 @@ function Header(props: HeaderProps) {
               variant="h5"
               noWrap
               component="a"
-              href=""
               sx={{
                 mr: 2,
                 display: { xs: "flex", md: "none" },
@@ -118,7 +153,9 @@ function Header(props: HeaderProps) {
                 textDecoration: "none",
               }}
             >
-              <Logo size={"h-[2rem]"} />
+              <NavLink key="logo" to="/">
+                <Logo size={"h-[2rem]"} />
+              </NavLink>
             </Typography>
             <Box
               className="justify-center"
@@ -128,6 +165,7 @@ function Header(props: HeaderProps) {
                 <NavLink
                   key={page.name}
                   to={page.href}
+                  // to="#features"
                   onClick={handleCloseNavMenu}
                   className="font-helvetica font-medium  text-xl my-1 mx-10 text-black block"
                 >
