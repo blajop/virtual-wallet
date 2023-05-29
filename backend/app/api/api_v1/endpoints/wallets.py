@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlmodel import Session
 
 from app import crud, deps
+from app.error_models.wallet_errors import WalletNameError
 from app.models import User, WalletCreate
 
 router = APIRouter()
@@ -31,8 +32,10 @@ def create_wallet(
         raise HTTPException(
             status_code=403, detail="Cannot add wallets to other users!"
         )
-
-    return crud.wallet.create(db, user, new_wallet)
+    try:
+        return crud.wallet.create(db, user, new_wallet)
+    except WalletNameError as err:
+        raise HTTPException(status_code=409, detail=err.args[0])
 
 
 @router.delete("/{wallet_id}", status_code=204)

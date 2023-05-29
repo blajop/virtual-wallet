@@ -4,6 +4,7 @@ from sqlmodel import Session, select
 
 from app import crud, utils
 from app.crud.base import CRUDBase
+from app.error_models.wallet_errors import WalletNameError
 from app.models import Card, User, Wallet, WalletCreate, WalletUpdate
 from app.models.wallet import UserWalletLink
 
@@ -22,6 +23,12 @@ class CRUDWallet(CRUDBase[Wallet, WalletCreate, WalletUpdate]):
         Returns:
             Wallet model
         """
+        user_wallets_names = [
+            w.name for w in crud.wallet.get_multi_by_owner(db, user)
+        ] + [w.name for w in user.wallets]
+
+        if new_wallet.name in user_wallets_names:
+            raise WalletNameError("You already have a wallet with that name!")
 
         wallet_orm = Wallet.from_orm(new_wallet)
         wallet_orm.id = utils.util_id.generate_id()
