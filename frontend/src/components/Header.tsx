@@ -7,19 +7,16 @@ import Typography from "@mui/material/Typography";
 import Menu from "@mui/material/Menu";
 import MenuIcon from "@mui/icons-material/Menu";
 import Container from "@mui/material/Container";
-import Avatar from "@mui/material/Avatar";
-import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
-import AdbIcon from "@mui/icons-material/Adb";
 import { NavLink } from "react-router-dom";
+import Logo from "./Logo";
+import UserDropdown from "./UserDropdown";
 
 const pages = [
   { name: "Overview", href: "/" },
   { name: "Features", href: "/register" },
   { name: "Contact us", href: "/" },
 ];
-
-const settings = ["Profile", "Account", "Dashboard", "Logout"];
 
 interface HeaderProps {
   children: React.ReactNode;
@@ -29,31 +26,27 @@ function Header(props: HeaderProps) {
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(
     null
   );
-  const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(
-    null
-  );
 
   const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElNav(event.currentTarget);
-  };
-  const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorElUser(event.currentTarget);
   };
 
   const handleCloseNavMenu = () => {
     setAnchorElNav(null);
   };
 
-  const handleCloseUserMenu = () => {
-    setAnchorElUser(null);
-  };
-
   return (
     <>
-      <AppBar position="static">
-        <Container maxWidth="xl">
+      <AppBar
+        position="fixed"
+        sx={{
+          boxShadow: "none",
+          borderBottom: "solid 1px black",
+          backgroundColor: "white",
+        }}
+      >
+        <Container maxWidth="md">
           <Toolbar disableGutters>
-            <AdbIcon sx={{ display: { xs: "none", md: "flex" }, mr: 1 }} />
             <Typography
               variant="h6"
               noWrap
@@ -69,7 +62,7 @@ function Header(props: HeaderProps) {
                 textDecoration: "none",
               }}
             >
-              LOGO
+              <Logo size={"h-[2rem]"} />
             </Typography>
 
             <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
@@ -109,7 +102,6 @@ function Header(props: HeaderProps) {
                 ))}
               </Menu>
             </Box>
-            <AdbIcon sx={{ display: { xs: "flex", md: "none" }, mr: 1 }} />
             <Typography
               variant="h5"
               noWrap
@@ -126,7 +118,7 @@ function Header(props: HeaderProps) {
                 textDecoration: "none",
               }}
             >
-              LOGO
+              <Logo size={"h-[2rem]"} />
             </Typography>
             <Box
               className="justify-center"
@@ -137,47 +129,22 @@ function Header(props: HeaderProps) {
                   key={page.name}
                   to={page.href}
                   onClick={handleCloseNavMenu}
-                  className="font-mono hover:font-bold font-light text-xl my-1 mx-10 text-white block"
+                  className="font-helvetica font-medium  text-xl my-1 mx-10 text-black block"
                 >
                   {page.name}
                 </NavLink>
               ))}
             </Box>
-
-            {/* TUKA E MENUTO NA AVATARA */}
-            {true && (
-              <Box sx={{ flexGrow: 0 }}>
-                <Tooltip title="Open settings">
-                  <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                    <Avatar
-                      alt="Remy Sharp"
-                      src="/static/images/avatar/2.jpg"
-                    />
-                  </IconButton>
-                </Tooltip>
-                <Menu
-                  sx={{ mt: "45px" }}
-                  id="menu-appbar"
-                  anchorEl={anchorElUser}
-                  anchorOrigin={{
-                    vertical: "top",
-                    horizontal: "right",
-                  }}
-                  keepMounted
-                  transformOrigin={{
-                    vertical: "top",
-                    horizontal: "right",
-                  }}
-                  open={Boolean(anchorElUser)}
-                  onClose={handleCloseUserMenu}
-                >
-                  {settings.map((setting) => (
-                    <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                      <Typography textAlign="center">{setting}</Typography>
-                    </MenuItem>
-                  ))}
-                </Menu>
-              </Box>
+            {<UserDropdown /> ? (
+              true
+            ) : (
+              <NavLink
+                key="login"
+                to="/login"
+                className="font-mono hover:font-bold font-light text-xl my-1 mx-10 text-black block"
+              >
+                Login
+              </NavLink>
             )}
           </Toolbar>
         </Container>
