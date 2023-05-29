@@ -11,16 +11,16 @@ export default function Home() {
       <CssBaseline />
       <div
         style={{ height: `calc(100vh - 64px)` }}
-        className="wawa snap-mandatory snap-y overflow-y-scroll scroll-smooth"
+        className="wawa snap-mandatory snap-y overflow-y-scroll "
       >
         <Overview></Overview>
         <Features></Features>
+        <ScrollTop>
+          <Fab size="small" aria-label="scroll back to top">
+            <KeyboardArrowUpIcon />
+          </Fab>
+        </ScrollTop>
       </div>
-      <ScrollTop>
-        <Fab size="small" aria-label="scroll back to top">
-          <KeyboardArrowUpIcon />
-        </Fab>
-      </ScrollTop>
     </>
   );
 }

@@ -22,9 +22,10 @@ export default function Overview() {
       <Container
         id="back-to-top-anchor"
         maxWidth={"lg"}
-        className="pt-60 snap-start "
+        className="align-center snap-start "
         sx={{
           display: "flex",
+          alignItems: "center",
           justifyContent: "center",
           scrollSnapAlign: "start",
           height: "calc(100vh - 64px)",

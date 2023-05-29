@@ -19,11 +19,11 @@ const pages = [
 ];
 
 interface HeaderProps {
-  children: React.ReactElement;
+  children: React.ReactNode;
 }
 
 function Header(props: HeaderProps) {
-  const [showLogo, setShowLogo] = React.useState(true);
+  const [showLogo, setShowLogo] = React.useState<boolean>(true);
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -69,11 +69,10 @@ function Header(props: HeaderProps) {
             <Typography
               variant="h6"
               noWrap
-              component="a"
               sx={{
                 mr: 2,
                 display: { xs: "none", md: "flex" },
-                fontFamily: "monospace",
+                fontFamily: "Helvetica",
                 fontWeight: 700,
                 letterSpacing: ".3rem",
                 color: "inherit",
@@ -141,12 +140,11 @@ function Header(props: HeaderProps) {
             <Typography
               variant="h5"
               noWrap
-              component="a"
               sx={{
                 mr: 2,
                 display: { xs: "flex", md: "none" },
                 flexGrow: 1,
-                fontFamily: "monospace",
+                fontFamily: "Helvetica",
                 fontWeight: 700,
                 letterSpacing: ".3rem",
                 color: "inherit",
@@ -173,13 +171,13 @@ function Header(props: HeaderProps) {
                 </NavLink>
               ))}
             </Box>
-            {<UserDropdown /> ? (
-              true
+            {false ? (
+              <UserDropdown />
             ) : (
               <NavLink
                 key="login"
                 to="/login"
-                className="font-mono hover:font-bold font-light text-xl my-1 mx-10 text-black block"
+                className="font-helvetica font-medium text-xl my-1 mx-10 text-black block"
               >
                 Login
               </NavLink>

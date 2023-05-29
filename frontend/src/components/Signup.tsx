@@ -45,13 +45,13 @@ export default function Register(props: Props) {
   return {
     form,
     render: (
-      <Fragment>
+      <>
         <form
           id="form"
-          className="flex justify-center mt-20"
+          className="flex justify-center "
           onSubmit={handleSubmit}
         >
-          <div className="w-[350px] justify-center gap-[10px] rounded p-[40px] bg-blue-50 flex flex-col">
+          <div className=" justify-center gap-[10px] rounded p-[40px] bg-blue-50 flex flex-col">
             <TextField
               required
               name="f_name"
@@ -92,7 +92,7 @@ export default function Register(props: Props) {
               name="username"
               error={wrongInput === "Username is already taken"}
               onChange={handleInput}
-              autocomplete=""
+              autoComplete="none"
             />
 
             <TextField
@@ -129,7 +129,7 @@ export default function Register(props: Props) {
           </Collapse>
         </div> */}
         </form>
-      </Fragment>
+      </>
     ),
   };
 }
