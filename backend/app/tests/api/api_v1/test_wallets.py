@@ -30,8 +30,8 @@ def test_create_wallets(client: TestClient, user, admin, session: Session):
     session.refresh(user2)
 
     # Create the wallets to be added
-    wallet1 = WalletCreate(currency="USD")
-    wallet2 = WalletCreate(currency="BGN")
+    wallet1 = WalletCreate(currency="USD", name="4i4o's")
+    wallet2 = WalletCreate(currency="BGN", name="Uncle's")
 
     # Successfully create 2 wallets
     response = client.post(f"/api/v1/users/{user1.username}/wallets", json=js(wallet1))

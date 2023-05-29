@@ -84,15 +84,15 @@ def random_admin() -> UserCreate:
     return user
 
 
-def random_wallet(owner: User, currency: str, balance: int = 200) -> Wallet:
-    wallet = WalletCreate(
-        currency=currency,
-    )
+def random_wallet(
+    owner: User, currency: str, balance: int = 200, name: str = "Uncle's"
+) -> Wallet:
+    wallet = WalletCreate(currency=currency, name=name)
     wallet = Wallet.from_orm(wallet)
     wallet.id = util_id.generate_id()
     wallet.owner = owner
     wallet.balance = balance
-    # wallet.owner_id = owner.id
+    wallet.name = name
 
     return wallet
 
