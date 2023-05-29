@@ -73,6 +73,17 @@ def sign_up(
     return registered_user
 
 
+@router.post("/data-unique")
+def verify_data_not_taken(
+    new_user: UserCreate,
+    db: Session = Depends(deps.get_db),
+):
+    try:
+        return crud.user.user_data_taken(db, user=new_user)
+    except DataTakenError as err:
+        raise HTTPException(status_code=409, detail=err.args[0])
+
+
 @router.get("/verify/{token}")
 def verify_email(token, db: Session = Depends(deps.get_db)):
     user_email = util_mail.verify_email_link_token(token)
