@@ -1,0 +1,2 @@
+class WalletNameError(ValueError):
+    pass
