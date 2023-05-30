@@ -1,6 +1,5 @@
 import TextField from "@mui/material/TextField";
-import axios from "axios";
-import { FormEvent, Fragment, useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 
 interface Props {
   alertUsername: boolean;
@@ -13,7 +12,7 @@ export default function Register(props: Props) {
   const alertEmail = props.alertEmail;
   const alertPhone = props.alertPhone;
   const [alertConfirmPass, setalertConfirmPass] = useState(false);
-  const [ConfirmPass, setConfirmPass] = useState("");
+  const [confirmPass, setConfirmPass] = useState("");
 
   const [formReg, setFormReg] = useState({
     username: "",
@@ -38,19 +37,20 @@ export default function Register(props: Props) {
 
   useEffect(() => {
     if (
-      ConfirmPass != "" &&
+      confirmPass != "" &&
       formReg["password"] != "" &&
-      ConfirmPass != formReg["password"]
+      confirmPass != formReg["password"]
     ) {
       setalertConfirmPass(true);
     } else {
       setalertConfirmPass(false);
     }
-  }, [ConfirmPass, formReg["password"]]);
+  }, [confirmPass, formReg["password"]]);
 
   return {
     formReg,
     alertConfirmPass,
+    confirmPass,
     renderReg: (
       <>
         <form

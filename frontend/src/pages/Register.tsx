@@ -16,7 +16,7 @@ export default function RegisterStepper() {
   const [alertUsername, setAlertUsername] = useState(false);
   const [alertEmail, setAlertEmail] = useState(false);
   const [alertPhone, setAlertPhone] = useState(false);
-  const { formReg, alertConfirmPass, renderReg } = Register({
+  const { formReg, alertConfirmPass, confirmPass, renderReg } = Register({
     alertUsername: alertUsername,
     alertEmail: alertEmail,
     alertPhone: alertPhone,
@@ -31,6 +31,8 @@ export default function RegisterStepper() {
     f_name: formReg["f_name"],
     l_name: formReg["l_name"],
   });
+
+  const [canSubmit, setCanSubmit] = useState(false);
 
   const pages = [renderReg, renderWall];
   const [activeStep, setActiveStep] = useState(0);
@@ -90,27 +92,36 @@ export default function RegisterStepper() {
     }
   }, [phone]);
 
+  useEffect(() => {
+    const conditions = [
+      !alertConfirmPass,
+      !alertUsername,
+      !alertEmail,
+      !alertPhone,
+    ];
+    const conditions2 = [
+      formReg["f_name"],
+      formReg["l_name"],
+      formReg["username"],
+      formReg["email"],
+      formReg["phone"],
+      formReg["password"],
+      confirmPass,
+    ];
+    if (
+      conditions.every((element) => element === true) &&
+      conditions2.every((element) => element != "")
+    ) {
+      setCanSubmit(true);
+    } else {
+      setCanSubmit(false);
+    }
+  });
+
   // NEXT BUTTON HANDLER
   const handleNext = () => {
     if (activeStep === 0) {
-      const conditions = [
-        !alertConfirmPass,
-        !alertUsername,
-        !alertEmail,
-        !alertPhone,
-      ];
-      const conditions2 = [
-        formReg["f_name"],
-        formReg["l_name"],
-        formReg["username"],
-        formReg["email"],
-        formReg["phone"],
-        formReg["password"],
-      ];
-      if (
-        conditions.every((element) => element === true) &&
-        conditions2.every((element) => element != "")
-      ) {
+      if (canSubmit === true) {
         axios
           .post("http://localhost:8000/api/v1/signup", formReg)
           .then((response) => {
@@ -167,6 +178,7 @@ export default function RegisterStepper() {
               onClick={handleNext}
               variant="outlined"
               size="large"
+              disabled={!canSubmit}
               sx={{
                 paddingY: "0rem",
                 paddingX: "6rem",
