@@ -4,59 +4,97 @@ import Step from "@mui/material/Step";
 import StepLabel from "@mui/material/StepLabel";
 import Stepper from "@mui/material/Stepper";
 import Typography from "@mui/material/Typography";
-import { Fragment, ReactNode, useState } from "react";
+import { Fragment, ReactNode, useState, useEffect } from "react";
 import Register from "../components/Signup";
-import Home from "./Home";
 import axios, { AxiosError } from "axios";
-import Collapse from "@mui/material/Collapse";
-import Alert from "@mui/material/Alert";
-import AlertTitle from "@mui/material/AlertTitle";
 import WalletCreate from "../components/WalletCreate";
 import Container from "@mui/system/Container/Container";
 
-const steps = ["New User", "Two", "Aide"];
+const steps = ["New User", "Create Wallet", "Finish"];
 
 export default function RegisterStepper() {
-  const [alert, setAlert] = useState(false);
-  const [alertMsg, setAlertMsg] = useState("");
+  const [alertUsername, setAlertUsername] = useState(false);
+  const [alertEmail, setAlertEmail] = useState(false);
+  const [alertPhone, setAlertPhone] = useState(false);
   const { formReg, renderReg } = Register({
-    wrongRegInputMsg: alertMsg,
+    alertUsername: alertUsername,
+    alertEmail: alertEmail,
+    alertPhone: alertPhone,
   });
+  const username = formReg["username"];
+  const email = formReg["email"];
+  const phone = formReg["phone"];
+
   const [wallAlertMsg, setWallAlertMsg] = useState("");
   const { formWall, renderWall } = WalletCreate({
     wrongWallInputMsg: wallAlertMsg,
     f_name: formReg["f_name"],
     l_name: formReg["l_name"],
   });
+
   const pages = [renderReg, renderWall];
   const [activeStep, setActiveStep] = useState(0);
   const [activePage, setActivePage] = useState(0);
 
+  useEffect(() => {
+    if (username != "") {
+      setTimeout(() => {
+        axios
+          .get(`http://localhost:8000/api/v1/username-unique/${username}`)
+          .then((response) => {
+            console.log(response.data);
+            if (response.status === 200) {
+              setAlertUsername(false);
+            }
+          })
+          .catch((err: AxiosError) => {
+            setAlertUsername(true);
+          });
+      }, 500);
+    }
+  }, [username]);
+
+  useEffect(() => {
+    if (email != "") {
+      setTimeout(() => {
+        axios
+          .get(`http://localhost:8000/api/v1/email-unique/${email}`)
+          .then((response) => {
+            console.log(response.data);
+            if (response.status === 200) {
+              setAlertEmail(false);
+            }
+          })
+          .catch((err: AxiosError) => {
+            setAlertEmail(true);
+          });
+      }, 500);
+    }
+  }, [email]);
+
+  useEffect(() => {
+    if (phone != "") {
+      setTimeout(() => {
+        axios
+          .get(`http://localhost:8000/api/v1/phone-unique/${phone}`)
+          .then((response) => {
+            console.log(response.data);
+            if (response.status === 200) {
+              setAlertPhone(false);
+            }
+          })
+          .catch((err: AxiosError) => {
+            setAlertPhone(true);
+          });
+      }, 500);
+    }
+  }, [phone]);
+
   // NEXT BUTTON HANDLER
   const handleNext = () => {
-    if (activeStep === 0) {
-      axios
-        .post("http://localhost:8000/api/v1/data-unique", formReg)
-        .then((response) => {
-          console.log(response.data);
-          if (response.status === 200) {
-            setActiveStep((prevActiveStep) => prevActiveStep + 1);
-            setActivePage((prevActivePage) => prevActivePage + 1);
-            setAlert(false);
-            setAlertMsg("");
-          }
-        })
-        .catch((err: AxiosError) => {
-          setAlert(true);
-          setAlertMsg(err.response.data["detail"]);
-        });
-    }
+    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+    setActivePage((prevActivePage) => prevActivePage + 1);
   };
-  // BACK BUTTON HANDLER
-  // const handleBack = () => {
-  //   setActiveStep((prevActiveStep) => prevActiveStep - 1);
-  //   setActivePage((prevActivePage) => prevActivePage - 1);
-  // };
 
   return (
     <Container
@@ -89,38 +127,16 @@ export default function RegisterStepper() {
           <Box
             sx={{
               display: "flex",
-              flexDirection: "row",
-              justifyContent: "space-between",
+              justifyContent: "center",
               pt: 2,
             }}
           >
-            {/* BACK BUTTON */}
-            {/* <Button
-              disabled={activeStep === 0}
-              onClick={handleBack}
-              size="large"
-              sx={{
-                borderColor: "black",
-                color: "black",
-                paddingX: "6rem",
-                textTransform: "none",
-                "&:hover": {
-                  borderColor: "black",
-                  textDecoration: "underline",
-                  backgroundColor: "white",
-                },
-              }}
-            >
-              Back
-            </Button> */}
-
             {/* NEXT BUTTON */}
             <Button
               onClick={handleNext}
               variant="outlined"
               size="large"
               sx={{
-                marginLeft: "auto",
                 paddingY: "0rem",
                 paddingX: "6rem",
                 color: "white",
@@ -136,19 +152,6 @@ export default function RegisterStepper() {
               {activeStep === steps.length - 1 ? "Finish" : "Next"}
             </Button>
           </Box>
-          <Collapse in={alert}>
-            <Alert
-              severity="error"
-              onClose={() => {
-                setAlert(false);
-                setAlertMsg("");
-              }}
-            >
-              <AlertTitle>
-                <strong>{alertMsg}</strong>
-              </AlertTitle>
-            </Alert>
-          </Collapse>
         </Fragment>
       )}
     </Container>

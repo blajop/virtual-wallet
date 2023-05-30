@@ -60,7 +60,7 @@ def get_user(
     logged_user: User = Depends(deps.get_current_user),
 ):
     """
-    Returns a User model from username, email or id search
+    Returns a User model from username, email, phone or id search
     """
     user = crud.user.get(db, identifier)
 

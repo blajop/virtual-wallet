@@ -78,6 +78,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
                     self.model.id == identifier,
                     self.model.username == identifier,
                     self.model.email == identifier,
+                    self.model.phone == identifier,
                 )
             )
         ).first()
@@ -123,6 +124,24 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         if result:
             raise DataTakenError("Phone number is already taken")
 
+        return False
+
+    def username_taken(self, db: Session, *, username: str):
+        result = db.scalar(select(User).filter(User.username == username))
+        if result:
+            raise DataTakenError("Username is already taken")
+        return False
+
+    def email_taken(self, db: Session, *, email: str):
+        result = db.scalar(select(User).filter(User.email == email))
+        if result:
+            raise DataTakenError("Email is already taken")
+        return False
+
+    def phone_taken(self, db: Session, *, phone: str):
+        result = db.scalar(select(User).filter(User.phone == phone))
+        if result:
+            raise DataTakenError("Phone is already taken")
         return False
 
     def refer_friend(self, *, user: User, email: str, db: Session):
