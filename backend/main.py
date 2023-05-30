@@ -5,6 +5,8 @@ from app.core import settings
 from app.api.api_v1.api import api_router
 from app.core.init_data import _init_data
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -31,5 +33,6 @@ app.add_middleware(
 #     scheduler.add_job(_init_data, "cron", hour=8)
 #     scheduler.start()
 
+app.mount("/static", StaticFiles(directory="./app/static"), name="static")
 
 app.include_router(api_router, prefix=settings.API_V1_STR)

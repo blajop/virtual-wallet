@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Any, Optional
+from typing import Annotated, Any, Optional
 
 from fastapi import APIRouter, BackgroundTasks, Body, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
@@ -17,7 +17,8 @@ router = APIRouter()
 
 @router.post("/login/access-token", response_model=models.Token)
 def login_access_token(
-    db: Session = Depends(deps.get_db), form_data: OAuth2PasswordRequestForm = Depends()
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    db: Session = Depends(deps.get_db),
 ) -> Any:
     """
     OAuth2 compatible token login, get an access token for future requests
@@ -30,6 +31,7 @@ def login_access_token(
 
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     return {
+        "user_id": user.id,
         "access_token": security.create_access_token(
             user.username, expires_delta=access_token_expires
         ),
