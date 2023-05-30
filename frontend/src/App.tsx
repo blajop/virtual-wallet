@@ -1,17 +1,33 @@
+import React, { createContext, useState, useEffect } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Header from "./components/Header";
 import Home from "./pages/Home";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
-import { createContext, useState } from "react";
+import Welcome from "./pages/Welcome";
 
 export const LoginContext = createContext();
 
 function App() {
   const [loggedIn, setLoggedIn] = useState(false);
+  const [firstTimeVisit, setFirstTimeVisit] = useState(true);
+
+  useEffect(() => {
+    const visitedBefore = localStorage.getItem("visitedBefore");
+    if (visitedBefore) {
+      setFirstTimeVisit(false);
+    } else {
+      setFirstTimeVisit(true);
+      setTimeout(() => {
+        localStorage.setItem("visitedBefore", "true");
+      }, 2000);
+    }
+  }, []);
+
   return (
     <LoginContext.Provider value={[loggedIn, setLoggedIn]}>
       <BrowserRouter>
+        {firstTimeVisit && <Welcome />}
         <Header>
           <Routes>
             <Route path="/" element={<Home />} />
