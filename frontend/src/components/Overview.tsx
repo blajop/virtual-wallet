@@ -34,14 +34,33 @@ export default function Overview() {
         <Box
           component="div"
           sx={{
-            display: "inline-block",
-            width: "fit-content",
+            display: "flex",
+            flexDirection: "column",
+            "@media (max-width: 600px)": {
+              justifyContent: "center",
+              paddingBottom: "80px",
+            },
           }}
         >
-          <Logo size={"h-[6rem]"} />
+          <Box
+            sx={{
+              display: "flex",
+              height: "6rem",
+              "@media (max-width: 600px)": {
+                justifyContent: "center",
+              },
+            }}
+          >
+            <Logo size={"h-[6rem]"} />
+          </Box>
           <Typography
             variant="h6"
-            sx={{ letterSpacing: 0.6 }}
+            sx={{
+              letterSpacing: 0.6,
+              "@media (max-width: 600px)": {
+                textAlign: "center",
+              },
+            }}
             className="text-black font-bold"
           >
             Join Uncle’s wallet and never worry about your spendings again.
@@ -52,6 +71,10 @@ export default function Overview() {
               justifyContent: "flex-end",
               gap: "1rem",
               mt: "2rem",
+              "@media (max-width: 600px)": {
+                justifyContent: "center",
+                textAlign: "center",
+              },
             }}
           >
             <Button

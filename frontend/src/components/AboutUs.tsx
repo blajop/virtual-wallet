@@ -35,6 +35,7 @@ export default function AboutUs() {
           justifyContent: "center",
           scrollSnapAlign: "start",
           height: "calc(100vh - 60px)",
+          paddingBottom: "180px",
         }}
       >
         <Box className="flex gap-10">

@@ -56,6 +56,7 @@ export default function Features() {
             width: "lg",
             display: "flex",
             alignItems: "center",
+            marginBottom: "60px",
           }}
         >
           <UncontrolledExample items={features} />{" "}
