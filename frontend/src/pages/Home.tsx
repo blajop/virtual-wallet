@@ -4,6 +4,7 @@ import Fab from "@mui/material/Fab/Fab";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import CssBaseline from "@mui/material/CssBaseline/CssBaseline";
 import ScrollTop from "../components/ScrollTop";
+import AboutUs from "../components/AboutUs";
 
 export default function Home() {
   return (
@@ -15,6 +16,7 @@ export default function Home() {
       >
         <Overview></Overview>
         <Features></Features>
+        <AboutUs></AboutUs>
         <ScrollTop>
           <Fab size="small" aria-label="scroll back to top">
             <KeyboardArrowUpIcon />
