@@ -26,7 +26,7 @@ export default function Home() {
         >
           <Logo size={"h-[6rem]"} />
           <Typography
-            variant="h6"
+            variant="h5"
             sx={{ letterSpacing: 0.6 }}
             className="text-black font-bold"
           >

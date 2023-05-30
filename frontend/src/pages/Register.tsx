@@ -77,16 +77,43 @@ export default function RegisterStepper() {
           <Box sx={{ display: "flex", flexDirection: "row", pt: 2 }}>
             {/* BACK BUTTON */}
             <Button
-              color="inherit"
               disabled={activeStep === 0}
               onClick={handleBack}
-              sx={{ mr: 1 }}
+              size="large"
+              sx={{
+                borderColor: "black",
+                color: "black",
+                paddingX: "6rem",
+                textTransform: "none",
+                "&:hover": {
+                  borderColor: "black",
+                  textDecoration: "underline",
+                  backgroundColor: "white",
+                },
+              }}
             >
               Back
             </Button>
 
             {/* NEXT BUTTON */}
-            <Button onClick={handleNext}>
+            <Button
+              onClick={handleNext}
+              variant="outlined"
+              size="large"
+              sx={{
+                marginLeft: "auto",
+                paddingY: "0rem",
+                paddingX: "6rem",
+                color: "white",
+                backgroundColor: "black",
+                textTransform: "none",
+                "&:hover": {
+                  backgroundColor: "white",
+                  color: "black",
+                  borderColor: "black",
+                },
+              }}
+            >
               {activeStep === steps.length - 1 ? "Finish" : "Next"}
             </Button>
           </Box>
