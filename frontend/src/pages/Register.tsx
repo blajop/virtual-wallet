@@ -16,7 +16,7 @@ export default function RegisterStepper() {
   const [alertUsername, setAlertUsername] = useState(false);
   const [alertEmail, setAlertEmail] = useState(false);
   const [alertPhone, setAlertPhone] = useState(false);
-  const { formReg, renderReg } = Register({
+  const { formReg, alertConfirmPass, renderReg } = Register({
     alertUsername: alertUsername,
     alertEmail: alertEmail,
     alertPhone: alertPhone,
@@ -92,8 +92,39 @@ export default function RegisterStepper() {
 
   // NEXT BUTTON HANDLER
   const handleNext = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
-    setActivePage((prevActivePage) => prevActivePage + 1);
+    if (activeStep === 0) {
+      const conditions = [
+        !alertConfirmPass,
+        !alertUsername,
+        !alertEmail,
+        !alertPhone,
+      ];
+      const conditions2 = [
+        formReg["f_name"],
+        formReg["l_name"],
+        formReg["username"],
+        formReg["email"],
+        formReg["phone"],
+        formReg["password"],
+      ];
+      if (
+        conditions.every((element) => element === true) &&
+        conditions2.every((element) => element != "")
+      ) {
+        axios
+          .post("http://localhost:8000/api/v1/signup", formReg)
+          .then((response) => {
+            if (response.status === 200) {
+              setActiveStep((prevActiveStep) => prevActiveStep + 1);
+              setActivePage((prevActivePage) => prevActivePage + 1);
+            }
+          })
+          .catch((err: AxiosError) => console.log(err));
+      }
+    } else {
+      setActiveStep((prevActiveStep) => prevActiveStep + 1);
+      setActivePage((prevActivePage) => prevActivePage + 1);
+    }
   };
 
   return (
