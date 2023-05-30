@@ -1,18 +1,14 @@
-// import Button from "@mui/base/Button";
-// import Alert from "@mui/material/Alert";
-// import AlertTitle from "@mui/material/AlertTitle";
-// import Collapse from "@mui/material/Collapse";
 import TextField from "@mui/material/TextField";
 import { Fragment, useState } from "react";
 import axios from "axios";
 
 interface Props {
-  wrongInputMsg: string;
+  wrongRegInputMsg: string;
 }
 
 export default function Register(props: Props) {
-  let wrongInput: string = props.wrongInputMsg;
-  const [form, setForm] = useState({
+  let wrongInput: string = props.wrongRegInputMsg;
+  const [formReg, setFormReg] = useState({
     username: "",
     f_name: "",
     l_name: "",
@@ -24,13 +20,13 @@ export default function Register(props: Props) {
   const [open, setOpen] = useState(false);
 
   const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [event.target.name]: event.target.value });
+    setFormReg({ ...formReg, [event.target.name]: event.target.value });
   };
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     axios
-      .post("http://localhost:8000/api/v1/signup", form)
+      .post("http://localhost:8000/api/v1/signup", formReg)
       .then((response) => {
         if (response.status === 200) {
           setOpen(true);
@@ -43,15 +39,15 @@ export default function Register(props: Props) {
   }
 
   return {
-    form,
-    render: (
+    formReg,
+    renderReg: (
       <Fragment>
         <form
           id="form"
           className="flex justify-center mt-20"
           onSubmit={handleSubmit}
         >
-          <div className="w-[350px] justify-center gap-[10px] rounded p-[40px] bg-blue-50 flex flex-col">
+          <div className="w-[350px] justify-center gap-[10px] rounded p-[40px] flex flex-col">
             <TextField
               required
               name="f_name"
@@ -85,14 +81,14 @@ export default function Register(props: Props) {
             />
           </div>
 
-          <div className="w-[350px] justify-center gap-[10px] rounded p-[40px] bg-blue-50 flex flex-col">
+          <div className="w-[350px] justify-center gap-[10px] rounded p-[40px] flex flex-col">
             <TextField
               required
               label="Username"
               name="username"
               error={wrongInput === "Username is already taken"}
               onChange={handleInput}
-              autocomplete=""
+              autoComplete="username"
             />
 
             <TextField
@@ -111,23 +107,6 @@ export default function Register(props: Props) {
               autoComplete="new-password"
             />
           </div>
-          {/* <div className="mt-20">
-          <Button
-            sx={{ fontWeight: "bold", fontSize: "1rem", mt: "20px" }}
-            variant="contained"
-            type="submit"
-          >
-            Register
-          </Button>
-          <Collapse in={open}>
-            <Alert severity="success">
-              <AlertTitle>
-                <strong>Successful registration</strong>
-              </AlertTitle>
-              You will now be redirected to the homepage.
-            </Alert>
-          </Collapse>
-        </div> */}
         </form>
       </Fragment>
     ),

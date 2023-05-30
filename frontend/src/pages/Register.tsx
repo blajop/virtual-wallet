@@ -11,16 +11,23 @@ import axios, { AxiosError } from "axios";
 import Collapse from "@mui/material/Collapse";
 import Alert from "@mui/material/Alert";
 import AlertTitle from "@mui/material/AlertTitle";
+import WalletCreate from "../components/WalletCreate";
 
 const steps = ["New User", "Two", "Aide"];
 
 export default function RegisterStepper() {
   const [alert, setAlert] = useState(false);
   const [alertMsg, setAlertMsg] = useState("");
-  const { form, render } = Register({
-    wrongInputMsg: alertMsg,
+  const { formReg, renderReg } = Register({
+    wrongRegInputMsg: alertMsg,
   });
-  const pages = [render, <Home />];
+  const [wallAlertMsg, setWallAlertMsg] = useState("");
+  const { formWall, renderWall } = WalletCreate({
+    wrongWallInputMsg: wallAlertMsg,
+    f_name: formReg["f_name"],
+    l_name: formReg["l_name"],
+  });
+  const pages = [renderReg, renderWall];
   const [activeStep, setActiveStep] = useState(0);
   const [activePage, setActivePage] = useState(0);
 
@@ -28,7 +35,7 @@ export default function RegisterStepper() {
   const handleNext = () => {
     if (activeStep === 0) {
       axios
-        .post("http://localhost:8000/api/v1/data-unique", form)
+        .post("http://localhost:8000/api/v1/data-unique", formReg)
         .then((response) => {
           console.log(response.data);
           if (response.status === 200) {
@@ -45,10 +52,10 @@ export default function RegisterStepper() {
     }
   };
   // BACK BUTTON HANDLER
-  const handleBack = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep - 1);
-    setActivePage((prevActivePage) => prevActivePage - 1);
-  };
+  // const handleBack = () => {
+  //   setActiveStep((prevActiveStep) => prevActiveStep - 1);
+  //   setActivePage((prevActivePage) => prevActivePage - 1);
+  // };
 
   return (
     <Box sx={{ width: "100%" }}>
@@ -76,7 +83,7 @@ export default function RegisterStepper() {
           <Typography sx={{ mt: 2, mb: 1 }}>{pages[activePage]}</Typography>
           <Box sx={{ display: "flex", flexDirection: "row", pt: 2 }}>
             {/* BACK BUTTON */}
-            <Button
+            {/* <Button
               disabled={activeStep === 0}
               onClick={handleBack}
               size="large"
@@ -93,7 +100,7 @@ export default function RegisterStepper() {
               }}
             >
               Back
-            </Button>
+            </Button> */}
 
             {/* NEXT BUTTON */}
             <Button
