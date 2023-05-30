@@ -22,7 +22,17 @@
   scrollbar-width: none;
   font-family: "Roboto","Helvetica","Arial",sans-serif;
   letter-spacing: 0.00938em;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active{
+    -webkit-box-shadow: 0 0 0 30px white inset !important;
   
+}
+input:-webkit-autofill{
+  -webkit-text-fill-color: black !important;
 }
 
 html::-webkit-scrollbar {

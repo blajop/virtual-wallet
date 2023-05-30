@@ -41,7 +41,7 @@ export default function Register(props: Props) {
   return {
     formReg,
     renderReg: (
-      <Fragment>
+      <>
         <form
           id="form"
           className="flex justify-center "

@@ -2,6 +2,7 @@ import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper/Paper";
+import { useEffect, useRef, useState } from "react";
 
 const features = [
   {
@@ -42,25 +43,37 @@ export default function Features() {
           }}
         >
           <Box
-            maxWidth={"sm"}
+            // maxWidth={"sm"}
+            className={`wawa snap-mandatory snap-x overflow-y-scroll`}
             sx={{
               display: "flex",
               justifyContent: "center",
               gap: "1rem",
               mt: "2rem",
+              flexWrap: "wrap",
+              flexDirection: "column",
+              overflowX: "scroll",
+              overflowY: "hidden",
+              maxHeight: "200px",
+              width: "800px",
             }}
           >
-            {1 ? (
-              <Paper variant="outlined" elevation={0} className="p-10 ">
+            {features.map((feature) => (
+              <Paper
+                variant="outlined"
+                elevation={0}
+                className="p-10 snap-start"
+                sx={{ width: "800px" }}
+              >
                 <Typography
                   variant="h5"
                   sx={{ letterSpacing: 0.6 }}
                   className="text-black font-bold"
                 >
-                  {features[2].text}
+                  {feature.text}
                 </Typography>
               </Paper>
-            ) : null}
+            ))}
           </Box>
         </Box>
       </Container>

@@ -1,24 +1,9 @@
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
-import Logo from "../components/Logo";
-import Button from "@mui/material/Button";
-import { useNavigate } from "react-router-dom";
-import Avatar from "@mui/material/Avatar";
 import AvatarBox from "./AvatarBox";
 
 export default function AboutUs() {
-  const navigate = useNavigate();
-  const handleScrollToFeatures = () => {
-    const scrollTarget = document.getElementById("features");
-    if (scrollTarget) {
-      scrollTarget.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    }
-  };
-
   return (
     <>
       <Container
@@ -35,14 +20,8 @@ export default function AboutUs() {
         }}
       >
         <Box className="flex gap-10">
-          <AvatarBox
-            image="./src/assets/images/stani.png"
-            name="Stan"
-          ></AvatarBox>
-          <AvatarBox
-            image="./src/assets/images/blago.png"
-            name="Blago"
-          ></AvatarBox>
+          <AvatarBox image="./src/assets/images/blago.png"></AvatarBox>
+          <AvatarBox image="./src/assets/images/stani.png"></AvatarBox>
         </Box>
         <Box className="mt-10">
           <Typography
@@ -50,8 +29,39 @@ export default function AboutUs() {
             sx={{ letterSpacing: 0.6 }}
             className="text-black font-bold"
           >
-            We are Blago and Stan, and this is our final project for the Telerik
-            Academy. This site is our first experiment outside of Python.
+            We are{" "}
+            <a
+              style={{
+                textDecoration: "underline",
+              }}
+              href="https://www.linkedin.com/in/pavlov-blagoy/"
+              target="_blank"
+              onMouseEnter={(e) => (e.target.style.fontStyle = "italic")}
+              onMouseLeave={(e) => (e.target.style.fontStyle = "inherit")}
+            >
+              Blago
+            </a>{" "}
+            and{" "}
+            <a
+              style={{ textDecoration: "underline" }}
+              target="_blank"
+              href="https://www.linkedin.com/in/stanislav-milchev/"
+              onMouseEnter={(e) => (e.target.style.fontStyle = "italic")}
+              onMouseLeave={(e) => (e.target.style.fontStyle = "inherit")}
+            >
+              Stan
+            </a>
+            , and this is our final project for the Telerik Academy. This site
+            is our first experiment outside of Python.{" "}
+            <a
+              style={{ textDecoration: "underline" }}
+              href="mailto:pavlov_blago@yahoo.com,milchev.st@gmail.com"
+              target="_blank"
+              onMouseEnter={(e) => (e.target.style.fontStyle = "italic")}
+              onMouseLeave={(e) => (e.target.style.fontStyle = "inherit")}
+            >
+              Contact us!
+            </a>
           </Typography>
         </Box>
       </Container>

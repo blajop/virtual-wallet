@@ -25,21 +25,21 @@ interface HeaderProps {
 function Header(props: HeaderProps) {
   const [showLogo, setShowLogo] = React.useState<boolean>(true);
 
-  React.useEffect(() => {
-    const handleScroll = () => {
-      const scrollPosition = window.scrollY;
-      if (scrollPosition > 0) {
-        setShowLogo(false);
-      } else {
-        setShowLogo(true);
-      }
-    };
+  // React.useEffect(() => {
+  //   const handleScroll = () => {
+  //     const scrollPosition = window.scrollY;
+  //     if (scrollPosition > 0) {
+  //       setShowLogo(false);
+  //     } else {
+  //       setShowLogo(true);
+  //     }
+  //   };
 
-    window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
+  //   window.addEventListener("scroll", handleScroll);
+  //   return () => {
+  //     window.removeEventListener("scroll", handleScroll);
+  //   };
+  // }, []);
 
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(
     null
