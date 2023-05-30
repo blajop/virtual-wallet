@@ -11,7 +11,9 @@ export default function Home() {
     <>
       <CssBaseline />
       <div
-        style={{ height: `calc(100vh - 60px)` }}
+        style={{
+          height: `calc(100vh - 60px)`,
+        }}
         className="wawa snap-mandatory snap-y overflow-y-scroll "
       >
         <Overview></Overview>

@@ -8,15 +8,16 @@ import Menu from "@mui/material/Menu";
 import MenuIcon from "@mui/icons-material/Menu";
 import Container from "@mui/material/Container";
 import MenuItem from "@mui/material/MenuItem";
-import { NavLink } from "react-router-dom";
+import { NavLink, Link, useNavigate, useLocation } from "react-router-dom";
 import Logo from "./Logo";
 import UserDropdown from "./UserDropdown";
 import { LoginContext } from "../App";
+import CircularLoading from "./CircularLoading";
 
 const pages = [
-  { name: "Overview", href: "/" },
-  { name: "Features", href: "/register" },
-  { name: "Contact us", href: "/" },
+  { name: "Overview", href: "overview" },
+  { name: "Features", href: "features" },
+  { name: "Contact us", href: "contact" },
 ];
 
 interface HeaderProps {
@@ -26,21 +27,10 @@ interface HeaderProps {
 function Header(props: HeaderProps) {
   const [showLogo, setShowLogo] = React.useState<boolean>(true);
   const [loggedIn, setLoggedIn] = React.useContext(LoginContext);
-  // React.useEffect(() => {
-  //   const handleScroll = () => {
-  //     const scrollPosition = window.scrollY;
-  //     if (scrollPosition > 0) {
-  //       setShowLogo(false);
-  //     } else {
-  //       setShowLogo(true);
-  //     }
-  //   };
+  const [loading, setLoading] = React.useState(false);
 
-  //   window.addEventListener("scroll", handleScroll);
-  //   return () => {
-  //     window.removeEventListener("scroll", handleScroll);
-  //   };
-  // }, []);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(
     null
@@ -52,6 +42,36 @@ function Header(props: HeaderProps) {
 
   const handleCloseNavMenu = () => {
     setAnchorElNav(null);
+  };
+
+  const handleLinkClick = (event: React.MouseEvent<HTMLElement>, elem) => {
+    const isHomePage = location.pathname === "/";
+    handleCloseNavMenu();
+    event.preventDefault();
+
+    if (!isHomePage) {
+      setLoading(true);
+      navigate(`/`);
+      setTimeout(() => {
+        const scrollTarget = document.getElementById(elem);
+        if (scrollTarget) {
+          scrollTarget.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+          setLoading(false);
+          console.log("stopLoading");
+        }
+      }, 300);
+    } else {
+      const scrollTarget = document.getElementById(elem);
+      if (scrollTarget) {
+        scrollTarget.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+    }
   };
 
   return (
@@ -89,9 +109,14 @@ function Header(props: HeaderProps) {
               textDecoration: "none",
             }}
           >
-            <NavLink to="/" style={{ textDecoration: "none", color: "white" }}>
+            <Link
+              key={"overview"}
+              to={"overview"}
+              onClick={(e) => handleLinkClick(e, "overview")}
+              style={{ textDecoration: "none", color: "white" }}
+            >
               <Logo size={"h-[2rem] top-[1rem] invert mix-blend-difference"} />
-            </NavLink>
+            </Link>
           </Typography>
 
           <Toolbar
@@ -142,15 +167,14 @@ function Header(props: HeaderProps) {
               sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}
             >
               {pages.map((page) => (
-                <NavLink
+                <Link
                   key={page.name}
                   to={page.href}
-                  // to="#features"
-                  onClick={handleCloseNavMenu}
+                  onClick={(e) => handleLinkClick(e, page.href)}
                   className="font-helvetica font-medium  text-xl my-1 mx-10 text-white block"
                 >
                   {page.name}
-                </NavLink>
+                </Link>
               ))}
             </Box>
           </Toolbar>
@@ -195,6 +219,7 @@ function Header(props: HeaderProps) {
           )}
         </Container>
       </AppBar>
+      {loading && <CircularLoading />}
       {props.children}
     </>
   );

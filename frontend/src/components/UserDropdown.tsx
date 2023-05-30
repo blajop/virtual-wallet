@@ -26,8 +26,7 @@ export default function UserDropdown() {
     <Box
       sx={{
         flexGrow: 0,
-        border: "solid 1px white",
-        width: "90px",
+        width: "50px",
         display: "flex",
         justifyContent: "center",
       }}

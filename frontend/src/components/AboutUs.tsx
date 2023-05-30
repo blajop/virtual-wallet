@@ -25,7 +25,7 @@ export default function AboutUs() {
   return (
     <>
       <Container
-        id="back-to-top-anchor"
+        id="contact"
         maxWidth={"sm"}
         className="align-center snap-start "
         sx={{
