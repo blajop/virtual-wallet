@@ -1,6 +1,5 @@
 import TextField from "@mui/material/TextField";
-import { Fragment, useState } from "react";
-import axios from "axios";
+import { FormEvent, useEffect, useState } from "react";
 
 interface Props {
   alertUsername: boolean;
@@ -12,6 +11,9 @@ export default function Register(props: Props) {
   const alertUsername = props.alertUsername;
   const alertEmail = props.alertEmail;
   const alertPhone = props.alertPhone;
+  const [alertConfirmPass, setalertConfirmPass] = useState(false);
+  const [confirmPass, setConfirmPass] = useState("");
+
   const [formReg, setFormReg] = useState({
     username: "",
     f_name: "",
@@ -25,22 +27,30 @@ export default function Register(props: Props) {
     setFormReg({ ...formReg, [event.target.name]: event.target.value });
   };
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  const handleConfirmPass = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setConfirmPass(event.target.value);
+  };
+
+  const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
-    axios
-      .post("http://localhost:8000/api/v1/signup", formReg)
-      .then((response) => {
-        if (response.status === 200) {
-          setTimeout(() => {
-            // navigate("/home");
-          }, 3000);
-        }
-      })
-      .catch((err) => console.log(err));
-  }
+  };
+
+  useEffect(() => {
+    if (
+      confirmPass != "" &&
+      formReg["password"] != "" &&
+      confirmPass != formReg["password"]
+    ) {
+      setalertConfirmPass(true);
+    } else {
+      setalertConfirmPass(false);
+    }
+  }, [confirmPass, formReg["password"]]);
 
   return {
     formReg,
+    alertConfirmPass,
+    confirmPass,
     renderReg: (
       <>
         <form
@@ -105,9 +115,14 @@ export default function Register(props: Props) {
 
             <TextField
               required
-              label="Confirm password"
+              label={
+                alertConfirmPass ? "Passwords do not match" : "Confirm password"
+              }
               type="password"
+              name="password-confirm"
+              error={alertConfirmPass}
               autoComplete="new-password"
+              onChange={handleConfirmPass}
             />
           </div>
         </form>
