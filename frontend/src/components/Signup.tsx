@@ -3,11 +3,15 @@ import { Fragment, useState } from "react";
 import axios from "axios";
 
 interface Props {
-  wrongRegInputMsg: string;
+  alertUsername: boolean;
+  alertEmail: boolean;
+  alertPhone: boolean;
 }
 
 export default function Register(props: Props) {
-  let wrongInput: string = props.wrongRegInputMsg;
+  const alertUsername = props.alertUsername;
+  const alertEmail = props.alertEmail;
+  const alertPhone = props.alertPhone;
   const [formReg, setFormReg] = useState({
     username: "",
     f_name: "",
@@ -16,8 +20,6 @@ export default function Register(props: Props) {
     phone: "",
     password: "",
   });
-
-  const [open, setOpen] = useState(false);
 
   const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFormReg({ ...formReg, [event.target.name]: event.target.value });
@@ -29,7 +31,6 @@ export default function Register(props: Props) {
       .post("http://localhost:8000/api/v1/signup", formReg)
       .then((response) => {
         if (response.status === 200) {
-          setOpen(true);
           setTimeout(() => {
             // navigate("/home");
           }, 3000);
@@ -41,7 +42,7 @@ export default function Register(props: Props) {
   return {
     formReg,
     renderReg: (
-      <Fragment>
+      <>
         <form
           id="form"
           className="flex justify-center "
@@ -65,18 +66,20 @@ export default function Register(props: Props) {
 
             <TextField
               required
-              label="Email"
+              label={alertEmail ? "Email is already taken" : "Email"}
               name="email"
               autoComplete="email"
-              error={wrongInput === "Email is already taken"}
+              error={alertEmail}
               onChange={handleInput}
             />
             <TextField
               required
-              label="Phone number"
+              label={
+                alertPhone ? "Phone number is already taken" : "Phone number"
+              }
               name="phone"
               autoComplete="phone"
-              error={wrongInput === "Phone number is already taken"}
+              error={alertPhone}
               onChange={handleInput}
             />
           </div>
@@ -84,9 +87,9 @@ export default function Register(props: Props) {
           <div className="w-[350px] justify-center gap-[10px] rounded p-[40px] flex flex-col">
             <TextField
               required
-              label="Username"
+              label={alertUsername ? "Username is already taken" : "Username"}
               name="username"
-              error={wrongInput === "Username is already taken"}
+              error={alertUsername}
               onChange={handleInput}
               autoComplete="username"
             />

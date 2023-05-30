@@ -73,13 +73,35 @@ def sign_up(
     return registered_user
 
 
-@router.post("/data-unique")
+@router.get("/username-unique/{username}")
 def verify_data_not_taken(
-    new_user: UserCreate,
+    username: str,
     db: Session = Depends(deps.get_db),
 ):
     try:
-        return crud.user.user_data_taken(db, user=new_user)
+        return crud.user.username_taken(db, username=username)
+    except DataTakenError as err:
+        raise HTTPException(status_code=409, detail=err.args[0])
+
+
+@router.get("/email-unique/{email}")
+def verify_data_not_taken(
+    email: str,
+    db: Session = Depends(deps.get_db),
+):
+    try:
+        return crud.user.email_taken(db, email=email)
+    except DataTakenError as err:
+        raise HTTPException(status_code=409, detail=err.args[0])
+
+
+@router.get("/phone-unique/{phone}")
+def verify_data_not_taken(
+    phone: str,
+    db: Session = Depends(deps.get_db),
+):
+    try:
+        return crud.user.phone_taken(db, phone=phone)
     except DataTakenError as err:
         raise HTTPException(status_code=409, detail=err.args[0])
 
