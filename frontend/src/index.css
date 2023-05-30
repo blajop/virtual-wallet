@@ -3,6 +3,8 @@
 @tailwind utilities;
 
 :root {
+  font-family: "Roboto","Helvetica","Arial",sans-serif;
+  letter-spacing: 0.00938em;
   line-height: 1.5;
   font-weight: 400;
   margin: 0;
@@ -20,10 +22,13 @@
   -webkit-text-size-adjust: 100%;
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+
+body {
   font-family: "Roboto","Helvetica","Arial",sans-serif;
   letter-spacing: 0.00938em;
 }
-
 input:-webkit-autofill,
 input:-webkit-autofill:hover, 
 input:-webkit-autofill:focus, 
@@ -44,6 +49,7 @@ html::-webkit-scrollbar {
 body {
   margin: 0;
 }
+
 
 @media (prefers-color-scheme: light) {
   :root {

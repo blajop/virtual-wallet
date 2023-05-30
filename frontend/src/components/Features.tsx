@@ -1,23 +1,36 @@
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
-import Typography from "@mui/material/Typography";
-import Paper from "@mui/material/Paper/Paper";
-import { useEffect, useRef, useState } from "react";
+import UncontrolledExample from "./Carousel";
 
 const features = [
   {
     id: 1,
-    text: "Send and receive money to anyone without minding the currency gap - exchange with <strong>no fees!</strong>",
+    text: (
+      <p>
+        Send and receive money to anyone without minding the currency gap -
+        exchange with <strong>no fees!</strong>
+      </p>
+    ),
   },
   {
     id: 2,
-    text: "Create multiple virtual wallets under your account with support of 10 different currencies!",
+    text: (
+      <p>
+        Create multiple virtual wallets under your account with support of 10
+        different currencies!
+      </p>
+    ),
   },
   {
     id: 3,
-    text: "Create shared wallets with friends or family - giving pocket money to your kids or sharing bills has never been easier!",
+    text: (
+      <p>
+        Share wallets with friends or family - giving pocket money to your kids
+        or sharing bills has never been easier!
+      </p>
+    ),
   },
-  { id: 4, text: "Refer a friend and you both receive $20!" },
+  { id: 4, text: <p>Invite friends and claim rewards!</p> },
 ];
 
 export default function Features() {
@@ -26,55 +39,26 @@ export default function Features() {
       <Container
         maxWidth={"false"}
         id="features"
-        className="bg-white  snap-start"
+        className="bg-white "
         sx={{
           display: "flex",
           justifyContent: "center",
+          alignContent: "center",
           mixBlendMode: "difference",
-          pt: "10rem",
           scrollSnapAlign: "start",
-          height: "calc(100vh - 64px)",
+          height: "calc(100vh - 60px)",
         }}
       >
         <Box
-          component="div"
+          maxWidth={"lg"}
+          className={`wawa snap-mandatory snap-x overflow-y-scroll`}
           sx={{
-            maxWidth: "md",
+            width: "lg",
+            display: "flex",
+            alignItems: "center",
           }}
         >
-          <Box
-            // maxWidth={"sm"}
-            className={`wawa snap-mandatory snap-x overflow-y-scroll`}
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              gap: "1rem",
-              mt: "2rem",
-              flexWrap: "wrap",
-              flexDirection: "column",
-              overflowX: "scroll",
-              overflowY: "hidden",
-              maxHeight: "200px",
-              width: "800px",
-            }}
-          >
-            {features.map((feature) => (
-              <Paper
-                variant="outlined"
-                elevation={0}
-                className="p-10 snap-start"
-                sx={{ width: "800px" }}
-              >
-                <Typography
-                  variant="h5"
-                  sx={{ letterSpacing: 0.6 }}
-                  className="text-black font-bold"
-                >
-                  {feature.text}
-                </Typography>
-              </Paper>
-            ))}
-          </Box>
+          <UncontrolledExample items={features} />{" "}
         </Box>
       </Container>
     </>

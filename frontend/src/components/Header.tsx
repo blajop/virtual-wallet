@@ -11,6 +11,7 @@ import MenuItem from "@mui/material/MenuItem";
 import { NavLink } from "react-router-dom";
 import Logo from "./Logo";
 import UserDropdown from "./UserDropdown";
+import { LoginContext } from "../App";
 
 const pages = [
   { name: "Overview", href: "/" },
@@ -24,7 +25,7 @@ interface HeaderProps {
 
 function Header(props: HeaderProps) {
   const [showLogo, setShowLogo] = React.useState<boolean>(true);
-
+  const [loggedIn, setLoggedIn] = React.useContext(LoginContext);
   // React.useEffect(() => {
   //   const handleScroll = () => {
   //     const scrollPosition = window.scrollY;
@@ -56,50 +57,48 @@ function Header(props: HeaderProps) {
   return (
     <>
       <AppBar
-        position="sticky"
+        position="static"
         sx={{
           boxShadow: "none",
-          borderBottom: "solid 1px black",
-          backgroundColor: "white",
-          // mixBlendMode: "difference",
+          backgroundColor: "black",
+          height: "60px",
+          alignContent: "center !important",
         }}
       >
-        <Container maxWidth="lg">
-          <Toolbar disableGutters>
-            <Typography
-              variant="h6"
-              noWrap
-              sx={{
-                mr: 2,
-                display: { xs: "none", md: "flex" },
-                fontFamily: "Helvetica",
-                fontWeight: 700,
-                letterSpacing: ".3rem",
-                color: "inherit",
-                textDecoration: "none",
-              }}
-            >
-              <NavLink
-                to="/"
-                style={{ textDecoration: "none", color: "white" }}
-              >
-                {showLogo ? (
-                  <Logo
-                    size={"h-[2rem] top-[1rem] invert mix-blend-difference"}
-                  />
-                ) : (
-                  <>
-                    <Logo size={"h-[2rem] top-[1rem]  mix-blend-difference"} />
-                    <Logo
-                      size={
-                        "h-[2rem] top-[1rem] fixed invert mix-blend-difference"
-                      }
-                    />
-                  </>
-                )}
-              </NavLink>
-            </Typography>
+        <Container
+          maxWidth="lg"
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            height: "60px",
+            alignContent: "center ",
+          }}
+        >
+          {/* LOGO ON WIDE SCREEN */}
+          <Typography
+            variant="h6"
+            noWrap
+            sx={{
+              mr: 2,
+              display: { xs: "none", md: "flex" },
+              fontFamily: "Helvetica",
+              fontWeight: 700,
+              letterSpacing: ".3rem",
+              color: "white",
+              textDecoration: "none",
+            }}
+          >
+            <NavLink to="/" style={{ textDecoration: "none", color: "white" }}>
+              <Logo size={"h-[2rem] top-[1rem] invert mix-blend-difference"} />
+            </NavLink>
+          </Typography>
 
+          <Toolbar
+            disableGutters
+            sx={{ display: "flex", justifyContent: "space-between" }}
+          >
+            {/* HAMBURGER MENU ON SMALL SCREEN */}
             <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
               <IconButton
                 size="large"
@@ -137,24 +136,7 @@ function Header(props: HeaderProps) {
                 ))}
               </Menu>
             </Box>
-            <Typography
-              variant="h5"
-              noWrap
-              sx={{
-                mr: 2,
-                display: { xs: "flex", md: "none" },
-                flexGrow: 1,
-                fontFamily: "Helvetica",
-                fontWeight: 700,
-                letterSpacing: ".3rem",
-                color: "inherit",
-                textDecoration: "none",
-              }}
-            >
-              <NavLink key="logo" to="/">
-                <Logo size={"h-[2rem]"} />
-              </NavLink>
-            </Typography>
+            {/* MENUS ON WIDE SCREEN */}
             <Box
               className="justify-center"
               sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}
@@ -165,24 +147,52 @@ function Header(props: HeaderProps) {
                   to={page.href}
                   // to="#features"
                   onClick={handleCloseNavMenu}
-                  className="font-helvetica font-medium  text-xl my-1 mx-10 text-black block"
+                  className="font-helvetica font-medium  text-xl my-1 mx-10 text-white block"
                 >
                   {page.name}
                 </NavLink>
               ))}
             </Box>
-            {false ? (
-              <UserDropdown />
-            ) : (
-              <NavLink
-                key="login"
-                to="/login"
-                className="font-helvetica font-medium text-xl my-1 mx-10 text-black block"
+          </Toolbar>
+          {/* LOGO ON SMALL SCREEN */}
+          <Typography
+            variant="h5"
+            noWrap
+            sx={{
+              display: { xs: "flex", md: "none" },
+              flexGrow: 1,
+              fontFamily: "Helvetica",
+              fontWeight: 700,
+              letterSpacing: ".3rem",
+              color: "white",
+              textDecoration: "none",
+              justifyContent: "center",
+            }}
+          >
+            <NavLink key="logo" to="/">
+              <Logo size={"h-[2rem] flex  invert"} />
+            </NavLink>
+          </Typography>
+          {/* LOGIN OR USER MENU */}
+          {loggedIn ? (
+            <UserDropdown />
+          ) : (
+            <NavLink key="login" to="/login">
+              <Typography
+                sx={{
+                  width: "50px",
+                  fontWeight: "500",
+                  fontSize: "1.25rem",
+                  lineHeight: "1.75rem",
+                  "&:hover": {
+                    color: "white",
+                  },
+                }}
               >
                 Login
-              </NavLink>
-            )}
-          </Toolbar>
+              </Typography>
+            </NavLink>
+          )}
         </Container>
       </AppBar>
       {props.children}

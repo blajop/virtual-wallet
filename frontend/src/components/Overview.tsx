@@ -28,7 +28,7 @@ export default function Overview() {
           alignItems: "center",
           justifyContent: "center",
           scrollSnapAlign: "start",
-          height: "calc(100vh - 64px)",
+          height: "calc(100vh - 60px)",
         }}
       >
         <Box

@@ -4,6 +4,24 @@ import Typography from "@mui/material/Typography";
 import AvatarBox from "./AvatarBox";
 
 export default function AboutUs() {
+  const jumpEffectStyle = {
+    textDecoration: "underline",
+    textDecorationThickness: "1px",
+    display: "inline-block",
+    transition: "transform 0.2s ease-in-out",
+    transform: "translateY(0)",
+  };
+
+  const handleMouseEnter = (e) => {
+    // e.target.style.fontStyle = "italic";
+    e.target.style.color = "black";
+    e.target.style.transform = "translateY(-2px)";
+  };
+
+  const handleMouseLeave = (e) => {
+    e.target.style.fontStyle = "inherit";
+    e.target.style.transform = "translateY(0)";
+  };
   return (
     <>
       <Container
@@ -16,7 +34,7 @@ export default function AboutUs() {
           alignItems: "center",
           justifyContent: "center",
           scrollSnapAlign: "start",
-          height: "calc(100vh - 64px)",
+          height: "calc(100vh - 60px)",
         }}
       >
         <Box className="flex gap-10">
@@ -31,34 +49,33 @@ export default function AboutUs() {
           >
             We are{" "}
             <a
-              style={{
-                textDecoration: "underline",
-              }}
+              style={jumpEffectStyle}
               href="https://www.linkedin.com/in/pavlov-blagoy/"
               target="_blank"
-              onMouseEnter={(e) => (e.target.style.fontStyle = "italic")}
-              onMouseLeave={(e) => (e.target.style.fontStyle = "inherit")}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
             >
               Blago
             </a>{" "}
             and{" "}
             <a
-              style={{ textDecoration: "underline" }}
+              style={jumpEffectStyle}
               target="_blank"
               href="https://www.linkedin.com/in/stanislav-milchev/"
-              onMouseEnter={(e) => (e.target.style.fontStyle = "italic")}
-              onMouseLeave={(e) => (e.target.style.fontStyle = "inherit")}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
             >
               Stan
             </a>
             , and this is our final project for the Telerik Academy. This site
             is our first experiment outside of Python.{" "}
             <a
-              style={{ textDecoration: "underline" }}
+              className="jump-effect"
+              style={jumpEffectStyle}
               href="mailto:pavlov_blago@yahoo.com,milchev.st@gmail.com"
               target="_blank"
-              onMouseEnter={(e) => (e.target.style.fontStyle = "italic")}
-              onMouseLeave={(e) => (e.target.style.fontStyle = "inherit")}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
             >
               Contact us!
             </a>
