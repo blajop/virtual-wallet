@@ -12,6 +12,7 @@ import Collapse from "@mui/material/Collapse";
 import Alert from "@mui/material/Alert";
 import AlertTitle from "@mui/material/AlertTitle";
 import WalletCreate from "../components/WalletCreate";
+import Container from "@mui/system/Container/Container";
 
 const steps = ["New User", "Two", "Aide"];
 
@@ -58,7 +59,11 @@ export default function RegisterStepper() {
   // };
 
   return (
-    <Box sx={{ width: "100%" }}>
+    <Container
+      maxWidth={"md"}
+      className="pt-[100px]"
+      sx={{ display: "flex", flexDirection: "column" }}
+    >
       <Stepper activeStep={activeStep}>
         {steps.map((label) => {
           const stepProps: { completed?: boolean } = {};
@@ -80,8 +85,15 @@ export default function RegisterStepper() {
       ) : (
         <Fragment>
           {/* ACTIVE PAGE IS NESTED HERE BUTTON */}
-          <Typography sx={{ mt: 2, mb: 1 }}>{pages[activePage]}</Typography>
-          <Box sx={{ display: "flex", flexDirection: "row", pt: 2 }}>
+          {pages[activePage]}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "space-between",
+              pt: 2,
+            }}
+          >
             {/* BACK BUTTON */}
             {/* <Button
               disabled={activeStep === 0}
@@ -139,6 +151,6 @@ export default function RegisterStepper() {
           </Collapse>
         </Fragment>
       )}
-    </Box>
+    </Container>
   );
 }

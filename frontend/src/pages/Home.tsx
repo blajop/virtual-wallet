@@ -1,84 +1,28 @@
-import Box from "@mui/material/Box";
-import Container from "@mui/material/Container";
-import Typography from "@mui/material/Typography";
-import Logo from "../components/Logo";
-import Button from "@mui/material/Button";
-import { useNavigate } from "react-router-dom";
+import Overview from "../components/Overview";
+import Features from "../components/Features";
+import Fab from "@mui/material/Fab/Fab";
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import CssBaseline from "@mui/material/CssBaseline/CssBaseline";
+import ScrollTop from "../components/ScrollTop";
+import AboutUs from "../components/AboutUs";
 
 export default function Home() {
-  const navigate = useNavigate();
   return (
     <>
-      <Container
-        maxWidth={"lg"}
-        className="mt-60 h-screen "
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-        }}
+      <CssBaseline />
+      <div
+        style={{ height: `calc(100vh - 64px)` }}
+        className="wawa snap-mandatory snap-y overflow-y-scroll "
       >
-        <Box
-          component="div"
-          sx={{
-            display: "inline-block",
-            width: "fit-content",
-          }}
-        >
-          <Logo size={"h-[6rem]"} />
-          <Typography
-            variant="h5"
-            sx={{ letterSpacing: 0.6 }}
-            className="text-black font-bold"
-          >
-            Join Uncle’s wallet and never worry about your spendings again.
-          </Typography>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "flex-end",
-              gap: "1rem",
-              mt: "2rem",
-            }}
-          >
-            <Button
-              // variant="outlined"
-              size="small"
-              sx={{
-                borderColor: "black",
-                color: "black",
-                paddingX: "2rem",
-                textTransform: "none",
-                "&:hover": {
-                  borderColor: "black",
-                  textDecoration: "underline",
-                  backgroundColor: "white",
-                },
-              }}
-            >
-              <strong>Learn more</strong>
-            </Button>
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={() => navigate("/register")}
-              sx={{
-                paddingY: "0rem",
-                paddingX: "2rem",
-                color: "white",
-                backgroundColor: "black",
-                textTransform: "none",
-                "&:hover": {
-                  backgroundColor: "white",
-                  color: "black",
-                  borderColor: "black",
-                },
-              }}
-            >
-              <strong>Join now</strong>
-            </Button>
-          </Box>
-        </Box>
-      </Container>
+        <Overview></Overview>
+        <Features></Features>
+        <AboutUs></AboutUs>
+        <ScrollTop>
+          <Fab size="small" aria-label="scroll back to top">
+            <KeyboardArrowUpIcon />
+          </Fab>
+        </ScrollTop>
+      </div>
     </>
   );
 }

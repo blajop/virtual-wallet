@@ -44,7 +44,7 @@ export default function Register(props: Props) {
       <Fragment>
         <form
           id="form"
-          className="flex justify-center mt-20"
+          className="flex justify-center "
           onSubmit={handleSubmit}
         >
           <div className="w-[350px] justify-center gap-[10px] rounded p-[40px] flex flex-col">
@@ -108,7 +108,7 @@ export default function Register(props: Props) {
             />
           </div>
         </form>
-      </Fragment>
+      </>
     ),
   };
 }
