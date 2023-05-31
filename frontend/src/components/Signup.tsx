@@ -1,16 +1,33 @@
+import AlertTitle from "@mui/lab/AlertTitle";
+import Alert from "@mui/material/Alert";
+import Collapse from "@mui/material/Collapse";
 import TextField from "@mui/material/TextField";
 import { FormEvent, useEffect, useState } from "react";
 
 interface Props {
   alertUsername: boolean;
+  alertMsgUsername: string;
   alertEmail: boolean;
+  alertMsgEmail: string;
   alertPhone: boolean;
+  alertMsgPhone: string;
+  alertPwd: boolean;
+  alertMsgPwd: string;
 }
 
-export default function Register(props: Props) {
+export default function SignupForm(props: Props) {
   const alertUsername = props.alertUsername;
+  const alertMsgUsername = props.alertMsgUsername;
+
   const alertEmail = props.alertEmail;
+  const alertMsgEmail = props.alertMsgEmail;
+
   const alertPhone = props.alertPhone;
+  const alertMsgPhone = props.alertMsgPhone;
+
+  const alertPwd = props.alertPwd;
+  const alertMsgPwd = props.alertMsgPwd;
+
   const [alertConfirmPass, setalertConfirmPass] = useState(false);
   const [confirmPass, setConfirmPass] = useState("");
 
@@ -35,6 +52,7 @@ export default function Register(props: Props) {
     event.preventDefault();
   };
 
+  // PASSWORD MATCH TEST
   useEffect(() => {
     if (
       confirmPass != "" &&
@@ -76,7 +94,7 @@ export default function Register(props: Props) {
 
             <TextField
               required
-              label={alertEmail ? "Email is already taken" : "Email"}
+              label={alertEmail ? alertMsgEmail : "Email"}
               name="email"
               autoComplete="email"
               error={alertEmail}
@@ -84,9 +102,7 @@ export default function Register(props: Props) {
             />
             <TextField
               required
-              label={
-                alertPhone ? "Phone number is already taken" : "Phone number"
-              }
+              label={alertPhone ? alertMsgPhone : "Phone number"}
               name="phone"
               autoComplete="phone"
               error={alertPhone}
@@ -97,7 +113,7 @@ export default function Register(props: Props) {
           <div className="w-[350px] justify-center gap-[10px] rounded p-[40px] flex flex-col">
             <TextField
               required
-              label={alertUsername ? "Username is already taken" : "Username"}
+              label={alertUsername ? alertMsgUsername : "Username"}
               name="username"
               error={alertUsername}
               onChange={handleInput}
@@ -109,9 +125,13 @@ export default function Register(props: Props) {
               label="Password"
               type="password"
               name="password"
+              error={alertPwd}
               autoComplete="new-password"
               onChange={handleInput}
             />
+            <Collapse in={alertPwd}>
+              <Alert severity="error">{alertMsgPwd}</Alert>
+            </Collapse>
 
             <TextField
               required

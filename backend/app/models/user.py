@@ -20,7 +20,7 @@ class UserLogin(BaseModel):
 
 
 class UserBase(SQLModel):
-    username: str = Field(min_length=2, max_length=20, unique=True)
+    username: str = Field(regex="^.{2,20}$", unique=True)
     email: EmailStr = Field(unique=True)
     phone: str = Field(regex="^\d{10}$", unique=True)
     f_name: str
