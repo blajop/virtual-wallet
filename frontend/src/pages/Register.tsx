@@ -7,7 +7,7 @@ import Typography from "@mui/material/Typography";
 import { Fragment, ReactNode, useState, useEffect } from "react";
 import Register from "../components/Signup";
 import axios, { AxiosError } from "axios";
-import WalletCreate from "../components/WalletCreate";
+import WalletCreate from "../components/Wallet/WalletCreate";
 import Container from "@mui/system/Container/Container";
 
 const steps = ["New User", "Create Wallet", "Finish"];

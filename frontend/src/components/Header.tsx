@@ -62,7 +62,7 @@ function Header(props: HeaderProps) {
           setLoading(false);
           console.log("stopLoading");
         }
-      }, 300);
+      }, 500);
     } else {
       const scrollTarget = document.getElementById(elem);
       if (scrollTarget) {

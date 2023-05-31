@@ -7,10 +7,17 @@ import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import React from "react";
 import { LoginContext } from "../App";
+import { useNavigate } from "react-router-dom";
 
-const settings = ["Profile", "Account", "Dashboard", "Logout"];
+const settings = [
+  { name: "Profile", href: "profile" },
+  { name: "Settings", href: "settings" },
+  { name: "Logout", href: "#" },
+];
 
 export default function UserDropdown() {
+  const navigate = useNavigate();
+
   const [loggedIn, setLoggedIn] = React.useContext(LoginContext);
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(
     null
@@ -58,15 +65,18 @@ export default function UserDropdown() {
       >
         {settings.map((setting) => (
           <MenuItem
-            key={setting}
+            key={setting.name}
             onClick={() => {
-              if (setting === "Logout") {
+              if (setting.name === "Logout") {
+                localStorage.removeItem("token");
                 setLoggedIn(false);
+                navigate("/");
               }
               handleCloseUserMenu;
+              navigate(setting.href);
             }}
           >
-            <Typography textAlign="center">{setting}</Typography>
+            <Typography textAlign="center">{setting.name}</Typography>
           </MenuItem>
         ))}
       </Menu>

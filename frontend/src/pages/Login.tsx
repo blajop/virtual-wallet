@@ -1,6 +1,5 @@
 import { Checkbox, Snackbar, Typography } from "@mui/material";
 import Box from "@mui/material/Box/Box";
-import Button from "@mui/material/Button/Button";
 import Container from "@mui/material/Container/Container";
 import TextField from "@mui/material/TextField/TextField";
 import { baseUrl } from "../shared.js";
@@ -8,7 +7,6 @@ import axios from "axios";
 import { useState, useContext } from "react";
 import { LoginContext } from "../App.js";
 import { useNavigate } from "react-router-dom";
-import CircularLoading from "../components/CircularLoading.js";
 import LoadingButton from "@mui/lab/LoadingButton";
 
 export default function Login() {
@@ -24,7 +22,6 @@ export default function Login() {
   data.append("password", password);
 
   const login = (e) => {
-    console.log("Start");
     e.preventDefault();
     setLoading(true);
     const url = baseUrl + "api/v1/login/access-token";
@@ -44,15 +41,14 @@ export default function Login() {
 
           localStorage.setItem("token", response.data.access_token);
           navigate("/");
-          console.log("Token set");
         }
       })
       .catch(() => {
         setError(true);
+        setLoading(false);
       })
       .finally(() => {
         console.log("Finally in");
-        setLoading(false);
       });
   };
   return (
