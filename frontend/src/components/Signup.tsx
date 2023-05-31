@@ -73,7 +73,7 @@ export default function SignupForm(props: Props) {
       <>
         <form
           id="form"
-          className="flex justify-center "
+          className="flex justify-center items-start"
           onSubmit={handleSubmit}
         >
           <div className="w-[350px] justify-center gap-[10px] rounded p-[40px] flex flex-col">
@@ -129,9 +129,6 @@ export default function SignupForm(props: Props) {
               autoComplete="new-password"
               onChange={handleInput}
             />
-            <Collapse in={alertPwd}>
-              <Alert severity="error">{alertMsgPwd}</Alert>
-            </Collapse>
 
             <TextField
               required
@@ -144,6 +141,16 @@ export default function SignupForm(props: Props) {
               autoComplete="new-password"
               onChange={handleConfirmPass}
             />
+
+            <Collapse in={alertPwd}>
+              <Alert
+                severity="error"
+                icon={false}
+                sx={{ fontSize: "11px", padding: "3px" }}
+              >
+                {alertMsgPwd}
+              </Alert>
+            </Collapse>
           </div>
         </form>
       </>
