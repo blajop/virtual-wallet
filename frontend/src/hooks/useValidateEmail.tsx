@@ -23,21 +23,18 @@ export default function useValidateEmail(
         setAlertEmail(false);
         setAlertMsgEmail("");
 
-        setTimeout(() => {
-          axios
-            .get(`${baseUrl}api/v1/email-unique/${email}`)
-            .then((response) => {
-              console.log(response.data);
-              if (response.status === 200) {
-                setAlertEmail(false);
-                setAlertMsgEmail("");
-              }
-            })
-            .catch(() => {
-              setAlertEmail(true);
-              setAlertMsgEmail("Email is already taken");
-            });
-        }, 500);
+        axios
+          .get(`${baseUrl}api/v1/email-unique/${email}`)
+          .then((response) => {
+            if (response.status === 200) {
+              setAlertEmail(false);
+              setAlertMsgEmail("");
+            }
+          })
+          .catch(() => {
+            setAlertEmail(true);
+            setAlertMsgEmail("Email is already taken");
+          });
       }
     } else {
       setAlertEmail(false);

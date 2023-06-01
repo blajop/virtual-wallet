@@ -23,21 +23,18 @@ export default function useValidateUsername(
         setAlertUsername(false);
         setAlertMsgUsername("");
 
-        setTimeout(() => {
-          axios
-            .get(`${baseUrl}api/v1/username-unique/${username}`)
-            .then((response) => {
-              console.log(response.data);
-              if (response.status === 200) {
-                setAlertUsername(false);
-                setAlertMsgUsername("");
-              }
-            })
-            .catch(() => {
-              setAlertUsername(true);
-              setAlertMsgUsername("Username is already taken");
-            });
-        }, 500);
+        axios
+          .get(`${baseUrl}api/v1/username-unique/${username}`)
+          .then((response) => {
+            if (response.status === 200) {
+              setAlertUsername(false);
+              setAlertMsgUsername("");
+            }
+          })
+          .catch(() => {
+            setAlertUsername(true);
+            setAlertMsgUsername("Username is already taken");
+          });
       }
     } else {
       setAlertUsername(false);

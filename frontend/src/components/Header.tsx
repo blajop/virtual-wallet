@@ -62,7 +62,6 @@ function Header(props: HeaderProps) {
             block: "start",
           });
           setLoading(false);
-          console.log("stopLoading");
         }
       }, 200);
     } else {

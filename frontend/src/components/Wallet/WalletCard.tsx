@@ -50,7 +50,6 @@ export default function WalletCard(props: CardProps) {
         },
       })
       .then((response) => {
-        console.log(response.data);
         setLeeches(response.data);
       });
   }, [walletId]);
