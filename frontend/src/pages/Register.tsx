@@ -7,18 +7,18 @@ import Typography from "@mui/material/Typography";
 import { Fragment, ReactNode, useState, useEffect } from "react";
 import SignupForm from "../components/Signup";
 import axios, { AxiosError } from "axios";
-import WalletCreate from "../components/Wallet/WalletCreate";
 import Container from "@mui/system/Container/Container";
-import { baseUrl } from "../shared.js";
+// import { baseUrl } from "../shared.js";
+import useValidateUsername from "../hooks/useValidateUsername.tsx";
 
 const steps = ["New User", "Create Wallet", "Finish"];
 
-const USERNAME_REGEX = /^.{2,20}$/;
+// const USERNAME_REGEX = /^.{2,20}$/;
 const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 const PHONE_REGEX = /^\d{10}$/;
 const PWD_REGEX = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[-+*&^_]).{8,}$/;
-const PWD_INSTRUCTION = "...";
-const SIGNUP_URL = baseUrl + "api/v1/signup";
+// const PWD_INSTRUCTION = "...";
+// const SIGNUP_URL = baseUrl + "api/v1/signup";
 
 export default function RegisterStepper() {
   const [alertUsername, setAlertUsername] = useState(false);
@@ -43,55 +43,68 @@ export default function RegisterStepper() {
     alertPwd: alertPwd,
     alertMsgPwd: alertMsgPwd,
   });
+
   const username = formReg["username"];
   const email = formReg["email"];
   const phone = formReg["phone"];
   const password = formReg["password"];
 
-  const [wallAlertMsg, setWallAlertMsg] = useState("");
-  const { formWall, renderWall } = WalletCreate({
-    wrongWallInputMsg: wallAlertMsg,
-    f_name: formReg["f_name"],
-    l_name: formReg["l_name"],
-  });
+  // CUSTOM HOOK
+  useValidateUsername(
+    username,
+    [
+      alertUsername,
+      (value: boolean) => {
+        setAlertUsername(value);
+        return value;
+      },
+    ],
+    [
+      alertMsgUsername,
+      (value: string) => {
+        setAlertMsgUsername(value);
+        return value;
+      },
+    ]
+  );
 
   const [canSubmit, setCanSubmit] = useState(false);
 
-  const pages = [renderReg, renderWall];
+  const pages = [renderReg];
   const [activeStep, setActiveStep] = useState(0);
   const [activePage, setActivePage] = useState(0);
 
   // USERNAME VALIDATIONS
-  useEffect(() => {
-    if (username != "") {
-      if (!USERNAME_REGEX.test(username)) {
-        setAlertUsername(true);
-        setAlertMsgUsername("Username should be [2,20] chars long");
-      } else {
-        setAlertUsername(false);
-        setAlertMsgUsername("");
+  // useEffect(() => {
+  //   if (username != "") {
+  //     if (!USERNAME_REGEX.test(username)) {
+  //       setAlertUsername(true);
+  //       setAlertMsgUsername("Username should be [2,20] chars long");
+  //     } else {
+  //       setAlertUsername(false);
+  //       setAlertMsgUsername("");
 
-        setTimeout(() => {
-          axios
-            .get(`http://localhost:8000/api/v1/username-unique/${username}`)
-            .then((response) => {
-              console.log(response.data);
-              if (response.status === 200) {
-                setAlertUsername(false);
-                setAlertMsgUsername("");
-              }
-            })
-            .catch(() => {
-              setAlertUsername(true);
-              setAlertMsgUsername("Username is already taken");
-            });
-        }, 500);
-      }
-    } else {
-      setAlertUsername(false);
-      setAlertMsgUsername("");
-    }
-  }, [username]);
+  //       setTimeout(() => {
+  //         axios
+  //           .get(`http://localhost:8000/api/v1/username-unique/${username}`)
+  //           .then((response) => {
+  //             console.log(response.data);
+  //             if (response.status === 200) {
+  //               setAlertUsername(false);
+  //               setAlertMsgUsername("");
+  //             }
+  //           })
+  //           .catch(() => {
+  //             setAlertUsername(true);
+  //             setAlertMsgUsername("Username is already taken");
+  //           });
+  //       }, 500);
+  //     }
+  //   } else {
+  //     setAlertUsername(false);
+  //     setAlertMsgUsername("");
+  //   }
+  // }, [username]);
 
   // EMAIL VALIDATIONS
   useEffect(() => {
