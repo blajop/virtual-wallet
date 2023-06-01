@@ -64,7 +64,7 @@ class User(UserBase, table=True):
 
     user_settings_obj: "UserSettings" = Relationship(
         sa_relationship_kwargs=dict(
-            uselist="false", primaryjoin="UserSettings.id==User.user_settings"
+            uselist=False, primaryjoin="UserSettings.id==User.user_settings"
         ),
     )
 
