@@ -2,6 +2,8 @@ import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 import AvatarBox from "./AvatarBox";
+import blago from "../assets/images/blago.png";
+import stani from "../assets/images/stani.png";
 
 export default function AboutUs() {
   const jumpEffectStyle = {
@@ -44,8 +46,8 @@ export default function AboutUs() {
         }}
       >
         <Box className="flex gap-10">
-          <AvatarBox image="./src/assets/images/blago.png"></AvatarBox>
-          <AvatarBox image="./src/assets/images/stani.png"></AvatarBox>
+          <AvatarBox image={blago}></AvatarBox>
+          <AvatarBox image={stani}></AvatarBox>
         </Box>
         <Box className="mt-10">
           <Typography

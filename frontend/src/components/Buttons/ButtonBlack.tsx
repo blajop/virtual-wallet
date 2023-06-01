@@ -10,6 +10,10 @@ interface ButtonBlackProps {
   invert?: boolean;
   leeches?: object[];
   text: string | React.ReactNode;
+  onClick?: (to: string) => void;
+  disabled?: boolean;
+  disabledText?: string;
+  sx: object;
 }
 
 export default function ButtonBlack(props: ButtonBlackProps) {
@@ -20,7 +24,19 @@ export default function ButtonBlack(props: ButtonBlackProps) {
     variant = "outlined",
     invert = false,
     text,
+    onClick,
+    disabled,
+    disabledText,
+    sx,
   } = props;
+
+  const handleClick = () => {
+    if (onClick) {
+      onClick(to);
+    } else {
+      navigate(to);
+    }
+  };
 
   const theme = createTheme({
     components: {
@@ -36,10 +52,20 @@ export default function ButtonBlack(props: ButtonBlackProps) {
             "&:hover": {
               backgroundColor: invert ? "black" : "white",
               color: invert ? "white" : "black",
-              borderColor: invert ? "black" : "white",
+              borderColor: !invert ? "black" : "white",
               "& .MuiSvgIcon-root": {
                 color: invert ? "white" : "black",
               },
+            },
+            "&.Mui-disabled": {
+              border: "solid 1px black",
+              color: "white",
+              text: "Please fill the form",
+            },
+            "&.Mui-disabled:hover": {
+              backgroundColor: invert ? "white" : "black",
+              color: invert ? "white" : "black",
+              borderColor: invert ? "black" : "white",
             },
           },
         },
@@ -49,8 +75,14 @@ export default function ButtonBlack(props: ButtonBlackProps) {
 
   return (
     <ThemeProvider theme={theme}>
-      <Button variant={variant} size={size} onClick={() => navigate(to)}>
-        {text}
+      <Button
+        sx={sx}
+        disabled={disabled}
+        variant={variant}
+        size={size}
+        onClick={handleClick}
+      >
+        {disabled ? disabledText : text}
       </Button>
     </ThemeProvider>
   );

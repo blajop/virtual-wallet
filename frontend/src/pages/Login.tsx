@@ -47,9 +47,7 @@ export default function Login() {
         setError(true);
         setLoading(false);
       })
-      .finally(() => {
-        console.log("Finally in");
-      });
+      .finally(() => {});
   };
 
   return (

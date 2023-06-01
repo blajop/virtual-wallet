@@ -5,13 +5,36 @@ import StepLabel from "@mui/material/StepLabel";
 import Stepper from "@mui/material/Stepper";
 import Typography from "@mui/material/Typography";
 import { Fragment, ReactNode, useState, useEffect } from "react";
-import SignupForm from "../components/Signup";
+import SignupForm from "../components/SignupForm.tsx";
 import axios, { AxiosError } from "axios";
 import Container from "@mui/system/Container/Container";
 // import { baseUrl } from "../shared.js";
 import useValidateUsername from "../hooks/useValidateUsername.tsx";
+import { baseUrl } from "../shared.ts";
+import ButtonBlack from "../components/Buttons/ButtonBlack.tsx";
+import debounce from "@mui/material/utils/debounce";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
 
-const steps = ["New User", "Create Wallet", "Finish"];
+const theme = createTheme({
+  components: {
+    MuiStepIcon: {
+      styleOverrides: {
+        root: {
+          "&$completed": {
+            color: "pink",
+          },
+          "&$active": {
+            color: "red",
+          },
+        },
+        active: {},
+        completed: {},
+      },
+    },
+  },
+});
+
+const steps = ["Register", "Create Wallet", "Final steps"];
 
 // const USERNAME_REGEX = /^.{2,20}$/;
 const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -118,7 +141,7 @@ export default function RegisterStepper() {
 
         setTimeout(() => {
           axios
-            .get(`http://localhost:8000/api/v1/email-unique/${email}`)
+            .get(`${baseUrl}api/v1/email-unique/${email}`)
             .then((response) => {
               console.log(response.data);
               if (response.status === 200) {
@@ -140,30 +163,30 @@ export default function RegisterStepper() {
 
   // PHONE VALIDATIONS
   useEffect(() => {
-    if (phone != "") {
+    setAlertPhone(false);
+    setAlertMsgPhone("");
+    const checkPhoneAvailability = debounce(() => {
+      axios
+        .get(`${baseUrl}api/v1/phone-unique/${phone}`)
+        .then((response) => {
+          if (response.status === 200) {
+            setAlertPhone(false);
+            setAlertMsgPhone("");
+          }
+        })
+        .catch(() => {
+          setAlertPhone(true);
+          setAlertMsgPhone("Phone number is already taken");
+        });
+    }, 1500);
+
+    if (phone !== "") {
       if (!PHONE_REGEX.test(phone)) {
         setAlertPhone(true);
-        setAlertMsgPhone("Phone should be valid 10 digits long");
-      } else {
-        setAlertPhone(false);
-        setAlertMsgPhone("");
-
-        setTimeout(() => {
-          axios
-            .get(`http://localhost:8000/api/v1/phone-unique/${phone}`)
-            .then((response) => {
-              console.log(response.data);
-              if (response.status === 200) {
-                setAlertPhone(false);
-                setAlertMsgPhone("");
-              }
-            })
-            .catch(() => {
-              setAlertPhone(true);
-              setAlertMsgPhone("Phone is already taken");
-            });
-        }, 500);
+        setAlertMsgPhone("Phone should be a valid 10-digit number");
+        return;
       }
+      checkPhoneAvailability();
     } else {
       setAlertPhone(false);
       setAlertMsgPhone("");
@@ -176,7 +199,7 @@ export default function RegisterStepper() {
       if (!PWD_REGEX.test(password)) {
         setAlertPwd(true);
         setAlertMsgPwd(
-          "Password must be at least 8 characters  and contain at least one uppercase, lowercase, digit, symbol"
+          "Password must be at least 8 characters - at least one uppercase, lowercase, digit, symbol"
         );
       } else {
         setAlertPwd(false);
@@ -220,7 +243,7 @@ export default function RegisterStepper() {
     if (activeStep === 0) {
       if (canSubmit === true) {
         axios
-          .post("http://localhost:8000/api/v1/signup", formReg)
+          .post(`${baseUrl}api/v1/signup`, formReg)
           .then((response) => {
             if (response.status === 200) {
               setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -236,64 +259,65 @@ export default function RegisterStepper() {
   };
 
   return (
-    <Container
-      maxWidth={"md"}
-      className="pt-[100px]"
-      sx={{ display: "flex", flexDirection: "column" }}
-    >
-      <Stepper activeStep={activeStep}>
-        {steps.map((label) => {
-          const stepProps: { completed?: boolean } = {};
-          const labelProps: {
-            optional?: ReactNode;
-          } = {};
-          return (
-            <Step key={label} {...stepProps}>
-              <StepLabel {...labelProps}>{label}</StepLabel>
-            </Step>
-          );
-        })}
-      </Stepper>
+    <ThemeProvider theme={theme}>
+      <Container
+        maxWidth={"md"}
+        className="pt-[100px]"
+        sx={{ display: "flex", flexDirection: "column", height: "120%" }}
+      >
+        <Stepper activeStep={activeStep} alternativeLabel>
+          {steps.map((label, index) => {
+            const stepProps: { completed?: boolean } = {};
+            const labelProps: {
+              optional?: ReactNode;
+            } = {};
+            return (
+              <Step key={label} {...stepProps}>
+                <StepLabel
+                  sx={{
+                    ".Mui-active": { color: "black !important" },
+                    ".Mui-completed": {
+                      color: "black",
+                    },
+                  }}
+                  {...labelProps}
+                >
+                  <Typography>{label}</Typography>
+                </StepLabel>
+              </Step>
+            );
+          })}
+        </Stepper>
 
-      {activeStep === steps.length ? (
-        <Fragment>
-          <Typography sx={{ mt: 2, mb: 1 }}>You are all set!</Typography>
-        </Fragment>
-      ) : (
-        <Fragment>
-          {/* ACTIVE PAGE IS NESTED HERE BUTTON */}
-          {pages[activePage]}
+        {activeStep === steps.length ? (
+          <Fragment>
+            <Typography sx={{ mt: 2, mb: 1 }}>You are all set!</Typography>
+          </Fragment>
+        ) : (
           <Box
             sx={{
               display: "flex",
-              justifyContent: "center",
-              pt: 2,
+              alignItems: "center",
+              flexDirection: "column",
+              width: "100%",
             }}
           >
+            {/* ACTIVE PAGE IS NESTED HERE BUTTON */}
+            {pages[activePage]}
+
             {/* NEXT BUTTON */}
-            <Button
+            <ButtonBlack
+              sx={{ width: "70%", mt: "40px" }}
               onClick={handleNext}
-              variant="outlined"
               size="large"
               disabled={!canSubmit}
-              sx={{
-                paddingY: "0rem",
-                paddingX: "6rem",
-                color: "white",
-                backgroundColor: "black",
-                textTransform: "none",
-                "&:hover": {
-                  backgroundColor: "white",
-                  color: "black",
-                  borderColor: "black",
-                },
-              }}
-            >
-              {activeStep === steps.length - 1 ? "Finish" : "Next"}
-            </Button>
+              variant="outlined"
+              disabledText="Please fill in the form"
+              text={activeStep === steps.length - 1 ? "Finish" : "Next step"}
+            ></ButtonBlack>
           </Box>
-        </Fragment>
-      )}
-    </Container>
+        )}
+      </Container>
+    </ThemeProvider>
   );
 }
