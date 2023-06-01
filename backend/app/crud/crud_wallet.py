@@ -15,6 +15,7 @@ class CRUDWallet(CRUDBase[Wallet, WalletCreate, WalletUpdate]):
     ) -> Wallet | HTTPException:
         """
         Creates a new wallet for the logged user.
+        If you have no wallets, the one created becomes your default one
 
         Arguments:
             db: Session
@@ -23,16 +24,21 @@ class CRUDWallet(CRUDBase[Wallet, WalletCreate, WalletUpdate]):
         Returns:
             Wallet model
         """
-        user_wallets_names = [
-            w.name for w in crud.wallet.get_multi_by_owner(db, user)
-        ] + [w.name for w in user.wallets]
+        user_wallets = crud.wallet.get_multi_by_owner(db, user) + user.wallets
+        # If you have no wallets, the one created becomes your default one
+        first = False
+        if not user_wallets:
+            first = True
 
-        if new_wallet.name in user_wallets_names:
+        if new_wallet.name in [w.name for w in user_wallets]:
             raise WalletNameError("You already have a wallet with that name!")
 
         wallet_orm = Wallet.from_orm(new_wallet)
         wallet_orm.id = utils.util_id.generate_id()
         wallet_orm.owner = user
+
+        if first:
+            user.user_settings_obj.default_wallet_obj = wallet_orm
 
         db.add(wallet_orm)
         db.commit()
