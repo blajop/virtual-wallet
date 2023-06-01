@@ -1,19 +1,20 @@
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 import Step from "@mui/material/Step";
 import StepLabel from "@mui/material/StepLabel";
 import Stepper from "@mui/material/Stepper";
 import Typography from "@mui/material/Typography";
-import { Fragment, ReactNode, useState, useEffect } from "react";
+import { Fragment, ReactNode, useState } from "react";
 import SignupForm from "../components/SignupForm.tsx";
 import axios, { AxiosError } from "axios";
 import Container from "@mui/system/Container/Container";
-// import { baseUrl } from "../shared.js";
 import useValidateUsername from "../hooks/useValidateUsername.tsx";
 import { baseUrl } from "../shared.ts";
 import ButtonBlack from "../components/Buttons/ButtonBlack.tsx";
-import debounce from "@mui/material/utils/debounce";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import useValidateEmail from "../hooks/useValidateEmail.tsx";
+import useValidatePhone from "../hooks/useValidatePhone.tsx";
+import useValidatePwd from "../hooks/useValidatePwd.tsx";
+import useValidateCanSubmit from "../hooks/useValidateCanSubmit.tsx";
 
 const theme = createTheme({
   components: {
@@ -35,13 +36,6 @@ const theme = createTheme({
 });
 
 const steps = ["Register", "Create Wallet", "Final steps"];
-
-// const USERNAME_REGEX = /^.{2,20}$/;
-const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-const PHONE_REGEX = /^\d{10}$/;
-const PWD_REGEX = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[-+*&^_]).{8,}$/;
-// const PWD_INSTRUCTION = "...";
-// const SIGNUP_URL = baseUrl + "api/v1/signup";
 
 export default function RegisterStepper() {
   const [alertUsername, setAlertUsername] = useState(false);
@@ -72,7 +66,13 @@ export default function RegisterStepper() {
   const phone = formReg["phone"];
   const password = formReg["password"];
 
-  // CUSTOM HOOK
+  const [canSubmit, setCanSubmit] = useState(false);
+
+  const pages = [renderReg];
+  const [activeStep, setActiveStep] = useState(0);
+  const [activePage, setActivePage] = useState(0);
+
+  // CUSTOM HOOK USERNAME
   useValidateUsername(
     username,
     [
@@ -91,152 +91,85 @@ export default function RegisterStepper() {
     ]
   );
 
-  const [canSubmit, setCanSubmit] = useState(false);
+  // CUSTOM HOOK EMAIL
+  useValidateEmail(
+    email,
+    [
+      alertEmail,
+      (value: boolean) => {
+        setAlertEmail(value);
+        return value;
+      },
+    ],
+    [
+      alertMsgEmail,
+      (value: string) => {
+        setAlertMsgEmail(value);
+        return value;
+      },
+    ]
+  );
 
-  const pages = [renderReg];
-  const [activeStep, setActiveStep] = useState(0);
-  const [activePage, setActivePage] = useState(0);
+  // CUSTOM HOOK PHONE
+  useValidatePhone(
+    phone,
+    [
+      alertPhone,
+      (value: boolean) => {
+        setAlertPhone(value);
+        return value;
+      },
+    ],
+    [
+      alertMsgPhone,
+      (value: string) => {
+        setAlertMsgPhone(value);
+        return value;
+      },
+    ]
+  );
 
-  // USERNAME VALIDATIONS
-  // useEffect(() => {
-  //   if (username != "") {
-  //     if (!USERNAME_REGEX.test(username)) {
-  //       setAlertUsername(true);
-  //       setAlertMsgUsername("Username should be [2,20] chars long");
-  //     } else {
-  //       setAlertUsername(false);
-  //       setAlertMsgUsername("");
+  // CUSTOM HOOK PASSWORD
+  useValidatePwd(
+    password,
+    [
+      alertPwd,
+      (value: boolean) => {
+        setAlertPwd(value);
+        return value;
+      },
+    ],
+    [
+      alertMsgPwd,
+      (value: string) => {
+        setAlertMsgPwd(value);
+        return value;
+      },
+    ]
+  );
 
-  //       setTimeout(() => {
-  //         axios
-  //           .get(`http://localhost:8000/api/v1/username-unique/${username}`)
-  //           .then((response) => {
-  //             console.log(response.data);
-  //             if (response.status === 200) {
-  //               setAlertUsername(false);
-  //               setAlertMsgUsername("");
-  //             }
-  //           })
-  //           .catch(() => {
-  //             setAlertUsername(true);
-  //             setAlertMsgUsername("Username is already taken");
-  //           });
-  //       }, 500);
-  //     }
-  //   } else {
-  //     setAlertUsername(false);
-  //     setAlertMsgUsername("");
-  //   }
-  // }, [username]);
+  // CUSTOM HOOK CAN SUBMIT
+  useValidateCanSubmit(
+    [
+      canSubmit,
+      (value: boolean) => {
+        setCanSubmit(value);
+        return value;
+      },
+    ],
 
-  // EMAIL VALIDATIONS
-  useEffect(() => {
-    if (email != "") {
-      if (!EMAIL_REGEX.test(email)) {
-        setAlertEmail(true);
-        setAlertMsgEmail("You should enter email input");
-      } else {
-        setAlertEmail(false);
-        setAlertMsgEmail("");
-
-        setTimeout(() => {
-          axios
-            .get(`${baseUrl}api/v1/email-unique/${email}`)
-            .then((response) => {
-              console.log(response.data);
-              if (response.status === 200) {
-                setAlertEmail(false);
-                setAlertMsgEmail("");
-              }
-            })
-            .catch(() => {
-              setAlertEmail(true);
-              setAlertMsgEmail("Email is already taken");
-            });
-        }, 500);
-      }
-    } else {
-      setAlertEmail(false);
-      setAlertMsgEmail("");
-    }
-  }, [email]);
-
-  // PHONE VALIDATIONS
-  useEffect(() => {
-    setAlertPhone(false);
-    setAlertMsgPhone("");
-    const checkPhoneAvailability = debounce(() => {
-      axios
-        .get(`${baseUrl}api/v1/phone-unique/${phone}`)
-        .then((response) => {
-          if (response.status === 200) {
-            setAlertPhone(false);
-            setAlertMsgPhone("");
-          }
-        })
-        .catch(() => {
-          setAlertPhone(true);
-          setAlertMsgPhone("Phone number is already taken");
-        });
-    }, 1500);
-
-    if (phone !== "") {
-      if (!PHONE_REGEX.test(phone)) {
-        setAlertPhone(true);
-        setAlertMsgPhone("Phone should be a valid 10-digit number");
-        return;
-      }
-      checkPhoneAvailability();
-    } else {
-      setAlertPhone(false);
-      setAlertMsgPhone("");
-    }
-  }, [phone]);
-
-  // PASSWORD VALIDATION
-  useEffect(() => {
-    if (password != "") {
-      if (!PWD_REGEX.test(password)) {
-        setAlertPwd(true);
-        setAlertMsgPwd(
-          "Password must be at least 8 characters - at least one uppercase, lowercase, digit, symbol"
-        );
-      } else {
-        setAlertPwd(false);
-        setAlertMsgPwd("");
-      }
-    } else {
-      setAlertPwd(false);
-      setAlertMsgPwd("");
-    }
-  }, [password]);
-
-  // CAN_SUBMIT VALIDATION
-  useEffect(() => {
-    const conditions = [
-      !alertConfirmPass,
-      !alertUsername,
-      !alertEmail,
-      !alertPhone,
-    ];
-    const conditions2 = [
-      formReg["f_name"],
-      formReg["l_name"],
-      formReg["username"],
-      formReg["email"],
-      formReg["phone"],
-      formReg["password"],
-      confirmPass,
-    ];
-    if (
-      conditions.every((element) => element === true) &&
-      conditions2.every((element) => element != "")
-    ) {
-      setCanSubmit(true);
-    } else {
-      setCanSubmit(false);
-    }
-  });
+    alertConfirmPass,
+    alertUsername,
+    alertEmail,
+    alertPhone,
+    formReg["f_name"],
+    formReg["l_name"],
+    formReg["username"],
+    formReg["email"],
+    formReg["phone"],
+    formReg["password"],
+    confirmPass
+  );
 
   // NEXT BUTTON HANDLER
   const handleNext = () => {
@@ -266,7 +199,7 @@ export default function RegisterStepper() {
         sx={{ display: "flex", flexDirection: "column", height: "120%" }}
       >
         <Stepper activeStep={activeStep} alternativeLabel>
-          {steps.map((label, index) => {
+          {steps.map((label) => {
             const stepProps: { completed?: boolean } = {};
             const labelProps: {
               optional?: ReactNode;
