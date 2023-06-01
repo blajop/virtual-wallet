@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { baseUrl } from "../../shared";
 
@@ -9,6 +9,12 @@ const CustomAvatar = () => {
     const file = event.target.files[0];
     setSelectedImage(file);
   };
+
+  useEffect(() => {
+    if (selectedImage != null) {
+      uploadImage();
+    }
+  }, [selectedImage]);
 
   const uploadImage = () => {
     const formData = new FormData();
@@ -31,7 +37,7 @@ const CustomAvatar = () => {
   return (
     <div>
       <input type="file" onChange={handleImageUpload} />
-      <button onClick={uploadImage}>Upload</button>
+      {/* <button onClick={uploadImage}>Upload</button> */}
     </div>
   );
 };
