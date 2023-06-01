@@ -47,6 +47,12 @@ const CustomAvatar = () => {
       .catch((error) => {
         console.error("Error uploading image:", error);
       });
+    localStorage.setItem(
+      "avatar",
+      `${localStorage.avatar}?update=${Date.now()}`
+    );
+    // MAY BE CHANGED
+    window.location.reload();
   };
 
   return (
