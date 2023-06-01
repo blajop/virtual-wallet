@@ -31,8 +31,7 @@ export default function WalletCreate(props: WallProps) {
             // navigate("/home");
           }, 3000);
         }
-      })
-      .catch((err) => console.log(err));
+      });
   }
 
   return {

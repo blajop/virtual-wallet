@@ -27,7 +27,6 @@ export default function useValidatePhone(
           axios
             .get(`${baseUrl}api/v1/phone-unique/${phone}`)
             .then((response) => {
-              console.log(response.data);
               if (response.status === 200) {
                 setAlertPhone(false);
                 setAlertMsgPhone("");

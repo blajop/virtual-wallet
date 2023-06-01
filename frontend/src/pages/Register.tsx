@@ -15,6 +15,7 @@ import useValidateEmail from "../hooks/useValidateEmail.tsx";
 import useValidatePhone from "../hooks/useValidatePhone.tsx";
 import useValidatePwd from "../hooks/useValidatePwd.tsx";
 import useValidateCanSubmit from "../hooks/useValidateCanSubmit.tsx";
+import useDebounce from "../hooks/useDebounce.tsx";
 
 const theme = createTheme({
   components: {
@@ -73,8 +74,10 @@ export default function RegisterStepper() {
   const [activePage, setActivePage] = useState(0);
 
   // CUSTOM HOOK USERNAME
+  const debouncedUsername = useDebounce(username, 1000);
+
   useValidateUsername(
-    username,
+    debouncedUsername,
     [
       alertUsername,
       (value: boolean) => {
@@ -92,8 +95,10 @@ export default function RegisterStepper() {
   );
 
   // CUSTOM HOOK EMAIL
+  const debouncedEmail = useDebounce(email, 1000);
+
   useValidateEmail(
-    email,
+    debouncedEmail,
     [
       alertEmail,
       (value: boolean) => {
@@ -111,8 +116,10 @@ export default function RegisterStepper() {
   );
 
   // CUSTOM HOOK PHONE
+  const debouncedPhone = useDebounce(phone, 1000);
+
   useValidatePhone(
-    phone,
+    debouncedPhone,
     [
       alertPhone,
       (value: boolean) => {
@@ -183,7 +190,7 @@ export default function RegisterStepper() {
               setActivePage((prevActivePage) => prevActivePage + 1);
             }
           })
-          .catch((err: AxiosError) => console.log(err));
+          .catch();
       }
     } else {
       setActiveStep((prevActiveStep) => prevActiveStep + 1);

@@ -39,7 +39,6 @@ function App() {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         })
         .catch((err) => {
-          console.log(err);
           if (err.response.status === 403) {
             setLoggedIn(false);
             localStorage.removeItem("token");
