@@ -1,4 +1,4 @@
-import { Checkbox, Snackbar, Typography } from "@mui/material";
+import { Snackbar } from "@mui/material";
 import Box from "@mui/material/Box/Box";
 import Container from "@mui/material/Container/Container";
 import TextField from "@mui/material/TextField/TextField";
@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 import LoadingButton from "@mui/lab/LoadingButton";
 
 export default function Login() {
-  const [loggedIn, setLoggedIn] = useContext(LoginContext);
+  const [, setLoggedIn] = useContext(LoginContext);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);

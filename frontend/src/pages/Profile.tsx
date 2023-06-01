@@ -5,7 +5,6 @@ import Typography from "@mui/material/Typography";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { baseUrl } from "../shared.js";
-import Divider from "@mui/material/Divider";
 import WalletCard from "../components/Wallet/WalletCard.js";
 import SelectSmall from "../components/Select/Select";
 import { AvatarGroup, Paper } from "@mui/material";
@@ -30,12 +29,12 @@ type UserResponse = {
 };
 
 export default function Profile() {
-  const [loggedIn, setLoggedIn] = React.useContext(LoginContext);
+  const [loggedIn] = React.useContext(LoginContext);
   const navigate = useNavigate();
 
   const [fullName, setFullName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
-  const [phone, setPhone] = useState<string>("");
+  const [, setPhone] = useState<string>("");
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [wallet, setWallet] = useState<Wallet | undefined>();
 

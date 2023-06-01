@@ -18,7 +18,7 @@ const settings = [
 export default function UserDropdown() {
   const navigate = useNavigate();
 
-  const [loggedIn, setLoggedIn] = React.useContext(LoginContext);
+  const [, setLoggedIn] = React.useContext(LoginContext);
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(
     null
   );

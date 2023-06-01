@@ -5,21 +5,17 @@ import Typography from "@mui/material/Typography";
 import WalletCard from "./WalletCard";
 
 interface WallProps {
-  wrongWallInputMsg: string;
   f_name: string;
   l_name: string;
 }
 
 export default function WalletCreate(props: WallProps) {
-  let wrongWallInput: string = props.wrongWallInputMsg;
   const f_name = props.f_name;
   const l_name = props.l_name;
   const [formWall, setFormWall] = useState({
     wallet_name: "",
     currency: "",
   });
-
-  const [open, setOpen] = useState(false);
 
   const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFormWall({ ...formWall, [event.target.name]: event.target.value });
@@ -31,7 +27,6 @@ export default function WalletCreate(props: WallProps) {
       .post("http://localhost:8000/api/v1/signup", formWall)
       .then((response) => {
         if (response.status === 200) {
-          setOpen(true);
           setTimeout(() => {
             // navigate("/home");
           }, 3000);

@@ -1,5 +1,4 @@
 import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
 import Avatar from "@mui/material/Avatar";
 
 export default function AvatarBox({ image }: { image: string }) {

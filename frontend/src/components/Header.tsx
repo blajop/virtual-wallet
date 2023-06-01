@@ -25,8 +25,7 @@ interface HeaderProps {
 }
 
 function Header(props: HeaderProps) {
-  const [showLogo, setShowLogo] = React.useState<boolean>(true);
-  const [loggedIn, setLoggedIn] = React.useContext(LoginContext);
+  const [loggedIn] = React.useContext(LoginContext);
   const [loading, setLoading] = React.useState(false);
 
   const navigate = useNavigate();
