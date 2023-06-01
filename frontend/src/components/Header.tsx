@@ -44,7 +44,10 @@ function Header(props: HeaderProps) {
     setAnchorElNav(null);
   };
 
-  const handleLinkClick = (event: React.MouseEvent<HTMLElement>, elem) => {
+  const handleLinkClick = (
+    event: React.MouseEvent<HTMLElement>,
+    elem: string
+  ) => {
     const isHomePage = location.pathname === "/";
     handleCloseNavMenu();
     event.preventDefault();

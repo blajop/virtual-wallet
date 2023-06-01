@@ -9,6 +9,7 @@ import SignupForm from "../components/Signup";
 import axios, { AxiosError } from "axios";
 import WalletCreate from "../components/Wallet/WalletCreate";
 import Container from "@mui/system/Container/Container";
+import { baseUrl } from "../shared.js";
 
 const steps = ["New User", "Create Wallet", "Finish"];
 
@@ -17,7 +18,7 @@ const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 const PHONE_REGEX = /^\d{10}$/;
 const PWD_REGEX = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[-+*&^_]).{8,}$/;
 const PWD_INSTRUCTION = "...";
-const SIGNUP_URL = "http://localhost:8000/api/v1/signup";
+const SIGNUP_URL = baseUrl + "api/v1/signup";
 
 export default function RegisterStepper() {
   const [alertUsername, setAlertUsername] = useState(false);
@@ -80,7 +81,7 @@ export default function RegisterStepper() {
                 setAlertMsgUsername("");
               }
             })
-            .catch((err: AxiosError) => {
+            .catch(() => {
               setAlertUsername(true);
               setAlertMsgUsername("Username is already taken");
             });
@@ -112,7 +113,7 @@ export default function RegisterStepper() {
                 setAlertMsgEmail("");
               }
             })
-            .catch((err: AxiosError) => {
+            .catch(() => {
               setAlertEmail(true);
               setAlertMsgEmail("Email is already taken");
             });
@@ -144,7 +145,7 @@ export default function RegisterStepper() {
                 setAlertMsgPhone("");
               }
             })
-            .catch((err: AxiosError) => {
+            .catch(() => {
               setAlertPhone(true);
               setAlertMsgPhone("Phone is already taken");
             });

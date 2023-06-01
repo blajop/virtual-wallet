@@ -1,8 +1,14 @@
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
 import UncontrolledExample from "./Carousel";
+import React from "react";
 
-const features = [
+type Item = {
+  id: number;
+  text: React.ReactNode;
+};
+
+const features: Item[] = [
   {
     id: 1,
     text: (
@@ -37,7 +43,7 @@ export default function Features() {
   return (
     <>
       <Container
-        maxWidth={"false"}
+        maxWidth={false}
         id="features"
         className="bg-white "
         sx={{

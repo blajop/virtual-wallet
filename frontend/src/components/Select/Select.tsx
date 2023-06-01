@@ -2,11 +2,21 @@ import * as React from "react";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
+import WalletIcon from "@mui/icons-material/Wallet";
+import { Wallet } from "../../pages/Profile";
 
-export default function SelectSmall({ wallets, setWallet }) {
-  const [selectedWalletId, setSelectedWalletId] = React.useState("");
+export default function SelectSmall({
+  wallets,
+  setWallet,
+  invert,
+}: {
+  wallets: Wallet[];
+  setWallet: (wallet: Wallet | undefined) => void;
+  invert?: boolean;
+}) {
+  const [selectedWalletId, setSelectedWalletId] = React.useState<string>();
 
-  const handleChange = (event) => {
+  const handleChange = (event: SelectChangeEvent<string>) => {
     setSelectedWalletId(event.target.value);
     const selectedWallet = wallets.find(
       (wallet) => wallet.id === event.target.value
@@ -15,20 +25,41 @@ export default function SelectSmall({ wallets, setWallet }) {
   };
 
   return (
-    <FormControl sx={{ m: 1, width: 200 }} size="small">
+    <FormControl
+      sx={{
+        mt: 1,
+        width: "100%",
+        backgroundColor: invert ? "black" : "white",
+        color: invert ? "white" : "black",
+        display: "flex",
+        paddingY: "0px",
+      }}
+      size="small"
+    >
       <Select
+        displayEmpty={true}
         labelId="demo-select-small-label"
         id="demo-select-small"
         value={selectedWalletId}
-        label="Age"
         onChange={handleChange}
+        sx={{
+          color: invert ? "white" : "black",
+        }}
       >
-        <MenuItem value="">
+        <MenuItem>
           <em>None</em>
         </MenuItem>
         {wallets.map((wallet, index) => (
-          <MenuItem key={index} value={wallet.id}>
-            {wallet.name || "Wallet"} • {wallet.balance.toFixed(2)} •{" "}
+          <MenuItem
+            key={index}
+            value={wallet.id}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <WalletIcon /> {"  "}
+            {wallet.name || "Wallet"} | {wallet.balance.toFixed(2)}{" "}
             {wallet.currency.toUpperCase()}
           </MenuItem>
         ))}

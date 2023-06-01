@@ -81,12 +81,13 @@ export default function WalletCreate(props: WallProps) {
           </div>
         </form>
         <div style={{ display: "flex", justifyContent: "center" }}>
-          {WalletCard({
-            f_name: f_name,
-            l_name: l_name,
-            wallet_name: formWall["wallet_name"],
-            currency: formWall["currency"],
-          })}
+          <WalletCard
+            name={`${f_name} ${l_name}`}
+            walletName={formWall["wallet_name"]}
+            currency={formWall["currency"]}
+            walletId={""}
+            username={""}
+          />
         </div>
       </Fragment>
     ),

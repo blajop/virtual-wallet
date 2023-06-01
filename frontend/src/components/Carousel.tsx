@@ -1,5 +1,4 @@
 import Carousel from "react-bootstrap/Carousel";
-import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 import "bootstrap/dist/css/bootstrap.min.css";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
@@ -7,7 +6,12 @@ import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import Box from "@mui/material/Box";
 import { useState, useEffect } from "react";
 
-function UncontrolledExample({ items }) {
+type Item = {
+  id: number;
+  text: React.ReactNode;
+};
+
+function UncontrolledExample({ items }: { items: Item[] }) {
   const [index, setIndex] = useState(1);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [isMediumScreen, setIsMediumScreen] = useState(false);
@@ -29,7 +33,7 @@ function UncontrolledExample({ items }) {
     };
   }, []);
 
-  const handleSelect = (selectedIndex, e) => {
+  const handleSelect = (selectedIndex: number) => {
     setIndex(selectedIndex);
   };
 

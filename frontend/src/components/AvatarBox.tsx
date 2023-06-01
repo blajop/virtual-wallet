@@ -2,7 +2,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Avatar from "@mui/material/Avatar";
 
-export default function AvatarBox({ image, name }) {
+export default function AvatarBox({ image }: { image: string }) {
   return (
     <>
       <Box
@@ -36,9 +36,6 @@ export default function AvatarBox({ image, name }) {
               src={image}
             ></Avatar>
           </Box>
-          <Typography variant="body2" className="text-black font-bold pt-2">
-            {name}
-          </Typography>
         </Box>
       </Box>
     </>
