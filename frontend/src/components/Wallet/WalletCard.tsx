@@ -23,6 +23,11 @@ interface CardProps {
   invert?: boolean;
 }
 
+type Leech = {
+  id: number;
+  username: string;
+};
+
 export default function WalletCard(props: CardProps) {
   const name = props.name;
   const walletName = props.walletName;
@@ -32,7 +37,7 @@ export default function WalletCard(props: CardProps) {
   const username = props.username;
   const invert = props.invert || false;
 
-  const [leeches, setLeeches] = useState([]);
+  const [leeches, setLeeches] = useState<Leech[]>([]);
 
   const requestUrl =
     baseUrl + `api/v1/users/${username}/wallets/${walletId}/leeches`;

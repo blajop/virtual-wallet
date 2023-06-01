@@ -9,26 +9,44 @@ import Divider from "@mui/material/Divider";
 import WalletCard from "../components/Wallet/WalletCard.js";
 import SelectSmall from "../components/Select/Select";
 import { AvatarGroup, Paper } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import React from "react";
+import { LoginContext } from "../App";
+
+export type Wallet = {
+  id: string;
+  name?: string;
+  currency: string;
+  balance: number;
+};
+
+type WalletResponse = Wallet[];
+
+type UserResponse = {
+  f_name: string;
+  l_name: string;
+  email: string;
+  phone: string;
+};
 
 export default function Profile() {
-  //   let fullName = "";
-  //   let email = "";
-  //   let phone = "";
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [wallets, setWallets] = useState([]);
-  const [wallet, setWallet] = useState();
-  const [defaultWallet, setDefaultWallet] = useState();
+  const [loggedIn, setLoggedIn] = React.useContext(LoginContext);
+  const navigate = useNavigate();
 
-  const handleSelectWallet = (selectedWallet) => {
-    setWallet(selectedWallet); // Set the entire selected wallet object
+  const [fullName, setFullName] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [phone, setPhone] = useState<string>("");
+  const [wallets, setWallets] = useState<Wallet[]>([]);
+  const [wallet, setWallet] = useState<Wallet | undefined>();
+
+  const handleSelectWallet = (wallet: Wallet | undefined) => {
+    setWallet(wallet);
   };
 
   useEffect(() => {
     //   GET USER
     axios
-      .get(baseUrl + "api/v1/users/profile", {
+      .get<UserResponse>(baseUrl + "api/v1/users/profile", {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       })
       .then((response) => {
@@ -36,33 +54,34 @@ export default function Profile() {
           setFullName(`${response.data.f_name} ${response.data.l_name}`);
           setEmail(response.data.email);
           setPhone(response.data.phone);
-          console.log(response.data);
-          //   setDefaultWallet(response.data.user_settings);
 
           //   GET WALLETS
-
           axios
-            .get(baseUrl + `api/v1/users/${response.data.email}/wallets`, {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-              },
-            })
+            .get<WalletResponse>(
+              baseUrl + `api/v1/users/${response.data.email}/wallets`,
+              {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+              }
+            )
             .then((response) => {
               if (response.status === 200) {
                 setWallets(response.data);
-                console.log(response.data);
               }
             })
             .catch();
         }
       })
-      .catch();
+      .catch(() => {
+        navigate("/");
+      });
   }, []);
 
   //   Update wallet
   useEffect(() => {}, [wallet]);
 
-  return (
+  return loggedIn ? (
     <Container
       sx={{
         display: "flex",
@@ -87,7 +106,7 @@ export default function Profile() {
         }}
       >
         <Avatar
-          src={localStorage.getItem("avatar")}
+          src={localStorage.getItem("avatar") ?? ""}
           sx={{ height: "80px", width: "80px" }}
         ></Avatar>
         <Typography variant="h3" sx={{ fontWeight: "700" }}>
@@ -201,5 +220,5 @@ export default function Profile() {
         </Box>
       </Container>
     </Container>
-  );
+  ) : null;
 }

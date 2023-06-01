@@ -43,7 +43,7 @@ export default function UserDropdown() {
           <Avatar
             alt="avatar"
             sx={{ width: "32px", height: "32px" }}
-            src={localStorage.getItem("avatar")}
+            src={localStorage.getItem("avatar") ?? ""}
           />
         </IconButton>
       </Tooltip>

@@ -33,7 +33,7 @@ const WelcomeScreen = () => {
         transitionDuration={{ appear: 0, exit: 800, enter: 0 }}
         sx={{
           zIndex: 9999,
-          transform: isVisible,
+          transform: isVisible ? "translateY(0)" : undefined,
         }}
       >
         <Container sx={{ width: "auto", paddingBottom: "60px" }}>

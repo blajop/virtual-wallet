@@ -3,11 +3,20 @@ import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import WalletIcon from "@mui/icons-material/Wallet";
+import { Wallet } from "../../pages/Profile";
 
-export default function SelectSmall({ wallets, setWallet, invert }) {
-  const [selectedWalletId, setSelectedWalletId] = React.useState();
+export default function SelectSmall({
+  wallets,
+  setWallet,
+  invert,
+}: {
+  wallets: Wallet[];
+  setWallet: (wallet: Wallet | undefined) => void;
+  invert?: boolean;
+}) {
+  const [selectedWalletId, setSelectedWalletId] = React.useState<string>();
 
-  const handleChange = (event) => {
+  const handleChange = (event: SelectChangeEvent<string>) => {
     setSelectedWalletId(event.target.value);
     const selectedWallet = wallets.find(
       (wallet) => wallet.id === event.target.value
@@ -37,7 +46,7 @@ export default function SelectSmall({ wallets, setWallet, invert }) {
           color: invert ? "white" : "black",
         }}
       >
-        <MenuItem value={wallets[0]}>
+        <MenuItem>
           <em>None</em>
         </MenuItem>
         {wallets.map((wallet, index) => (

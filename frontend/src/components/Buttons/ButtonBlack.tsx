@@ -1,7 +1,7 @@
 import Button from "@mui/material/Button/Button";
 import { useNavigate } from "react-router-dom";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import AddIcon from "@mui/icons-material/Add";
+import React from "react";
 
 interface ButtonBlackProps {
   to?: string;
@@ -9,8 +9,7 @@ interface ButtonBlackProps {
   variant?: "text" | "outlined" | "contained";
   invert?: boolean;
   leeches?: object[];
-  text: string;
-  children: any;
+  text: string | React.ReactNode;
 }
 
 export default function ButtonBlack(props: ButtonBlackProps) {
@@ -21,7 +20,6 @@ export default function ButtonBlack(props: ButtonBlackProps) {
     variant = "outlined",
     invert = false,
     text,
-    children,
   } = props;
 
   const theme = createTheme({

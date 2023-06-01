@@ -12,16 +12,22 @@ export default function AboutUs() {
     transform: "translateY(0)",
   };
 
-  const handleMouseEnter = (e) => {
-    // e.target.style.fontStyle = "italic";
-    e.target.style.color = "black";
-    e.target.style.transform = "translateY(-2px)";
+  const handleMouseEnter = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (target && target.style) {
+      target.style.color = "black";
+      target.style.transform = "translateY(-2px)";
+    }
   };
 
-  const handleMouseLeave = (e) => {
-    e.target.style.fontStyle = "inherit";
-    e.target.style.transform = "translateY(0)";
+  const handleMouseLeave = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (target && target.style) {
+      target.style.fontStyle = "inherit";
+      target.style.transform = "translateY(0)";
+    }
   };
+
   return (
     <>
       <Container

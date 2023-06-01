@@ -21,7 +21,7 @@ export default function Login() {
   data.append("username", username);
   data.append("password", password);
 
-  const login = (e) => {
+  const login = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     const url = baseUrl + "api/v1/login/access-token";
@@ -51,6 +51,7 @@ export default function Login() {
         console.log("Finally in");
       });
   };
+
   return (
     <>
       <Container
