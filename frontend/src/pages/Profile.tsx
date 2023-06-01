@@ -8,6 +8,7 @@ import { baseUrl } from "../shared.js";
 import Divider from "@mui/material/Divider";
 import WalletCard from "../components/Wallet/WalletCard.js";
 import SelectSmall from "../components/Select/Select";
+import { AvatarGroup, Paper } from "@mui/material";
 
 export default function Profile() {
   //   let fullName = "";
@@ -18,6 +19,7 @@ export default function Profile() {
   const [phone, setPhone] = useState("");
   const [wallets, setWallets] = useState([]);
   const [wallet, setWallet] = useState();
+  const [defaultWallet, setDefaultWallet] = useState();
 
   const handleSelectWallet = (selectedWallet) => {
     setWallet(selectedWallet); // Set the entire selected wallet object
@@ -34,6 +36,8 @@ export default function Profile() {
           setFullName(`${response.data.f_name} ${response.data.l_name}`);
           setEmail(response.data.email);
           setPhone(response.data.phone);
+          console.log(response.data);
+          //   setDefaultWallet(response.data.user_settings);
 
           //   GET WALLETS
 
@@ -46,6 +50,7 @@ export default function Profile() {
             .then((response) => {
               if (response.status === 200) {
                 setWallets(response.data);
+                console.log(response.data);
               }
             })
             .catch();
@@ -55,66 +60,146 @@ export default function Profile() {
   }, []);
 
   //   Update wallet
-  useEffect(() => {
-    console.log("Selected Wallet:", wallet);
-  }, [wallet]);
+  useEffect(() => {}, [wallet]);
 
   return (
     <Container
-      maxWidth="md"
       sx={{
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        border: "solid, black, 1px",
-        height: "50vh",
-        backgroundColor: "gray",
-        position: "absolute",
-        gap: "20px",
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -50%)",
+        height: "auto",
+        width: "auto",
+        backgroundColor: "white",
+        gap: "40px",
         paddingY: "50px",
       }}
     >
-      <Box sx={{ display: "flex", alignItems: "center", gap: "50px" }}>
+      <Paper
+        elevation={2}
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: "50px",
+          height: "100%",
+          width: "100%",
+          padding: "20px",
+        }}
+      >
         <Avatar
           src={localStorage.getItem("avatar")}
           sx={{ height: "80px", width: "80px" }}
         ></Avatar>
-        <Box>
-          <Typography variant="h5" sx={{ fontWeight: "bold" }}>
-            {fullName}
-          </Typography>
-          <Typography
-            variant="body1"
-            sx={{ marginBottom: "-5px", fontStyle: "italic" }}
-          >
-            {email}
-          </Typography>
-          <Typography variant="body1" sx={{ fontStyle: "italic" }}>
-            {phone}
-          </Typography>
-        </Box>
-      </Box>
-      <hr className="w-[80%] text-black border-2" />
-      <Box
+        <Typography variant="h3" sx={{ fontWeight: "700" }}>
+          {fullName}
+        </Typography>
+      </Paper>
+      {/* WALLETS */}
+      <Container
         sx={{
-          backgroundColor: "white",
-          height: "200px",
-          width: "500px",
+          display: "flex",
+          alignItems: "flex-start",
+          gap: "20px",
+          padding: "0 !important",
         }}
       >
-        <SelectSmall wallets={wallets} setWallet={handleSelectWallet} />
-      </Box>
-      {wallet && (
-        <WalletCard
-          name={fullName}
-          currency={wallet.currency.toUpperCase()}
-          balance={wallet.balance.toFixed(2)}
-          walletName={wallet.name}
-        ></WalletCard>
-      )}
+        <Box>
+          <Paper
+            elevation={2}
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              backgroundColor: "white",
+              height: "auto",
+              width: "auto",
+              padding: "20px",
+            }}
+          >
+            {wallet && (
+              <WalletCard
+                username={email}
+                walletId={wallet.id}
+                currency={wallet.currency.toUpperCase()}
+                balance={wallet.balance.toFixed(2)}
+                walletName={wallet.name || "Wallet"}
+              />
+            )}
+            <SelectSmall wallets={wallets} setWallet={handleSelectWallet} />
+            {/* CARDS */}
+            <br />
+            {wallet && (
+              <WalletCard
+                username={email}
+                walletId={wallet.id}
+                currency={wallet.currency.toUpperCase()}
+                balance={wallet.balance.toFixed(2)}
+                walletName={wallet.name || "Wallet"}
+              />
+            )}
+            <SelectSmall wallets={wallets} setWallet={handleSelectWallet} />
+          </Paper>
+        </Box>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            flex: "1 !important",
+            height: "100% !important",
+          }}
+        >
+          <Paper
+            elevation={2}
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              backgroundColor: "white",
+              height: "100% !important",
+              width: "auto",
+              padding: "20px",
+              flex: "0 !important",
+            }}
+          >
+            <AvatarGroup max={6}>
+              <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
+              <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
+              <Avatar alt="Cindy Baker" src="/static/images/avatar/3.jpg" />
+              <Avatar alt="Agnes Walker" src="/static/images/avatar/4.jpg" />
+              <Avatar alt="Cindy Baker" src="/static/images/avatar/3.jpg" />
+              <Avatar alt="Agnes Walker" src="/static/images/avatar/4.jpg" />
+              <Avatar
+                alt="Trevor Henderson"
+                src="/static/images/avatar/5.jpg"
+              />
+            </AvatarGroup>
+          </Paper>
+          <br></br>
+          <Paper
+            elevation={2}
+            sx={{
+              display: "flex !important",
+              flexDirection: "column",
+              justifyContent: "center",
+              backgroundColor: "white",
+              height: "100% !important",
+              width: "auto",
+              padding: "20px",
+              flex: "1 !important",
+            }}
+          >
+            {wallet && (
+              <WalletCard
+                username={email}
+                walletId={wallet.id}
+                currency={wallet.currency.toUpperCase()}
+                balance={wallet.balance.toFixed(2)}
+                walletName={wallet.name || "Wallet"}
+              />
+            )}
+            <SelectSmall wallets={wallets} setWallet={handleSelectWallet} />
+          </Paper>
+        </Box>
+      </Container>
     </Container>
   );
 }

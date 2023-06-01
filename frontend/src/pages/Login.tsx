@@ -36,7 +36,7 @@ export default function Login() {
           setLoggedIn(true);
           localStorage.setItem(
             "avatar",
-            baseUrl + `static/avatars/${response.data.user_id}.jpg`
+            baseUrl + `static/avatars/${response.data.user_id}.png`
           );
 
           localStorage.setItem("token", response.data.access_token);

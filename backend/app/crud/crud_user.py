@@ -198,10 +198,10 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
 
                 # Resize the img
                 resized_img = cropped_img.resize((600, 600))
-
+                print(cwd)
                 resized_img.save(
-                    os.path.join(cwd, f"app/static/avatars/{user.id}.jpg"),
-                    format="JPEG",
+                    f"app/static/avatars/{user.id}.png",
+                    format="PNG",
                 )
             return Msg(msg="Successfully uploaded avatar!")
         except OSError as err:
