@@ -63,7 +63,9 @@ class User(UserBase, table=True):
     user_settings: Optional[str] = Field(foreign_key="user_settings.id", unique=True)
 
     user_settings_obj: "UserSettings" = Relationship(
-        sa_relationship_kwargs=dict(primaryjoin="UserSettings.id==User.user_settings")
+        sa_relationship_kwargs=dict(
+            uselist=False, primaryjoin="UserSettings.id==User.user_settings"
+        ),
     )
 
     scopes: Optional[List["Scope"]] = Relationship(
@@ -98,15 +100,11 @@ class User(UserBase, table=True):
 class UserSettings(SQLModel, table=True):
     __tablename__ = "user_settings"
     id: Optional[str] = Field(primary_key=True)
-    user_id: str = Field(foreign_key="users.id", unique=True)
     default_wallet_id: Optional[str] = Field(default=None, foreign_key="wallets.id")
     email_confirmed: bool = Field(default=False)
     avatar_id: Optional[str] = Field(default=None)
     referrals_left: int = Field(default=5)
 
-    user_obj: "User" = Relationship(
-        sa_relationship_kwargs=dict(primaryjoin="User.id==UserSettings.user_id")
-    )
     default_wallet_obj: Optional["Wallet"] = Relationship(
         sa_relationship_kwargs=dict(
             primaryjoin="Wallet.id==UserSettings.default_wallet_id"

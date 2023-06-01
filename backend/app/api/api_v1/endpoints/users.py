@@ -6,6 +6,8 @@ from app import crud, deps
 from app.error_models.user_errors import FileError
 from app.models import User, UserBase, UserUpdate
 from app.models.msg import Msg
+from app.models.user import UserSettings
+from app.models.wallet import Wallet
 
 router = APIRouter()
 
@@ -67,6 +69,33 @@ def get_user(
     if not user:
         raise HTTPException(status_code=404)
     return user
+
+
+@router.get("/{identifier}/settings", response_model=UserSettings)
+def get_settings_user(
+    user: User = Depends(deps.get_user_from_path),
+    logged_user: User = Depends(deps.get_current_user),
+):
+    # Admin can view everybody's settings
+    if user != logged_user and not crud.user.is_admin(logged_user):
+        raise HTTPException(status_code=403, detail="Cannot view other's settings")
+
+    return user.user_settings_obj
+
+
+@router.get("/{identifier}/wallets/default", response_model=Wallet)
+def get_settings_user(
+    user: User = Depends(deps.get_user_from_path),
+    db: Session = Depends(deps.get_db),
+    logged_user: User = Depends(deps.get_current_user),
+):
+    if user != logged_user and not crud.user.is_admin(logged_user):
+        raise HTTPException(
+            status_code=403, detail="Cannot view others's default wallets"
+        )
+    return (
+        user.user_settings_obj.default_wallet_obj
+    )  # crud.wallet.get(db=db, id=user.user_settings_obj.default_wallet_id)
 
 
 @router.post("/{identifier}/friends", response_model=UserBase)
