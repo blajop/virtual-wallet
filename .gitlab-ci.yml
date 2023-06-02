@@ -25,6 +25,10 @@ unit-test-job:   # This job runs in the test stage.
   image: python:3.11
   script:
     - cd backend/
+    - wget https://dlm.mariadb.com/2678574/Connectors/c/connector-c-3.3.3/mariadb-connector-c-3.3.3-debian-bullseye-amd64.tar.gz -O - | tar -zxf - --strip-components=1 -C /usr
+    - pip install --upgrade pip
+    - pip install Flask Flask-SQLAlchemy flask-marshmallow marshmallow-sqlalchemy
+    - pip install mariadb
     - pip install poetry
     - poetry install
     - pytest
