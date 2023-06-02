@@ -85,7 +85,7 @@ export default function WalletCreate({
             value={name}
             onChange={(e) => {
               setName(e.target.value);
-              setWalletName(name);
+              setWalletName(e.target.value);
             }}
             sx={{ flex: 3 }}
           />
@@ -97,7 +97,7 @@ export default function WalletCreate({
             label={"Currency"}
             onChange={(e) => {
               setCurrency(e.target.value);
-              setWalletCurr(currency);
+              setWalletCurr(e.target.value);
             }}
             sx={{ width: "250", color: "black", flex: 1 }}
           >

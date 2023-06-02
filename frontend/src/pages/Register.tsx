@@ -3,7 +3,7 @@ import Step from "@mui/material/Step";
 import StepLabel from "@mui/material/StepLabel";
 import Stepper from "@mui/material/Stepper";
 import Typography from "@mui/material/Typography";
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import axios from "axios";
 import Container from "@mui/system/Container/Container";
 import useValidateUsername from "../hooks/useValidateUsername.tsx";
@@ -53,7 +53,8 @@ export default function RegisterStepper() {
 
   const [token, setToken] = useState("");
   const [walletName, setWalletName] = useState("");
-  const [walletCurr, setWalletCurr] = useState("BGN");
+  const [currUpdated, setCurrUpdated] = useState(false);
+  const [mostRecentCurrency, setMostRecentCurrency] = useState("BGN");
 
   const handleSetToken = (data: string) => {
     setToken(data);
@@ -62,8 +63,23 @@ export default function RegisterStepper() {
     setWalletName(name);
   };
   const handleSetWalletCurr = (curr: string) => {
-    setWalletCurr(curr);
+    setMostRecentCurrency(curr);
   };
+
+  useEffect(() => {
+    if (currUpdated) {
+      axios
+        .post(
+          `${apiUrl}users/${username}/wallets`,
+          { currency: mostRecentCurrency, name: walletName },
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        )
+        .catch((err) => console.log(err));
+      setActiveStep((prevActiveStep) => prevActiveStep + 1);
+    }
+  }, [currUpdated]);
 
   const pages = [
     renderReg,
@@ -197,18 +213,7 @@ export default function RegisterStepper() {
           .catch();
       }
     } else if (activeStep === 1) {
-      axios
-        .post(
-          `${apiUrl}users/${username}/wallets`,
-          { currency: walletCurr, name: walletName },
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        )
-        .then(() => console.log("wallet created"))
-        .catch((err) => console.log(err));
-
-      setActiveStep((prevActiveStep) => prevActiveStep + 1);
+      setCurrUpdated(true);
     } else {
       setActiveStep((prevActiveStep) => prevActiveStep + 1);
     }
