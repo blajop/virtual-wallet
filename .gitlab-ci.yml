@@ -1,21 +1,36 @@
-image: node:16.5.0
+image: python:3.11-slim-bullseye
 
-pages:
-  stage: deploy
-  
-  cache:
-    key:
-      files:
-        - package-lock.json
-      prefix: npm
-    paths:
-      - node_modules/
+services:
+  - docker:dind
+
+variables:
+  DOCKER_DRIVER: overlay2
+
+before_script:
+  - apt-get update && apt-get install -y gcc wget libc-dev
+  - apt-get update -qq
+  - apt-get install -y -qq --no-install-recommends gcc wget
+
+stages:
+  - test
+
+unit-test-job:
+  stage: test
   script:
-    - npm install
-    - npm run build
-    - cp -a dist/. public/
+    - cd backend/
+    - python -m venv venv
+    - source venv/bin/activate
+    - wget https://dlm.mariadb.com/2678574/Connectors/c/connector-c-3.3.3/mariadb-connector-c-3.3.3-debian-bullseye-amd64.tar.gz -O - | tar -zxf - --strip-components=1 -C /usr
+    - pip install --upgrade pip
+    - pip install Flask Flask-SQLAlchemy flask-marshmallow marshmallow-sqlalchemy
+    - pip install mariadb
+    - pip install poetry
+    - poetry install
+    - pip install pytest
+    - apt-get update && apt-get install -y mariadb-client
+    - export $(grep -v '^#' .gitlab-ci.yml | grep '=' | sed 's/=.*//')
+    - pytest --cov=app/api --cov=app/crud --cov-report=term --cov-report=html
   artifacts:
     paths:
-      - public
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      - backend/htmlcov/
+    expire_in: 30 days
