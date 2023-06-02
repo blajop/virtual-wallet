@@ -27,6 +27,7 @@ unit-test-job:
     - pip install poetry
     - poetry install
     - pip install pytest
+    - apt-get update && apt-get install -y mariadb-client
     - export $(grep -v '^#' .gitlab-ci.yml | grep '=' | sed 's/=.*//')
     - pytest --cov=app/api --cov=app/crud --cov-report=term --cov-report=html
   artifacts:
