@@ -16,11 +16,13 @@ import { baseUrl } from "../../shared.js";
 interface CardProps {
   name?: string;
   walletName?: string;
+  description?: string;
   currency?: string;
   balance?: string;
-  walletId: string;
-  username: string;
+  walletId?: string;
+  username?: string;
   invert?: boolean;
+  buttons?: string[];
 }
 
 type Leech = {
@@ -31,11 +33,13 @@ type Leech = {
 export default function WalletCard(props: CardProps) {
   const name = props.name;
   const walletName = props.walletName;
+  const description = props.description;
   const currency = props.currency;
   const balance = props.balance;
   const walletId = props.walletId;
   const username = props.username;
   const invert = props.invert || false;
+  const buttons = props.buttons || [`deposit`, `send`, `invite`];
 
   const [leeches, setLeeches] = useState<Leech[]>([]);
 
@@ -43,15 +47,17 @@ export default function WalletCard(props: CardProps) {
     baseUrl + `api/v1/users/${username}/wallets/${walletId}/leeches`;
 
   useEffect(() => {
-    axios
-      .get(requestUrl, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      })
-      .then((response) => {
-        setLeeches(response.data);
-      });
+    if (username) {
+      axios
+        .get(requestUrl, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        })
+        .then((response) => {
+          setLeeches(response.data);
+        });
+    }
   }, [walletId]);
 
   return (
@@ -102,42 +108,49 @@ export default function WalletCard(props: CardProps) {
               gap: "5px",
             }}
           >
-            <ButtonBlack
-              invert={invert}
-              text={
-                <Tooltip title={"Add money"}>
-                  <AddIcon
-                    fontSize="medium"
-                    sx={{ color: invert ? "black" : "white" }}
-                  />
-                </Tooltip>
-              }
-            />
+            {description && <Typography variant="h6">{description}</Typography>}
+            {buttons && buttons.includes("deposit") && (
+              <ButtonBlack
+                invert={invert}
+                text={
+                  <Tooltip title={"Add money"}>
+                    <AddIcon
+                      fontSize="medium"
+                      sx={{ color: invert ? "black" : "white" }}
+                    />
+                  </Tooltip>
+                }
+              />
+            )}
 
-            <ButtonBlack
-              invert={invert}
-              text={
-                <Tooltip title={"Send money"}>
-                  <SendIcon
-                    fontSize="medium"
-                    sx={{
-                      color: invert ? "black" : "white",
-                    }}
-                  />
-                </Tooltip>
-              }
-            ></ButtonBlack>
-            <ButtonBlack
-              invert={invert}
-              text={
-                <Tooltip title={"Invite people"}>
-                  <PersonAddIcon
-                    fontSize="medium"
-                    sx={{ color: invert ? "black" : "white" }}
-                  />
-                </Tooltip>
-              }
-            />
+            {buttons && buttons.includes("send") && (
+              <ButtonBlack
+                invert={invert}
+                text={
+                  <Tooltip title={"Send money"}>
+                    <SendIcon
+                      fontSize="medium"
+                      sx={{
+                        color: invert ? "black" : "white",
+                      }}
+                    />
+                  </Tooltip>
+                }
+              ></ButtonBlack>
+            )}
+            {buttons && buttons.includes("invite") && (
+              <ButtonBlack
+                invert={invert}
+                text={
+                  <Tooltip title={"Invite people"}>
+                    <PersonAddIcon
+                      fontSize="medium"
+                      sx={{ color: invert ? "black" : "white" }}
+                    />
+                  </Tooltip>
+                }
+              />
+            )}
           </Box>
 
           <AvatarGroup max={4}>

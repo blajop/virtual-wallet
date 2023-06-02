@@ -5,7 +5,7 @@ export default function CircularLoading() {
   return (
     <Box
       sx={{
-        position: "fixed",
+        position: "absolute",
         top: "60px",
         left: 0,
         width: "100%",

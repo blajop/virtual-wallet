@@ -13,7 +13,7 @@ interface ButtonBlackProps {
   onClick?: (to: string) => void;
   disabled?: boolean;
   disabledText?: string;
-  sx: object;
+  sx?: object;
 }
 
 export default function ButtonBlack(props: ButtonBlackProps) {
