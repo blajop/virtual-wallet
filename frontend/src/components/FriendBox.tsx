@@ -4,7 +4,6 @@ import Paper from "@mui/material/Paper/Paper";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { apiUrl, baseUrl } from "../shared";
-import { Label } from "@mui/icons-material";
 import Tooltip from "@mui/material/Tooltip/Tooltip";
 import AddIcon from "@mui/icons-material/Add";
 
@@ -21,20 +20,21 @@ export interface Friend {
   user_settings: string;
 }
 
-export default function FriendBox() {
+export default function FriendBox({ email }: { email: string }) {
   const [friends, setFriends] = useState<Friends>();
-  const url = apiUrl + `users/stanim/friends`;
   const token: string = localStorage.token;
 
   useEffect(() => {
-    axios
-      .get(url, { headers: { Authorization: `Bearer ${token}` } })
-      .then((response) => {
-        console.log(response);
-        setFriends(response.data);
-      })
-      .catch((err) => console.log(err));
-  }, []);
+    if (email) {
+      const url = apiUrl + `users/${email}/friends`; // change username
+      axios
+        .get(url, { headers: { Authorization: `Bearer ${token}` } })
+        .then((response) => {
+          setFriends(response.data);
+        })
+        .catch((err) => console.log(err));
+    }
+  }, [email]);
 
   return (
     <>
@@ -53,6 +53,7 @@ export default function FriendBox() {
         <AvatarGroup max={6}>
           <Tooltip title="Add friend">
             <Avatar
+              sx={{ cursor: "pointer" }}
               onClick={() =>
                 console.log("Not implemented. Modal popup for add friend")
               }
@@ -61,8 +62,9 @@ export default function FriendBox() {
             </Avatar>
           </Tooltip>
           {friends?.map((friend, index) => (
-            <Tooltip title={`${friend.f_name} ${friend.l_name}`}>
+            <Tooltip key={index} title={`${friend.f_name} ${friend.l_name}`}>
               <Avatar
+                sx={{ cursor: "pointer" }}
                 key={index}
                 alt={friend?.username}
                 src={`${baseUrl}static/avatars/${friend.id}.png`}

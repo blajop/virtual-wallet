@@ -9,14 +9,17 @@ interface ButtonBlackProps {
   variant?: "text" | "outlined" | "contained";
   invert?: boolean;
   leeches?: object[];
-  text: string | React.ReactNode;
+  text?: string;
+  children?: React.ReactNode;
   onClick?: (to: string) => void;
   disabled?: boolean;
   disabledText?: string;
   sx?: object;
 }
 
-export default function ButtonBlack(props: ButtonBlackProps) {
+const ButtonBlack = React.forwardRef(function ButtonBlack(
+  props: ButtonBlackProps
+) {
   const navigate = useNavigate();
   const {
     to = "#",
@@ -24,6 +27,7 @@ export default function ButtonBlack(props: ButtonBlackProps) {
     variant = "outlined",
     invert = false,
     text,
+    children,
     onClick,
     disabled,
     disabledText,
@@ -82,8 +86,10 @@ export default function ButtonBlack(props: ButtonBlackProps) {
         size={size}
         onClick={handleClick}
       >
-        {disabled ? disabledText : text}
+        {disabled ? disabledText : children || text}
       </Button>
     </ThemeProvider>
   );
-}
+});
+
+export default ButtonBlack;

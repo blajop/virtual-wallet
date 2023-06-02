@@ -6,7 +6,7 @@ import MenuItem from "@mui/material/MenuItem/MenuItem";
 import TextField from "@mui/material/TextField/TextField";
 import Paper from "@mui/material/Paper/Paper";
 import axios from "axios";
-import { apiUrl } from "../../shared";
+import { apiUrl, baseUrl } from "../../shared";
 
 const currencies = [
   `BGN`,
@@ -51,7 +51,8 @@ export default function WalletCreate({
         },
       })
       .then((response) => {
-        console.log("logged in");
+        localStorage.setItem("token", response.data.access_token);
+        localStorage.setItem("avatar", baseUrl + `static/avatars/none.png`);
         setToken(response.data.access_token);
       })
       .catch((err) => console.log(err));

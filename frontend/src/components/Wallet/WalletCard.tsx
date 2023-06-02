@@ -110,46 +110,41 @@ export default function WalletCard(props: CardProps) {
           >
             {description && <Typography variant="h6">{description}</Typography>}
             {buttons && buttons.includes("deposit") && (
-              <ButtonBlack
-                invert={invert}
-                text={
-                  <Tooltip title={"Add money"}>
+              <Tooltip title={"Add money"}>
+                <span>
+                  <ButtonBlack invert={invert}>
                     <AddIcon
                       fontSize="medium"
                       sx={{ color: invert ? "black" : "white" }}
                     />
-                  </Tooltip>
-                }
-              />
+                  </ButtonBlack>
+                </span>
+              </Tooltip>
             )}
 
             {buttons && buttons.includes("send") && (
-              <ButtonBlack
-                invert={invert}
-                text={
-                  <Tooltip title={"Send money"}>
+              <Tooltip title={"Send money"}>
+                <span>
+                  <ButtonBlack invert={invert}>
                     <SendIcon
                       fontSize="medium"
-                      sx={{
-                        color: invert ? "black" : "white",
-                      }}
+                      sx={{ color: invert ? "black" : "white" }}
                     />
-                  </Tooltip>
-                }
-              ></ButtonBlack>
+                  </ButtonBlack>
+                </span>
+              </Tooltip>
             )}
             {buttons && buttons.includes("invite") && (
-              <ButtonBlack
-                invert={invert}
-                text={
-                  <Tooltip title={"Invite people"}>
+              <Tooltip title={"Invite people"}>
+                <span>
+                  <ButtonBlack invert={invert}>
                     <PersonAddIcon
                       fontSize="medium"
                       sx={{ color: invert ? "black" : "white" }}
                     />
-                  </Tooltip>
-                }
-              />
+                  </ButtonBlack>
+                </span>
+              </Tooltip>
             )}
           </Box>
 

@@ -74,6 +74,7 @@ export default function RegisterStepper() {
       setWalletName={handleSetWalletName}
       setWalletCurr={handleSetWalletCurr}
     />,
+    <RegisterFinish />,
   ];
   const [activeStep, setActiveStep] = useState(0);
 
@@ -196,7 +197,6 @@ export default function RegisterStepper() {
           .catch();
       }
     } else if (activeStep === 1) {
-      console.log("Submit wallet state changed");
       axios
         .post(
           `${apiUrl}users/${username}/wallets`,
@@ -251,31 +251,26 @@ export default function RegisterStepper() {
             })}
           </Stepper>
         </Box>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            flexDirection: "column",
+            width: "100%",
+          }}
+        >
+          {pages[activeStep]}
 
-        {activeStep === steps.length ? (
-          <RegisterFinish />
-        ) : (
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              flexDirection: "column",
-              width: "100%",
-            }}
-          >
-            {pages[activeStep]}
-
-            <ButtonBlack
-              sx={{ width: "70%", mt: "40px" }}
-              onClick={handleNext}
-              size="large"
-              disabled={!canSubmit && activeStep != 1}
-              variant="outlined"
-              disabledText="Please fill in the form"
-              text={activeStep === steps.length - 1 ? "Finish" : "Next step"}
-            ></ButtonBlack>
-          </Box>
-        )}
+          <ButtonBlack
+            sx={{ width: "70%", mt: "40px" }}
+            onClick={handleNext}
+            size="large"
+            disabled={!canSubmit && activeStep != 1}
+            variant="outlined"
+            disabledText="Please fill in the form"
+            text={activeStep === steps.length - 1 ? "Finish" : "Next step"}
+          ></ButtonBlack>
+        </Box>
       </Container>
     </>
   );

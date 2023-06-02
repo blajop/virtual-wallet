@@ -1,4 +1,3 @@
-import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container/Container";
 import Typography from "@mui/material/Typography";
@@ -7,12 +6,10 @@ import { useEffect, useState } from "react";
 import { baseUrl } from "../shared.js";
 import WalletCard from "../components/Wallet/WalletCard.js";
 import SelectSmall from "../components/Select/Select";
-import { AvatarGroup, Paper } from "@mui/material";
+import { Paper } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import CircularLoading from "../components/CircularLoading.js";
 import FriendBox from "../components/FriendBox.js";
-import React from "react";
-import { LoginContext } from "../App";
 import CustomAvatar from "../components/Icons/CustomAvatar.tsx";
 
 export type Wallet = {
@@ -47,7 +44,6 @@ export default function Profile() {
   const [, setPhone] = useState<string>("");
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [wallet, setWallet] = useState<Wallet | undefined>();
-  const [defaultWallet, setDefaultWallet] = useState<DefWallet>();
 
   const handleSelectWallet = (wallet: Wallet | undefined) => {
     setWallet(wallet);
@@ -82,7 +78,7 @@ export default function Profile() {
       } finally {
         setTimeout(() => {
           setLoading(false);
-        });
+        }, 300);
       }
     };
 
@@ -120,7 +116,6 @@ export default function Profile() {
       );
 
       if (response.status === 200) {
-        setDefaultWallet(response.data);
         setWallet(response.data);
       }
     } catch (error) {
@@ -196,7 +191,6 @@ export default function Profile() {
                   />
 
                   <SelectSmall
-                    defaultWallet={defaultWallet}
                     wallets={wallets}
                     setWallet={handleSelectWallet}
                   />
@@ -213,11 +207,7 @@ export default function Profile() {
                   walletName={wallet.name || "Wallet"}
                 />
               )}
-              <SelectSmall
-                defaultWallet={defaultWallet}
-                wallets={wallets}
-                setWallet={handleSelectWallet}
-              />
+              <SelectSmall wallets={wallets} setWallet={handleSelectWallet} />
             </Paper>
           </Box>
           <Box
@@ -228,7 +218,7 @@ export default function Profile() {
               height: "100% !important",
             }}
           >
-            <FriendBox />
+            <FriendBox email={email} />
             <br></br>
             <Paper
               elevation={2}
@@ -252,11 +242,7 @@ export default function Profile() {
                   walletName={wallet.name || "Wallet"}
                 />
               )}
-              <SelectSmall
-                defaultWallet={defaultWallet}
-                wallets={wallets}
-                setWallet={handleSelectWallet}
-              />
+              <SelectSmall wallets={wallets} setWallet={handleSelectWallet} />
             </Paper>
           </Box>
         </>
