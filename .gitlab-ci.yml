@@ -25,6 +25,7 @@ variables:
   DOCKER_DRIVER: overlay2
 
 before_script:
+  - apt-get update && apt-get install -y gcc wget libc-dev
   - apt-get update -qq
   - apt-get install -y -qq --no-install-recommends gcc wget
 
