@@ -16,13 +16,25 @@
 # This specific template is located at:
 # https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Getting-Started.gitlab-ci.yml
 
+image: python:3.11-slim-bullseye
+
+services:
+  - docker:dind
+
+variables:
+  DOCKER_DRIVER: overlay2
+
+before_script:
+  - apt-get update -qq
+  - apt-get install -y -qq --no-install-recommends gcc wget
+
+
 stages:          # List of stages for jobs, and their order of execution
   - test
 
 
 unit-test-job:   # This job runs in the test stage.
   stage: test   
-  image: python:3.11
   script:
     - cd backend/
     - wget https://dlm.mariadb.com/2678574/Connectors/c/connector-c-3.3.3/mariadb-connector-c-3.3.3-debian-bullseye-amd64.tar.gz -O - | tar -zxf - --strip-components=1 -C /usr
