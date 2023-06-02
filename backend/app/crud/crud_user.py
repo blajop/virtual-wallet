@@ -198,14 +198,12 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
 
                 # Resize the img
                 resized_img = cropped_img.resize((600, 600))
-                print(cwd)
                 resized_img.save(
                     f"app/static/avatars/{user.id}.png",
                     format="PNG",
                 )
             return Msg(msg="Successfully uploaded avatar!")
         except OSError as err:
-            print(err)
             raise FileError("Cannot convert and upload file")
 
     def delete_avatar(self, user: User) -> Msg | FileError:
