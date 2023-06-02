@@ -11,6 +11,7 @@ pages:
     paths:
       - node_modules/
   script:
+    - cd frontend/
     - npm install
     - npm run build
     - cp -a dist/. public/
