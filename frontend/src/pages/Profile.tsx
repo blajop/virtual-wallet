@@ -11,6 +11,9 @@ import { AvatarGroup, Paper } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import CircularLoading from "../components/CircularLoading.js";
 import FriendBox from "../components/FriendBox.js";
+import React from "react";
+import { LoginContext } from "../App";
+import CustomAvatar from "../components/Icons/CustomAvatar.tsx";
 
 export type Wallet = {
   id: string;
@@ -152,10 +155,7 @@ export default function Profile() {
           padding: "20px",
         }}
       >
-        <Avatar
-          src={localStorage.getItem("avatar") ?? ""}
-          sx={{ height: "80px", width: "80px" }}
-        ></Avatar>
+        <CustomAvatar />
         <Typography variant="h3" sx={{ fontWeight: "700" }}>
           {fullName}
         </Typography>
