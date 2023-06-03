@@ -1,0 +1,38 @@
+image: python:3.11-slim-bullseye
+
+services:
+  - docker:dind
+
+variables:
+  DOCKER_DRIVER: overlay2
+
+before_script:
+  - apt-get update && apt-get install -y gcc wget libc-dev
+
+stages:
+  - test
+
+unit-test-job:
+  stage: test
+  script:
+    - cd backend/
+    - python -m venv venv
+    - source venv/bin/activate
+    - wget https://dlm.mariadb.com/2678574/Connectors/c/connector-c-3.3.3/mariadb-connector-c-3.3.3-debian-bullseye-amd64.tar.gz -O - | tar -zxf - --strip-components=1 -C /usr
+    - pip install --upgrade pip
+    - pip install Flask Flask-SQLAlchemy flask-marshmallow marshmallow-sqlalchemy mariadb poetry pytest
+    - apt-get update && apt-get install -y mariadb-client
+    - poetry install
+    - pytest --cov=app/api --cov=app/crud --cov-report=term --cov-report=html
+  artifacts:
+    paths:
+      - backend/htmlcov/
+    expire_in: 30 days
+  variables:
+    VAR1: SMTP_LOGIN_MAIL
+    VAR2: SMTP_LOGIN_PASS
+    VAR3: SECRET_KEY
+    VAR4: AES_KEY
+    VAR5: CBC_iv
+    VAR6: DB_ENGINE
+    VAR7: CURRENCY_REQUEST_URL

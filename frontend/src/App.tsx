@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Dispatch, SetStateAction } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Header from "./components/Header";
 import Home from "./pages/Home";
-import Register from "./pages/Register";
+import Register from "./pages/Register.tsx";
 import Login from "./pages/Login";
 import Welcome from "./pages/Welcome";
 import Profile from "./pages/Profile";
@@ -15,8 +15,20 @@ export const LoginContext = React.createContext<ILoginContext>([
 ]);
 type ILoginContext = [boolean, React.Dispatch<React.SetStateAction<boolean>>];
 
+type IAvatarContext = {
+  updatedAvatar: string;
+  setUpdatedAvatar: Dispatch<SetStateAction<string>>;
+};
+
+export const AvatarContext = React.createContext<IAvatarContext>({
+  updatedAvatar: "",
+  setUpdatedAvatar: () => {},
+});
+
 function App() {
   const [loggedIn, setLoggedIn] = useState(localStorage.token ? true : false);
+  const [updatedAvatar, setUpdatedAvatar] = useState(localStorage.avatar ?? "");
+
   const [firstTimeVisit, setFirstTimeVisit] = useState(true);
 
   useEffect(() => {
@@ -49,17 +61,19 @@ function App() {
 
   return (
     <LoginContext.Provider value={[loggedIn, setLoggedIn]}>
-      <BrowserRouter>
-        {firstTimeVisit && <Welcome />}
-        <Header>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/profile" element={<Profile />} />
-          </Routes>
-        </Header>
-      </BrowserRouter>
+      <AvatarContext.Provider value={{ updatedAvatar, setUpdatedAvatar }}>
+        <BrowserRouter>
+          {firstTimeVisit && <Welcome />}
+          <Header>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/profile" element={<Profile />} />
+            </Routes>
+          </Header>
+        </BrowserRouter>
+      </AvatarContext.Provider>
     </LoginContext.Provider>
   );
 }

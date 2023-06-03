@@ -1,4 +1,3 @@
-import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container/Container";
 import Typography from "@mui/material/Typography";
@@ -7,14 +6,21 @@ import { useEffect, useState } from "react";
 import { baseUrl } from "../shared.js";
 import WalletCard from "../components/Wallet/WalletCard.js";
 import SelectSmall from "../components/Select/Select";
-import { AvatarGroup, Paper } from "@mui/material";
+import { Paper } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import React from "react";
-import { LoginContext } from "../App";
+import CircularLoading from "../components/CircularLoading.js";
+import FriendBox from "../components/FriendBox.js";
 import CustomAvatar from "../components/Icons/CustomAvatar.tsx";
 import EditProfile from "../components/EditProfile.tsx";
 
 export type Wallet = {
+  id: string;
+  name?: string;
+  currency: string;
+  balance: number;
+};
+
+export type DefWallet = {
   id: string;
   name?: string;
   currency: string;
@@ -31,8 +37,8 @@ type UserResponse = {
 };
 
 export default function Profile() {
-  const [loggedIn] = React.useContext(LoginContext);
   const navigate = useNavigate();
+  const [loading, setLoading] = useState<boolean>(false);
 
   const [fullName, setFullName] = useState<string>("");
   const [firstName, setFirstName] = useState<string>("");
@@ -47,12 +53,20 @@ export default function Profile() {
   };
 
   useEffect(() => {
+    setLoading(true);
+
     //   GET USER
-    axios
-      .get<UserResponse>(baseUrl + "api/v1/users/profile", {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      })
-      .then((response) => {
+    const getUser = async () => {
+      try {
+        const response = await axios.get<UserResponse>(
+          baseUrl + "api/v1/users/profile",
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+
         if (response.status === 200) {
           setFullName(`${response.data.f_name} ${response.data.l_name}`);
           setFirstName(response.data.f_name);
@@ -60,33 +74,64 @@ export default function Profile() {
           setEmail(response.data.email);
           setPhone(response.data.phone);
 
-          //   GET WALLETS
-          axios
-            .get<WalletResponse>(
-              baseUrl + `api/v1/users/${response.data.email}/wallets`,
-              {
-                headers: {
-                  Authorization: `Bearer ${localStorage.getItem("token")}`,
-                },
-              }
-            )
-            .then((response) => {
-              if (response.status === 200) {
-                setWallets(response.data);
-              }
-            })
-            .catch();
+          setLoading(true);
+          await getWallets(response.data.email);
+          await getDefaultWallet(response.data.email);
         }
-      })
-      .catch(() => {
+      } catch (error) {
         navigate("/");
-      });
+      } finally {
+        setTimeout(() => {
+          setLoading(false);
+        }, 300);
+      }
+    };
+
+    getUser();
   }, []);
+  //   GET WALLETS
+  const getWallets = async (email: string) => {
+    try {
+      const response = await axios.get<WalletResponse>(
+        baseUrl + `api/v1/users/${email}/wallets`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        setWallets(response.data);
+      }
+    } catch (error) {
+      // Handle error
+    }
+  };
+  //   GET DEFAULT WALLET
+  const getDefaultWallet = async (email: string) => {
+    try {
+      const response = await axios.get<DefWallet>(
+        baseUrl + `api/v1/users/${email}/wallets/default`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        setWallet(response.data);
+      }
+    } catch (error) {
+      // Handle error
+    }
+  };
 
   //   Update wallet
   useEffect(() => {}, [wallet]);
 
-  return loggedIn ? (
+  return (
     <Container
       sx={{
         display: "flex",
@@ -121,7 +166,7 @@ export default function Profile() {
           phone={phone}
         />
       </Paper>
-      {/* WALLETS */}
+      {/* WALLETS  */}
       <Container
         sx={{
           display: "flex",
@@ -130,103 +175,89 @@ export default function Profile() {
           padding: "0 !important",
         }}
       >
-        <Box>
-          <Paper
-            elevation={2}
+        <>
+          <Box>
+            <Paper
+              elevation={2}
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                backgroundColor: "white",
+                height: "auto",
+                width: "auto",
+                padding: "20px",
+              }}
+            >
+              {loading ? (
+                <CircularLoading />
+              ) : (
+                <>
+                  <WalletCard
+                    username={email}
+                    walletId={wallet?.id ?? ""}
+                    currency={wallet?.currency.toUpperCase()}
+                    balance={wallet?.balance.toFixed(2)}
+                    walletName={wallet?.name || "Wallet"}
+                  />
+
+                  <SelectSmall
+                    wallets={wallets}
+                    setWallet={handleSelectWallet}
+                  />
+                </>
+              )}
+              {/* CARDS */}
+              <br />
+              {wallet && (
+                <WalletCard
+                  username={email}
+                  walletId={wallet.id}
+                  currency={wallet.currency.toUpperCase()}
+                  balance={wallet.balance.toFixed(2)}
+                  walletName={wallet.name || "Wallet"}
+                />
+              )}
+              <SelectSmall wallets={wallets} setWallet={handleSelectWallet} />
+            </Paper>
+          </Box>
+          <Box
             sx={{
               display: "flex",
               flexDirection: "column",
-              justifyContent: "center",
-              backgroundColor: "white",
-              height: "auto",
-              width: "auto",
-              padding: "20px",
-            }}
-          >
-            {wallet && (
-              <WalletCard
-                username={email}
-                walletId={wallet.id}
-                currency={wallet.currency.toUpperCase()}
-                balance={wallet.balance.toFixed(2)}
-                walletName={wallet.name || "Wallet"}
-              />
-            )}
-            <SelectSmall wallets={wallets} setWallet={handleSelectWallet} />
-            {/* CARDS */}
-            <br />
-            {wallet && (
-              <WalletCard
-                username={email}
-                walletId={wallet.id}
-                currency={wallet.currency.toUpperCase()}
-                balance={wallet.balance.toFixed(2)}
-                walletName={wallet.name || "Wallet"}
-              />
-            )}
-            <SelectSmall wallets={wallets} setWallet={handleSelectWallet} />
-          </Paper>
-        </Box>
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            flex: "1 !important",
-            height: "100% !important",
-          }}
-        >
-          <Paper
-            elevation={2}
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              backgroundColor: "white",
-              height: "100% !important",
-              width: "auto",
-              padding: "20px",
-              flex: "0 !important",
-            }}
-          >
-            <AvatarGroup max={6}>
-              <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
-              <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
-              <Avatar alt="Cindy Baker" src="/static/images/avatar/3.jpg" />
-              <Avatar alt="Agnes Walker" src="/static/images/avatar/4.jpg" />
-              <Avatar alt="Cindy Baker" src="/static/images/avatar/3.jpg" />
-              <Avatar alt="Agnes Walker" src="/static/images/avatar/4.jpg" />
-              <Avatar
-                alt="Trevor Henderson"
-                src="/static/images/avatar/5.jpg"
-              />
-            </AvatarGroup>
-          </Paper>
-          <br></br>
-          <Paper
-            elevation={2}
-            sx={{
-              display: "flex !important",
-              flexDirection: "column",
-              justifyContent: "center",
-              backgroundColor: "white",
-              height: "100% !important",
-              width: "auto",
-              padding: "20px",
               flex: "1 !important",
+              height: "100% !important",
             }}
           >
-            {wallet && (
-              <WalletCard
-                username={email}
-                walletId={wallet.id}
-                currency={wallet.currency.toUpperCase()}
-                balance={wallet.balance.toFixed(2)}
-                walletName={wallet.name || "Wallet"}
-              />
-            )}
-            <SelectSmall wallets={wallets} setWallet={handleSelectWallet} />
-          </Paper>
-        </Box>
+            <FriendBox email={email} />
+            <br></br>
+            <Paper
+              elevation={2}
+              sx={{
+                display: "flex !important",
+                flexDirection: "column",
+                justifyContent: "center",
+                backgroundColor: "white",
+                height: "100% !important",
+                width: "auto",
+                padding: "20px",
+                flex: "1 !important",
+              }}
+            >
+              {wallet && (
+                <WalletCard
+                  username={email}
+                  walletId={wallet.id}
+                  currency={wallet.currency.toUpperCase()}
+                  balance={wallet.balance.toFixed(2)}
+                  walletName={wallet.name || "Wallet"}
+                />
+              )}
+              <SelectSmall wallets={wallets} setWallet={handleSelectWallet} />
+            </Paper>
+          </Box>
+        </>
       </Container>
     </Container>
-  ) : null;
+  );
 }

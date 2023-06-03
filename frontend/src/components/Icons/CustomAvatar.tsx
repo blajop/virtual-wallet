@@ -4,13 +4,18 @@ import Box from "@mui/material/Box";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
 import { baseUrl } from "../../shared";
 import axios from "axios";
+import React from "react";
+import { AvatarContext } from "../../App";
 
 const CustomAvatar = () => {
+  const { setUpdatedAvatar } = React.useContext(AvatarContext);
+
   const [isHovered, setIsHovered] = useState(false);
 
-  const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [updatedAvatarState, setUpdatedAvatarState] = useState<string>();
 
-  const fileInputRef = useRef();
+  const fileInputRef = useRef<HTMLInputElement>();
 
   const handleMouseEnter = () => {
     setIsHovered(true);
@@ -20,21 +25,23 @@ const CustomAvatar = () => {
     setIsHovered(false);
   };
 
-  const handleImageUpload = (event) => {
-    const file = event.target.files[0];
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files![0];
     setSelectedImage(file);
   };
 
   useEffect(() => {
+    setUpdatedAvatarState(`${localStorage.avatar}`);
+
     if (selectedImage != null) {
       uploadImage();
     }
   }, [selectedImage]);
 
-  const uploadImage = () => {
+  async function uploadImage() {
     const formData = new FormData();
-    formData.append("file", selectedImage);
-    axios
+    formData.append("file", selectedImage!);
+    await axios
       .post(`${baseUrl}api/v1/users/profile/avatar`, formData, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -42,22 +49,22 @@ const CustomAvatar = () => {
         },
       })
       .then((response) => {
-        console.log("Image uploaded successfully:", response);
+        if (response.status === 200) {
+        }
       })
-      .catch((error) => {
-        console.error("Error uploading image:", error);
-      });
+      .catch();
+
     localStorage.setItem(
       "avatar",
-      `${localStorage.avatar}?update=${Date.now()}`
+      `${localStorage.avatar.split("?")[0]}?update=${Date.now()}`
     );
-    // MAY BE CHANGED
-    window.location.reload();
-  };
+    setUpdatedAvatar(`${localStorage.avatar}`);
+    setUpdatedAvatarState(`${localStorage.avatar}`);
+  }
 
   return (
     <Box
-      onClick={() => fileInputRef.current.click()}
+      onClick={() => fileInputRef.current!.click()}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       className="rounded-full cursor-pointer"
@@ -68,18 +75,18 @@ const CustomAvatar = () => {
     >
       <div>
         <input
-          ref={fileInputRef}
+          ref={fileInputRef as React.RefObject<HTMLInputElement>}
           type="file"
           onChange={handleImageUpload}
           style={{ display: "none" }}
         />
       </div>
       <Avatar
-        src={localStorage.getItem("avatar") ?? ""}
+        src={updatedAvatarState}
         sx={{
           height: "80px",
           width: "80px",
-          filter: isHovered ? "brightness(80%)" : "none",
+          filter: isHovered ? "brightness(40%)" : "none",
         }}
       />
       {isHovered && (
@@ -92,7 +99,7 @@ const CustomAvatar = () => {
             zIndex: 1,
           }}
         >
-          <FileUploadIcon fontSize="large" />
+          <FileUploadIcon fontSize="large" sx={{ color: "white" }} />
         </Box>
       )}
     </Box>

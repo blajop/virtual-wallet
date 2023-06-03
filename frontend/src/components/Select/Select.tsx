@@ -14,14 +14,14 @@ export default function SelectSmall({
   setWallet: (wallet: Wallet | undefined) => void;
   invert?: boolean;
 }) {
-  const [selectedWalletId, setSelectedWalletId] = React.useState<string>();
+  const [selectedWalletId, setSelectedWalletId] = React.useState<string>("");
 
   const handleChange = (event: SelectChangeEvent<string>) => {
     setSelectedWalletId(event.target.value);
     const selectedWallet = wallets.find(
       (wallet) => wallet.id === event.target.value
     );
-    setWallet(selectedWallet); // Pass the selected wallet object to the callback function
+    setWallet(selectedWallet);
   };
 
   return (
@@ -37,7 +37,7 @@ export default function SelectSmall({
       size="small"
     >
       <Select
-        displayEmpty={true}
+        displayEmpty={false}
         labelId="demo-select-small-label"
         id="demo-select-small"
         value={selectedWalletId}
@@ -46,9 +46,6 @@ export default function SelectSmall({
           color: invert ? "white" : "black",
         }}
       >
-        <MenuItem>
-          <em>None</em>
-        </MenuItem>
         {wallets.map((wallet, index) => (
           <MenuItem
             key={index}

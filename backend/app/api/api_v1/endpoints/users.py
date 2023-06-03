@@ -84,7 +84,7 @@ def get_settings_user(
 
 
 @router.get("/{identifier}/wallets/default", response_model=Wallet)
-def get_settings_user(
+def get_default_wallet(
     user: User = Depends(deps.get_user_from_path),
     db: Session = Depends(deps.get_db),
     logged_user: User = Depends(deps.get_current_user),
@@ -117,7 +117,7 @@ def add_friend(
     return result
 
 
-@router.get("/{identifier}/friends", response_model=List[UserBase])
+@router.get("/{identifier}/friends", response_model=List[User])
 def get_friends(
     user: User = Depends(deps.get_user_from_path),
     db: Session = Depends(deps.get_db),

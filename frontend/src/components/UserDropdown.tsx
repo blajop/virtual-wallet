@@ -6,13 +6,13 @@ import MenuItem from "@mui/material/MenuItem";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import React from "react";
-import { LoginContext } from "../App";
+import { AvatarContext, LoginContext } from "../App";
 import { useNavigate } from "react-router-dom";
 
 const settings = [
   { name: "Profile", href: "profile" },
   { name: "Settings", href: "settings" },
-  { name: "Logout", href: "#" },
+  { name: "Logout", href: "" },
 ];
 
 export default function UserDropdown() {
@@ -22,9 +22,8 @@ export default function UserDropdown() {
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(
     null
   );
-  const handleCloseUserMenu = () => {
-    setAnchorElUser(null);
-  };
+  const { updatedAvatar } = React.useContext(AvatarContext);
+
   const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElUser(event.currentTarget);
   };
@@ -43,7 +42,7 @@ export default function UserDropdown() {
           <Avatar
             alt="avatar"
             sx={{ width: "32px", height: "32px" }}
-            src={localStorage.getItem("avatar") ?? ""}
+            src={updatedAvatar ?? ""}
           />
         </IconButton>
       </Tooltip>
@@ -61,18 +60,18 @@ export default function UserDropdown() {
           horizontal: "right",
         }}
         open={Boolean(anchorElUser)}
-        onClose={handleCloseUserMenu}
+        onClose={() => setAnchorElUser(null)}
       >
         {settings.map((setting) => (
           <MenuItem
             key={setting.name}
             onClick={() => {
+              setAnchorElUser(null);
               if (setting.name === "Logout") {
                 localStorage.removeItem("token");
                 setLoggedIn(false);
                 navigate("/");
               }
-              handleCloseUserMenu;
               navigate(setting.href);
             }}
           >

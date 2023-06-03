@@ -3,7 +3,7 @@ from typing import Optional
 
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "Kache"
+    PROJECT_NAME: str = "Uncle's"
 
     API_V1_STR: str = "/api/v1"
 

@@ -3,38 +3,20 @@ import Step from "@mui/material/Step";
 import StepLabel from "@mui/material/StepLabel";
 import Stepper from "@mui/material/Stepper";
 import Typography from "@mui/material/Typography";
-import { Fragment, ReactNode, useState } from "react";
-import SignupForm from "../components/SignupForm.tsx";
-import axios, { AxiosError } from "axios";
+import { ReactNode, useEffect, useState } from "react";
+import axios from "axios";
 import Container from "@mui/system/Container/Container";
 import useValidateUsername from "../hooks/useValidateUsername.tsx";
-import { baseUrl } from "../shared.ts";
+import { apiUrl, baseUrl } from "../shared.ts";
 import ButtonBlack from "../components/Buttons/ButtonBlack.tsx";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
 import useValidateEmail from "../hooks/useValidateEmail.tsx";
 import useValidatePhone from "../hooks/useValidatePhone.tsx";
 import useValidatePwd from "../hooks/useValidatePwd.tsx";
 import useValidateCanSubmit from "../hooks/useValidateCanSubmit.tsx";
 import useDebounce from "../hooks/useDebounce.tsx";
-
-const theme = createTheme({
-  components: {
-    MuiStepIcon: {
-      styleOverrides: {
-        root: {
-          "&$completed": {
-            color: "pink",
-          },
-          "&$active": {
-            color: "red",
-          },
-        },
-        active: {},
-        completed: {},
-      },
-    },
-  },
-});
+import RegisterForm from "../components/RegisterPageComponents/RegisterForm.tsx";
+import RegisterFinish from "../components/RegisterPageComponents/RegisterFinish.tsx";
+import RegisterWallet from "../components/RegisterPageComponents/RegisterWallet.tsx";
 
 const steps = ["Register", "Create Wallet", "Final steps"];
 
@@ -51,7 +33,7 @@ export default function RegisterStepper() {
   const [alertPwd, setAlertPwd] = useState(false);
   const [alertMsgPwd, setAlertMsgPwd] = useState("");
 
-  const { formReg, alertConfirmPass, confirmPass, renderReg } = SignupForm({
+  const { formReg, alertConfirmPass, confirmPass, renderReg } = RegisterForm({
     alertUsername: alertUsername,
     alertMsgUsername: alertMsgUsername,
     alertEmail: alertEmail,
@@ -69,9 +51,48 @@ export default function RegisterStepper() {
 
   const [canSubmit, setCanSubmit] = useState(false);
 
-  const pages = [renderReg];
+  const [token, setToken] = useState("");
+  const [walletName, setWalletName] = useState("");
+  const [currUpdated, setCurrUpdated] = useState(false);
+  const [mostRecentCurrency, setMostRecentCurrency] = useState("BGN");
+
+  const handleSetToken = (data: string) => {
+    setToken(data);
+  };
+  const handleSetWalletName = (name: string) => {
+    setWalletName(name);
+  };
+  const handleSetWalletCurr = (curr: string) => {
+    setMostRecentCurrency(curr);
+  };
+
+  useEffect(() => {
+    if (currUpdated) {
+      axios
+        .post(
+          `${apiUrl}users/${username}/wallets`,
+          { currency: mostRecentCurrency, name: walletName },
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        )
+        .catch((err) => console.log(err));
+      setActiveStep((prevActiveStep) => prevActiveStep + 1);
+    }
+  }, [currUpdated]);
+
+  const pages = [
+    renderReg,
+    <RegisterWallet
+      username={username}
+      password={password}
+      setToken={handleSetToken}
+      setWalletName={handleSetWalletName}
+      setWalletCurr={handleSetWalletCurr}
+    />,
+    <RegisterFinish />,
+  ];
   const [activeStep, setActiveStep] = useState(0);
-  const [activePage, setActivePage] = useState(0);
 
   // CUSTOM HOOK USERNAME
   const debouncedUsername = useDebounce(username, 1000);
@@ -187,77 +208,75 @@ export default function RegisterStepper() {
           .then((response) => {
             if (response.status === 200) {
               setActiveStep((prevActiveStep) => prevActiveStep + 1);
-              setActivePage((prevActivePage) => prevActivePage + 1);
             }
           })
           .catch();
       }
+    } else if (activeStep === 1) {
+      setCurrUpdated(true);
     } else {
       setActiveStep((prevActiveStep) => prevActiveStep + 1);
-      setActivePage((prevActivePage) => prevActivePage + 1);
     }
   };
 
   return (
-    <ThemeProvider theme={theme}>
+    <>
       <Container
         maxWidth={"md"}
         className="pt-[100px]"
-        sx={{ display: "flex", flexDirection: "column", height: "120%" }}
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          height: "100%",
+          alignItems: "center",
+        }}
       >
-        <Stepper activeStep={activeStep} alternativeLabel>
-          {steps.map((label) => {
-            const stepProps: { completed?: boolean } = {};
-            const labelProps: {
-              optional?: ReactNode;
-            } = {};
-            return (
-              <Step key={label} {...stepProps}>
-                <StepLabel
-                  sx={{
-                    ".Mui-active": { color: "black !important" },
-                    ".Mui-completed": {
-                      color: "black",
-                    },
-                  }}
-                  {...labelProps}
-                >
-                  <Typography>{label}</Typography>
-                </StepLabel>
-              </Step>
-            );
-          })}
-        </Stepper>
+        <Box sx={{ width: "100%" }}>
+          <Stepper activeStep={activeStep} alternativeLabel>
+            {steps.map((label) => {
+              const stepProps: { completed?: boolean } = {};
+              const labelProps: {
+                optional?: ReactNode;
+              } = {};
+              return (
+                <Step key={label} {...stepProps}>
+                  <StepLabel
+                    sx={{
+                      ".Mui-active": { color: "black !important" },
+                      ".Mui-completed": {
+                        color: "black !important",
+                      },
+                    }}
+                    {...labelProps}
+                  >
+                    <Typography>{label}</Typography>
+                  </StepLabel>
+                </Step>
+              );
+            })}
+          </Stepper>
+        </Box>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            flexDirection: "column",
+            width: "100%",
+          }}
+        >
+          {pages[activeStep]}
 
-        {activeStep === steps.length ? (
-          <Fragment>
-            <Typography sx={{ mt: 2, mb: 1 }}>You are all set!</Typography>
-          </Fragment>
-        ) : (
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              flexDirection: "column",
-              width: "100%",
-            }}
-          >
-            {/* ACTIVE PAGE IS NESTED HERE BUTTON */}
-            {pages[activePage]}
-
-            {/* NEXT BUTTON */}
-            <ButtonBlack
-              sx={{ width: "70%", mt: "40px" }}
-              onClick={handleNext}
-              size="large"
-              disabled={!canSubmit}
-              variant="outlined"
-              disabledText="Please fill in the form"
-              text={activeStep === steps.length - 1 ? "Finish" : "Next step"}
-            ></ButtonBlack>
-          </Box>
-        )}
+          <ButtonBlack
+            sx={{ width: "70%", mt: "40px" }}
+            onClick={handleNext}
+            size="large"
+            disabled={!canSubmit && activeStep != 1}
+            variant="outlined"
+            disabledText="Please fill in the form"
+            text={activeStep === steps.length - 1 ? "Finish" : "Next step"}
+          ></ButtonBlack>
+        </Box>
       </Container>
-    </ThemeProvider>
+    </>
   );
 }

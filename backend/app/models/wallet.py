@@ -17,7 +17,7 @@ class UserWalletLink(SQLModel, table=True):
 
 class WalletCreate(SQLModel):
     currency: constr(regex="^(USD|EUR|BGN|CAD|AUD|CHF|CNY|JPY|GBP|NOK)$")
-    name: constr(min_length=3)
+    name: constr(min_length=3) = Field(default="Wallet")
 
 
 class WalletBase(WalletCreate):

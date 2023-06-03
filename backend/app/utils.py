@@ -198,7 +198,6 @@ class CurrencyExchangeUtility:
 
         db.add_all(rates)
         db.commit()
-        print("DB currency rates refreshed")
 
     def get_rate(self, data: dict, base_curr: str, to_curr: str) -> float:
         rate = data[to_curr] / data[base_curr]

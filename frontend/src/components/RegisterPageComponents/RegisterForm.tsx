@@ -1,4 +1,3 @@
-
 import Snackbar from "@mui/material/Snackbar/Snackbar";
 import TextField from "@mui/material/TextField";
 import { FormEvent, useEffect, useState } from "react";
@@ -139,16 +138,6 @@ export default function SignupForm(props: Props) {
             autoComplete="new-password"
             onChange={handleConfirmPass}
           />
-
-          {/* <Collapse in={alertPwd}>
-            <Alert
-              severity="error"
-              icon={false}
-              sx={{ fontSize: "11px", padding: "5px", pl: "10px" }}
-            >
-              {alertMsgPwd}
-            </Alert>
-          </Collapse> */}
         </div>
         <Snackbar
           anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
