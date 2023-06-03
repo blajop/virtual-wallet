@@ -4,17 +4,12 @@ import Box from "@mui/material/Box";
 import Modal from "@mui/material/Modal";
 import Fade from "@mui/material/Fade";
 import Button from "@mui/material/Button";
-import Typography from "@mui/material/Typography";
 import EditIcon from "@mui/icons-material/Edit";
 import { baseUrl } from "../shared.js";
 import axios from "axios";
 import Paper from "@mui/material/Paper";
-import TxtField from "./TxtField.js";
-import InputAdornment from "@mui/material/InputAdornment";
-import TextField from "@mui/material/TextField";
-import AccountCircle from "@mui/icons-material/AccountCircle";
 import { useRef, useState } from "react";
-import DoneIcon from "@mui/icons-material/Done";
+import DataFieldEdit from "./DataFieldEdit.tsx";
 
 const style = {
   position: "absolute" as "absolute",
@@ -68,6 +63,11 @@ export default function EditProfile(props: Props) {
     props.phone
   );
 
+  const [firstName, setFirstName] = useState(props.firstName);
+  const [lastName, setLastName] = useState(props.lastName);
+  const [email, setEmail] = useState(props.email);
+  const [phone, setPhone] = useState(props.phone);
+
   const [editFirstName, setEditFirstName] = useState(false);
   const [editLastName, setEditLastName] = useState(false);
   const [editEmail, setEditEmail] = useState(false);
@@ -82,16 +82,6 @@ export default function EditProfile(props: Props) {
   };
 
   const [details, setDetails] = useState(profileDetails);
-
-  const handleInput = (
-    event: React.ChangeEvent<HTMLInputElement>,
-    field: string
-  ) => {
-    setDetails({ ...details, [event.target.name]: event.target.value });
-    if (event.target.name === field) {
-      setTextFieldValue(event.target.value);
-    }
-  };
 
   const detailEdit = [editFirstName, editLastName, editEmail, editPhone];
   const setEdit = [
@@ -111,7 +101,6 @@ export default function EditProfile(props: Props) {
   };
 
   const handleClose = () => setOpen(false);
-  const [textFieldValue, setTextFieldValue] = useState("");
 
   return (
     <div>
@@ -133,53 +122,74 @@ export default function EditProfile(props: Props) {
       >
         <Fade in={open}>
           <Box sx={style}>
-            {Object.entries(details).map((entry, idx) => (
-              <Box
-                sx={{
-                  "& > :not(style)": { m: 1 },
-                  display: "flex",
-                  alignItems: "center",
-                }}
-              >
-                <TextField
-                  id="input-textfield"
-                  name={entry[0]}
-                  value={textFieldValue}
-                  label={entry[0]}
-                  disabled={!detailEdit[idx]}
-                  onChange={(e) => {
-                    handleInput(e, entry[0]);
-                  }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <AccountCircle />
-                        {!detailEdit[idx] ? entry[1] : null}
-                      </InputAdornment>
-                    ),
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        {!detailEdit[idx] ? (
-                          <EditIcon
-                            onClick={() => {
-                              setEdit[idx](true);
-                            }}
-                          ></EditIcon>
-                        ) : (
-                          <DoneIcon
-                            onClick={() => {
-                              setEdit[idx](false);
-                              setTextFieldValue("");
-                            }}
-                          />
-                        )}
-                      </InputAdornment>
-                    ),
-                  }}
-                  variant="standard"
-                />
-              </Box>
-            ))}
+            <DataFieldEdit
+              data={[
+                firstName,
+                (value: string) => {
+                  setFirstName(value);
+                  return value;
+                },
+              ]}
+              editData={[
+                editFirstName,
+                (value: boolean) => {
+                  setEditFirstName(value);
+                  return value;
+                },
+              ]}
+              label="First Name"
+            ></DataFieldEdit>
+            <DataFieldEdit
+              data={[
+                lastName,
+                (value: string) => {
+                  setLastName(value);
+                  return value;
+                },
+              ]}
+              editData={[
+                editLastName,
+                (value: boolean) => {
+                  setEditLastName(value);
+                  return value;
+                },
+              ]}
+              label="Last Name"
+            ></DataFieldEdit>
+            <DataFieldEdit
+              data={[
+                email,
+                (value: string) => {
+                  setEmail(value);
+                  return value;
+                },
+              ]}
+              editData={[
+                editEmail,
+                (value: boolean) => {
+                  setEditEmail(value);
+                  return value;
+                },
+              ]}
+              label="Email"
+            ></DataFieldEdit>
+            <DataFieldEdit
+              data={[
+                phone,
+                (value: string) => {
+                  setPhone(value);
+                  return value;
+                },
+              ]}
+              editData={[
+                editPhone,
+                (value: boolean) => {
+                  setEditPhone(value);
+                  return value;
+                },
+              ]}
+              label="Phone"
+            ></DataFieldEdit>
           </Box>
         </Fade>
       </Modal>
