@@ -71,6 +71,24 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
 
         return user_orm
 
+    def get_multi(self, db: Session, identifier: str) -> Optional[User]:
+        search_query = f"%{identifier}%"
+
+        return (
+            db.scalars(
+                select(self.model).where(
+                    or_(
+                        self.model.id.ilike(search_query),
+                        self.model.username.ilike(search_query),
+                        self.model.email.ilike(search_query),
+                        self.model.phone.ilike(search_query),
+                    )
+                )
+            )
+            .unique()
+            .all()
+        )
+
     def get(self, db: Session, identifier: str) -> Optional[User]:
         return db.scalars(
             select(self.model).where(
