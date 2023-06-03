@@ -9,6 +9,9 @@ import { baseUrl } from "../shared.js";
 import axios from "axios";
 import { useState } from "react";
 import DataFieldEdit from "./DataFieldEdit.tsx";
+import useDebounce from "../hooks/useDebounce.tsx";
+import useValidateEmail from "../hooks/useValidateEmail.tsx";
+import useValidatePhone from "../hooks/useValidatePhone.tsx";
 
 const style = {
   position: "absolute" as "absolute",
@@ -65,6 +68,54 @@ export default function EditProfile(props: Props) {
 
   const handleClose = () => setOpen(false);
 
+  const [alertEmail, setAlertEmail] = useState(false);
+  const [alertMsgEmail, setAlertMsgEmail] = useState("");
+
+  // CUSTOM HOOK EMAIL
+  const debouncedEmail = useDebounce(email, 0);
+
+  useValidateEmail(
+    debouncedEmail,
+    [
+      alertEmail,
+      (value: boolean) => {
+        setAlertEmail(value);
+        return value;
+      },
+    ],
+    [
+      alertMsgEmail,
+      (value: string) => {
+        setAlertMsgEmail(value);
+        return value;
+      },
+    ]
+  );
+
+  const [alertPhone, setAlertPhone] = useState(false);
+  const [alertMsgPhone, setAlertMsgPhone] = useState("");
+
+  // CUSTOM HOOK PHONE
+  const debouncedPhone = useDebounce(phone, 0);
+
+  useValidatePhone(
+    debouncedPhone,
+    [
+      alertPhone,
+      (value: boolean) => {
+        setAlertPhone(value);
+        return value;
+      },
+    ],
+    [
+      alertMsgPhone,
+      (value: string) => {
+        setAlertMsgPhone(value);
+        return value;
+      },
+    ]
+  );
+
   return (
     <div>
       <Button onClick={handleOpen}>
@@ -102,6 +153,8 @@ export default function EditProfile(props: Props) {
               ]}
               label="First Name"
               icon="name"
+              alert={false}
+              alertMsg={""}
             ></DataFieldEdit>
             <DataFieldEdit
               data={[
@@ -120,6 +173,8 @@ export default function EditProfile(props: Props) {
               ]}
               label="Last Name"
               icon="name"
+              alert={false}
+              alertMsg={""}
             ></DataFieldEdit>
             <DataFieldEdit
               data={[
@@ -138,6 +193,8 @@ export default function EditProfile(props: Props) {
               ]}
               label="Email"
               icon="email"
+              alert={email != props.email ? alertEmail : false}
+              alertMsg={email != props.email ? alertMsgEmail : ""}
             ></DataFieldEdit>
             <DataFieldEdit
               data={[
@@ -156,6 +213,8 @@ export default function EditProfile(props: Props) {
               ]}
               label="Phone"
               icon="phone"
+              alert={phone != props.phone ? alertPhone : false}
+              alertMsg={phone != props.phone ? alertMsgPhone : ""}
             ></DataFieldEdit>
           </Box>
         </Fade>

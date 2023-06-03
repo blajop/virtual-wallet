@@ -16,6 +16,8 @@ interface Props {
   editData: editDataState;
   label: string;
   icon: "name" | "email" | "phone";
+  alert: boolean;
+  alertMsg: string;
 }
 
 export default function EditProfile(props: Props) {
@@ -23,6 +25,8 @@ export default function EditProfile(props: Props) {
   const [data, setData] = props.data;
   const label = props.label;
   const icon = props.icon;
+  const alert = props.alert;
+  const alertMsg = props.alertMsg;
 
   const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     setTextFieldValue(event.target.value);
@@ -42,8 +46,9 @@ export default function EditProfile(props: Props) {
         id="input-textfield"
         sx={{ width: "100%" }}
         value={textFieldValue}
-        label={label}
+        label={alert && !editData ? alertMsg : label}
         disabled={!editData}
+        error={!editData && alert}
         onChange={handleInput}
         InputProps={{
           startAdornment: (
