@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import React from "react";
 import { LoginContext } from "../App";
 import CustomAvatar from "../components/Icons/CustomAvatar.tsx";
+import EditProfile from "../components/EditProfile.tsx";
 
 export type Wallet = {
   id: string;
@@ -34,8 +35,10 @@ export default function Profile() {
   const navigate = useNavigate();
 
   const [fullName, setFullName] = useState<string>("");
+  const [firstName, setFirstName] = useState<string>("");
+  const [lastName, setLastName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
-  const [, setPhone] = useState<string>("");
+  const [phone, setPhone] = useState<string>("");
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [wallet, setWallet] = useState<Wallet | undefined>();
 
@@ -52,6 +55,8 @@ export default function Profile() {
       .then((response) => {
         if (response.status === 200) {
           setFullName(`${response.data.f_name} ${response.data.l_name}`);
+          setFirstName(response.data.f_name);
+          setLastName(response.data.l_name);
           setEmail(response.data.email);
           setPhone(response.data.phone);
 
@@ -109,6 +114,12 @@ export default function Profile() {
         <Typography variant="h3" sx={{ fontWeight: "700" }}>
           {fullName}
         </Typography>
+        <EditProfile
+          firstName={firstName}
+          lastName={lastName}
+          email={email}
+          phone={phone}
+        />
       </Paper>
       {/* WALLETS */}
       <Container
