@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import WalletCard from "../Wallet/WalletCard";
+import { useContext, useEffect, useState } from "react";
+import WalletCard from "../ProfilePageComponents/WalletCard";
 import Box from "@mui/material/Box/Box";
 import Select from "@mui/material/Select/Select";
 import MenuItem from "@mui/material/MenuItem/MenuItem";
@@ -7,6 +7,7 @@ import TextField from "@mui/material/TextField/TextField";
 import Paper from "@mui/material/Paper/Paper";
 import axios from "axios";
 import { apiUrl, baseUrl } from "../../shared";
+import { LoginContext } from "../../App";
 
 const currencies = [
   `BGN`,
@@ -34,6 +35,8 @@ export default function WalletCreate({
   setWalletName: (e: string) => void;
   setWalletCurr: (e: string) => void;
 }) {
+  const [, setLoggedIn] = useContext(LoginContext);
+
   const [name, setName] = useState("Wallet");
   const [currency, setCurrency] = useState("BGN");
 
@@ -44,6 +47,7 @@ export default function WalletCreate({
 
   // GET TOKEN
   useEffect(() => {
+    setWalletName(name);
     axios
       .post(url, data, {
         headers: {
@@ -52,8 +56,12 @@ export default function WalletCreate({
       })
       .then((response) => {
         localStorage.setItem("token", response.data.access_token);
-        localStorage.setItem("avatar", baseUrl + `static/avatars/none.png`);
+        localStorage.setItem(
+          "avatar",
+          baseUrl + `static/avatars/${response.data.user_id}.png`
+        );
         setToken(response.data.access_token);
+        setLoggedIn(true);
       })
       .catch((err) => console.log(err));
   }, []);
@@ -84,6 +92,7 @@ export default function WalletCreate({
             label="Wallet name"
             value={name}
             onChange={(e) => {
+              console.log(e.target.value);
               setName(e.target.value);
               setWalletName(e.target.value);
             }}
@@ -104,8 +113,10 @@ export default function WalletCreate({
             <MenuItem disabled value="">
               <em>Currency</em>
             </MenuItem>
-            {currencies.map((curr) => (
-              <MenuItem value={curr}>{curr}</MenuItem>
+            {currencies.map((curr, index) => (
+              <MenuItem key={index} value={curr}>
+                {curr}
+              </MenuItem>
             ))}
           </Select>
         </Box>

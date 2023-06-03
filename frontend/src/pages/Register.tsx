@@ -17,10 +17,14 @@ import useDebounce from "../hooks/useDebounce.tsx";
 import RegisterForm from "../components/RegisterPageComponents/RegisterForm.tsx";
 import RegisterFinish from "../components/RegisterPageComponents/RegisterFinish.tsx";
 import RegisterWallet from "../components/RegisterPageComponents/RegisterWallet.tsx";
+import RegisterAvatar from "../components/RegisterPageComponents/RegisterAvatar.tsx";
+import { useNavigate } from "react-router";
 
-const steps = ["Register", "Create Wallet", "Final steps"];
+const steps = ["Register", "Create Wallet", "Upload avatar"];
 
 export default function RegisterStepper() {
+  const navigate = useNavigate();
+
   const [alertUsername, setAlertUsername] = useState(false);
   const [alertMsgUsername, setAlertMsgUsername] = useState("");
 
@@ -50,6 +54,11 @@ export default function RegisterStepper() {
   const password = formReg["password"];
 
   const [canSubmit, setCanSubmit] = useState(false);
+  const [isAvatarUploaded, setIsAvatarUploaded] = useState(false);
+
+  const handleAvatarUploaded = () => {
+    setIsAvatarUploaded(true);
+  };
 
   const [token, setToken] = useState("");
   const [walletName, setWalletName] = useState("");
@@ -90,7 +99,7 @@ export default function RegisterStepper() {
       setWalletName={handleSetWalletName}
       setWalletCurr={handleSetWalletCurr}
     />,
-    <RegisterFinish />,
+    <RegisterAvatar onAvatarUploaded={handleAvatarUploaded} token={token} />,
   ];
   const [activeStep, setActiveStep] = useState(0);
 
@@ -196,7 +205,9 @@ export default function RegisterStepper() {
     formReg["email"],
     formReg["phone"],
     formReg["password"],
-    confirmPass
+    confirmPass,
+    activeStep,
+    isAvatarUploaded
   );
 
   // NEXT BUTTON HANDLER
@@ -213,7 +224,10 @@ export default function RegisterStepper() {
           .catch();
       }
     } else if (activeStep === 1) {
+      setCanSubmit(false);
       setCurrUpdated(true);
+    } else if (activeStep === steps.length) {
+      navigate("/profile");
     } else {
       setActiveStep((prevActiveStep) => prevActiveStep + 1);
     }
@@ -264,16 +278,24 @@ export default function RegisterStepper() {
             width: "100%",
           }}
         >
-          {pages[activeStep]}
+          {activeStep === pages.length ? <RegisterFinish /> : pages[activeStep]}
 
           <ButtonBlack
             sx={{ width: "70%", mt: "40px" }}
             onClick={handleNext}
             size="large"
-            disabled={!canSubmit && activeStep != 1}
+            disabled={(activeStep === 0 || activeStep === 2) && !canSubmit}
             variant="outlined"
-            disabledText="Please fill in the form"
-            text={activeStep === steps.length - 1 ? "Finish" : "Next step"}
+            disabledText={
+              activeStep === steps.length - 1
+                ? "Please select an avatar"
+                : "Please fill in the form"
+            }
+            text={
+              activeStep === steps.length
+                ? "Take me to my profile"
+                : "Next step"
+            }
           ></ButtonBlack>
         </Box>
       </Container>

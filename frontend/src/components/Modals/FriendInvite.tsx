@@ -6,11 +6,11 @@ import Fade from "@mui/material/Fade";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField/TextField";
 import { useEffect } from "react";
-import { Friend } from "../FriendBox";
+import { Friend } from "../ProfilePageComponents/FriendBox";
 import axios from "axios";
 import { apiUrl, baseUrl } from "../../shared";
 import useDebounce from "../../hooks/useDebounce";
-import { Avatar, Paper, Tooltip } from "@mui/material";
+import { Avatar, Tooltip } from "@mui/material";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import SendIcon from "@mui/icons-material/Send";
 

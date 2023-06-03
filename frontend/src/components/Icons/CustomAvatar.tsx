@@ -8,7 +8,17 @@ import React from "react";
 import { AvatarContext } from "../../App";
 import Tooltip from "@mui/material/Tooltip/Tooltip";
 
-const CustomAvatar = () => {
+const CustomAvatar = ({
+  src,
+  token,
+  onAvatarUploaded,
+  onUploadAvatar,
+}: {
+  src?: string;
+  token?: string;
+  onAvatarUploaded?: () => void;
+  onUploadAvatar?: (url: string) => void;
+}) => {
   const { setUpdatedAvatar } = React.useContext(AvatarContext);
 
   const [isHovered, setIsHovered] = useState(false);
@@ -45,7 +55,9 @@ const CustomAvatar = () => {
     await axios
       .post(`${baseUrl}api/v1/users/profile/avatar`, formData, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${
+            token ? token : localStorage.getItem("token")
+          }`,
           "Content-Type": "multipart/form-data",
         },
       })
@@ -61,6 +73,12 @@ const CustomAvatar = () => {
     );
     setUpdatedAvatar(`${localStorage.avatar}`);
     setUpdatedAvatarState(`${localStorage.avatar}`);
+    if (onAvatarUploaded) {
+      onAvatarUploaded();
+    }
+    if (onUploadAvatar) {
+      onUploadAvatar(`${localStorage.avatar}`);
+    }
   }
 
   return (
@@ -84,7 +102,7 @@ const CustomAvatar = () => {
           />
         </div>
         <Avatar
-          src={updatedAvatarState}
+          src={src ? src : updatedAvatarState}
           sx={{
             height: "80px",
             width: "80px",

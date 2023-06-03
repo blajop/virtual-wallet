@@ -8,7 +8,6 @@ import Welcome from "./pages/Welcome";
 import Profile from "./pages/Profile";
 import axios from "axios";
 import { baseUrl } from "./shared.ts";
-import FriendInvite from "./components/Modals/FriendInvite.tsx";
 
 export const LoginContext = React.createContext<ILoginContext>([
   false,

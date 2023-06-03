@@ -1,6 +1,6 @@
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
-import UncontrolledExample from "./HomePageComponents/Carousel";
+import UncontrolledExample from "./Carousel";
 import React from "react";
 
 type Item = {

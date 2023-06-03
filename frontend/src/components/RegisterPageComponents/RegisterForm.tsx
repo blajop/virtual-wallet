@@ -104,6 +104,9 @@ export default function SignupForm(props: Props) {
             autoComplete="phone"
             error={alertPhone}
             onChange={handleInput}
+            inputProps={{
+              maxLength: 10,
+            }}
           />
         </div>
 

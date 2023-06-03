@@ -3,10 +3,10 @@ import AvatarGroup from "@mui/material/AvatarGroup/AvatarGroup";
 import Paper from "@mui/material/Paper/Paper";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { apiUrl, baseUrl } from "../shared";
+import { apiUrl, baseUrl } from "../../shared";
 import Tooltip from "@mui/material/Tooltip/Tooltip";
 import AddIcon from "@mui/icons-material/Add";
-import FriendInvite from "./Modals/FriendInvite";
+import FriendInvite from "../Modals/FriendInvite";
 
 export type Friends = Friend[];
 

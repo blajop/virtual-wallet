@@ -1,5 +1,5 @@
 import Overview from "../components/HomePageComponents/Overview";
-import Features from "../components/Features";
+import Features from "../components/HomePageComponents/Features";
 import Fab from "@mui/material/Fab/Fab";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import CssBaseline from "@mui/material/CssBaseline/CssBaseline";
