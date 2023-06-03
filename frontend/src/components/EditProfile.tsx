@@ -6,7 +6,7 @@ import Fade from "@mui/material/Fade";
 import Button from "@mui/material/Button";
 import EditIcon from "@mui/icons-material/Edit";
 import { baseUrl } from "../shared.js";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { useEffect, useState } from "react";
 import DataFieldEdit from "./DataFieldEdit.tsx";
 import useDebounce from "../hooks/useDebounce.tsx";
@@ -162,7 +162,27 @@ export default function EditProfile(props: Props) {
     editPhone,
   ]);
 
-  const handleApply = () => {};
+  const handleApply = () => {
+    const finalData = {
+      f_name: firstName,
+      l_name: lastName,
+      email: email,
+      phone: phone,
+    };
+    axios
+      .put(`${baseUrl}api/v1/users/profile`, finalData, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      })
+      .then((response) => {
+        if (response.status === 200) {
+          console.log(response);
+        }
+      })
+      .catch();
+    handleClose();
+  };
 
   return (
     <div>
@@ -269,6 +289,7 @@ export default function EditProfile(props: Props) {
               size="medium"
               onClick={handleApply}
               disabled={!canSubmit}
+              disabledText="Please fill in correct data"
             >
               Apply
             </ButtonBlack>
