@@ -5,11 +5,12 @@ import TextField from "@mui/material/TextField/TextField";
 import { baseUrl } from "../shared.js";
 import axios from "axios";
 import { useState, useContext } from "react";
-import { LoginContext } from "../App.js";
+import { AvatarContext, LoginContext } from "../App.js";
 import { useNavigate } from "react-router-dom";
 import LoadingButton from "@mui/lab/LoadingButton";
 
 export default function Login() {
+  const { setUpdatedAvatar } = useContext(AvatarContext);
   const [, setLoggedIn] = useContext(LoginContext);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -34,10 +35,11 @@ export default function Login() {
       .then((response) => {
         if (response.status === 200) {
           setLoggedIn(true);
-          localStorage.setItem(
-            "avatar",
-            baseUrl + `static/avatars/${response.data.user_id}.png`
-          );
+
+          const avatarUrl =
+            baseUrl + `static/avatars/${response.data.user_id}.png`;
+          localStorage.setItem("avatar", avatarUrl);
+          setUpdatedAvatar(avatarUrl);
 
           localStorage.setItem("token", response.data.access_token);
           navigate("/");

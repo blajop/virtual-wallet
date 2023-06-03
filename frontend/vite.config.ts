@@ -8,5 +8,4 @@ export default defineConfig({
     host: '0.0.0.0', // Replace with the desired host
     port: 80, // Replace with the desired port
   },
-  base: '/virtual-wallet/'
 })

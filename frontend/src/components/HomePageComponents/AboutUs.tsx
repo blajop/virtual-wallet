@@ -2,8 +2,8 @@ import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 import AvatarBox from "./AvatarBox";
-import blago from "../assets/images/blago.png";
-import stani from "../assets/images/stani.png";
+import blago from "../../assets/images/blago.png";
+import stani from "../../assets/images/stani.png";
 
 export default function AboutUs() {
   const jumpEffectStyle = {

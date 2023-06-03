@@ -6,6 +6,7 @@ import { baseUrl } from "../../shared";
 import axios from "axios";
 import React from "react";
 import { AvatarContext } from "../../App";
+import Tooltip from "@mui/material/Tooltip/Tooltip";
 
 const CustomAvatar = () => {
   const { setUpdatedAvatar } = React.useContext(AvatarContext);
@@ -63,46 +64,48 @@ const CustomAvatar = () => {
   }
 
   return (
-    <Box
-      onClick={() => fileInputRef.current!.click()}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      className="rounded-full cursor-pointer"
-      sx={{
-        position: "relative",
-        display: "inline-block",
-      }}
-    >
-      <div>
-        <input
-          ref={fileInputRef as React.RefObject<HTMLInputElement>}
-          type="file"
-          onChange={handleImageUpload}
-          style={{ display: "none" }}
-        />
-      </div>
-      <Avatar
-        src={updatedAvatarState}
+    <Tooltip title="Upload avatar">
+      <Box
+        onClick={() => fileInputRef.current!.click()}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        className="rounded-full cursor-pointer"
         sx={{
-          height: "80px",
-          width: "80px",
-          filter: isHovered ? "brightness(40%)" : "none",
+          position: "relative",
+          display: "inline-block",
         }}
-      />
-      {isHovered && (
-        <Box
+      >
+        <div>
+          <input
+            ref={fileInputRef as React.RefObject<HTMLInputElement>}
+            type="file"
+            onChange={handleImageUpload}
+            style={{ display: "none" }}
+          />
+        </div>
+        <Avatar
+          src={updatedAvatarState}
           sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            zIndex: 1,
+            height: "80px",
+            width: "80px",
+            filter: isHovered ? "brightness(40%)" : "none",
           }}
-        >
-          <FileUploadIcon fontSize="large" sx={{ color: "white" }} />
-        </Box>
-      )}
-    </Box>
+        />
+        {isHovered && (
+          <Box
+            sx={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              zIndex: 1,
+            }}
+          >
+            <FileUploadIcon fontSize="large" sx={{ color: "white" }} />
+          </Box>
+        )}
+      </Box>
+    </Tooltip>
   );
 };
 

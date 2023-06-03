@@ -38,6 +38,11 @@ type UserResponse = {
 export default function Profile() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState<boolean>(false);
+  const [refreshFriends, setRefreshFriends] = useState<string>();
+
+  const handleRefreshFriends = () => {
+    setRefreshFriends("a");
+  };
 
   const [fullName, setFullName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
@@ -218,7 +223,11 @@ export default function Profile() {
               height: "100% !important",
             }}
           >
-            <FriendBox email={email} />
+            <FriendBox
+              refreshFriends={refreshFriends!}
+              handleRefreshFriends={handleRefreshFriends}
+              email={email}
+            />
             <br></br>
             <Paper
               elevation={2}
