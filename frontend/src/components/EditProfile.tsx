@@ -7,11 +7,12 @@ import Button from "@mui/material/Button";
 import EditIcon from "@mui/icons-material/Edit";
 import { baseUrl } from "../shared.js";
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import DataFieldEdit from "./DataFieldEdit.tsx";
 import useDebounce from "../hooks/useDebounce.tsx";
 import useValidateEmail from "../hooks/useValidateEmail.tsx";
 import useValidatePhone from "../hooks/useValidatePhone.tsx";
+import ButtonBlack from "./Buttons/ButtonBlack.tsx";
 
 const style = {
   position: "absolute" as "absolute",
@@ -79,15 +80,25 @@ export default function EditProfile(props: Props) {
     [
       alertEmail,
       (value: boolean) => {
-        setAlertEmail(value);
-        return value;
+        if (email != props.email) {
+          setAlertEmail(value);
+          return value;
+        } else {
+          setAlertEmail(false);
+          return value;
+        }
       },
     ],
     [
       alertMsgEmail,
       (value: string) => {
-        setAlertMsgEmail(value);
-        return value;
+        if (email != props.email) {
+          setAlertMsgEmail(value);
+          return value;
+        } else {
+          setAlertMsgEmail("");
+          return value;
+        }
       },
     ]
   );
@@ -103,18 +114,55 @@ export default function EditProfile(props: Props) {
     [
       alertPhone,
       (value: boolean) => {
-        setAlertPhone(value);
-        return value;
+        if (phone != props.phone) {
+          setAlertPhone(value);
+          return value;
+        } else {
+          setAlertPhone(false);
+          return value;
+        }
       },
     ],
     [
       alertMsgPhone,
       (value: string) => {
-        setAlertMsgPhone(value);
-        return value;
+        if (phone != props.phone) {
+          setAlertMsgPhone(value);
+          return value;
+        } else {
+          setAlertMsgPhone("");
+          return value;
+        }
       },
     ]
   );
+
+  const [canSubmit, setCanSubmit] = useState(true);
+
+  useEffect(() => {
+    const conditions = [
+      alertEmail,
+      alertPhone,
+      editFirstName,
+      editLastName,
+      editEmail,
+      editPhone,
+    ];
+    if (conditions.every((element) => element === false)) {
+      setCanSubmit(true);
+    } else {
+      setCanSubmit(false);
+    }
+  }, [
+    alertEmail,
+    alertPhone,
+    editFirstName,
+    editLastName,
+    editEmail,
+    editPhone,
+  ]);
+
+  const handleApply = () => {};
 
   return (
     <div>
@@ -193,8 +241,8 @@ export default function EditProfile(props: Props) {
               ]}
               label="Email"
               icon="email"
-              alert={email != props.email ? alertEmail : false}
-              alertMsg={email != props.email ? alertMsgEmail : ""}
+              alert={alertEmail}
+              alertMsg={alertMsgEmail}
             ></DataFieldEdit>
             <DataFieldEdit
               data={[
@@ -213,9 +261,17 @@ export default function EditProfile(props: Props) {
               ]}
               label="Phone"
               icon="phone"
-              alert={phone != props.phone ? alertPhone : false}
-              alertMsg={phone != props.phone ? alertMsgPhone : ""}
+              alert={alertPhone}
+              alertMsg={alertMsgPhone}
             ></DataFieldEdit>
+
+            <ButtonBlack
+              size="medium"
+              onClick={handleApply}
+              disabled={!canSubmit}
+            >
+              Apply
+            </ButtonBlack>
           </Box>
         </Fade>
       </Modal>
