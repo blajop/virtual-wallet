@@ -7,8 +7,7 @@ import Button from "@mui/material/Button";
 import EditIcon from "@mui/icons-material/Edit";
 import { baseUrl } from "../shared.js";
 import axios from "axios";
-import Paper from "@mui/material/Paper";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import DataFieldEdit from "./DataFieldEdit.tsx";
 
 const style = {
@@ -33,36 +32,7 @@ interface Props {
   phone: string;
 }
 
-class UserData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  password: string;
-
-  constructor(
-    firstName: string = "",
-    lastName: string = "",
-    email: string = "",
-    phone: string = "",
-    password: string = ""
-  ) {
-    this.firstName = firstName;
-    this.lastName = lastName;
-    this.email = email;
-    this.phone = phone;
-    this.password = password;
-  }
-}
-
 export default function EditProfile(props: Props) {
-  const profile = new UserData(
-    props.firstName,
-    props.lastName,
-    props.email,
-    props.phone
-  );
-
   const [firstName, setFirstName] = useState(props.firstName);
   const [lastName, setLastName] = useState(props.lastName);
   const [email, setEmail] = useState(props.email);
@@ -74,16 +44,6 @@ export default function EditProfile(props: Props) {
   const [editPhone, setEditPhone] = useState(false);
   const [editPwd, setEditPwd] = useState(false);
 
-  const profileDetails = {
-    firstName: profile.firstName,
-    lastName: profile.lastName,
-    email: profile.email,
-    phone: profile.phone,
-  };
-
-  const [details, setDetails] = useState(profileDetails);
-
-  const detailEdit = [editFirstName, editLastName, editEmail, editPhone];
   const setEdit = [
     setEditFirstName,
     setEditLastName,
@@ -94,10 +54,13 @@ export default function EditProfile(props: Props) {
   const [open, setOpen] = React.useState(false);
   const handleOpen = () => {
     setOpen(true);
-    setDetails(profileDetails);
     for (const el of setEdit) {
       el(false);
     }
+    setFirstName(props.firstName);
+    setLastName(props.lastName);
+    setEmail(props.email);
+    setPhone(props.phone);
   };
 
   const handleClose = () => setOpen(false);
@@ -138,6 +101,7 @@ export default function EditProfile(props: Props) {
                 },
               ]}
               label="First Name"
+              icon="name"
             ></DataFieldEdit>
             <DataFieldEdit
               data={[
@@ -155,6 +119,7 @@ export default function EditProfile(props: Props) {
                 },
               ]}
               label="Last Name"
+              icon="name"
             ></DataFieldEdit>
             <DataFieldEdit
               data={[
@@ -172,6 +137,7 @@ export default function EditProfile(props: Props) {
                 },
               ]}
               label="Email"
+              icon="email"
             ></DataFieldEdit>
             <DataFieldEdit
               data={[
@@ -189,6 +155,7 @@ export default function EditProfile(props: Props) {
                 },
               ]}
               label="Phone"
+              icon="phone"
             ></DataFieldEdit>
           </Box>
         </Fade>

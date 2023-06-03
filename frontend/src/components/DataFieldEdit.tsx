@@ -5,6 +5,8 @@ import AccountCircle from "@mui/icons-material/AccountCircle";
 import DoneIcon from "@mui/icons-material/Done";
 import { useState } from "react";
 import EditIcon from "@mui/icons-material/Edit";
+import AlternateEmailIcon from "@mui/icons-material/AlternateEmail";
+import TagIcon from "@mui/icons-material/Tag";
 
 type editDataState = [boolean, (e: boolean) => boolean];
 type dataState = [string, (e: string) => string];
@@ -13,12 +15,14 @@ interface Props {
   data: dataState;
   editData: editDataState;
   label: string;
+  icon: "name" | "email" | "phone";
 }
 
 export default function EditProfile(props: Props) {
   const [editData, setEditData] = props.editData;
   const [data, setData] = props.data;
   const label = props.label;
+  const icon = props.icon;
 
   const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     setTextFieldValue(event.target.value);
@@ -36,6 +40,7 @@ export default function EditProfile(props: Props) {
     >
       <TextField
         id="input-textfield"
+        sx={{ width: "100%" }}
         value={textFieldValue}
         label={label}
         disabled={!editData}
@@ -43,7 +48,9 @@ export default function EditProfile(props: Props) {
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
-              <AccountCircle />
+              {icon === "name" && <AccountCircle sx={{ mr: "10px" }} />}
+              {icon === "email" && <AlternateEmailIcon sx={{ mr: "10px" }} />}
+              {icon === "phone" && <TagIcon sx={{ mr: "10px" }} />}
               {!editData ? data : null}
             </InputAdornment>
           ),
@@ -59,7 +66,9 @@ export default function EditProfile(props: Props) {
                 <DoneIcon
                   onClick={() => {
                     setEditData(false);
-                    setData(textFieldValue);
+                    if (textFieldValue != "") {
+                      setData(textFieldValue);
+                    }
                     setTextFieldValue("");
                   }}
                 />
