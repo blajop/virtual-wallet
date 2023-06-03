@@ -78,8 +78,9 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             db.scalars(
                 select(self.model).where(
                     or_(
-                        self.model.id.ilike(search_query),
                         self.model.username.ilike(search_query),
+                        self.model.f_name.ilike(search_query),
+                        self.model.l_name.ilike(search_query),
                         self.model.email.ilike(search_query),
                         self.model.phone.ilike(search_query),
                     )
