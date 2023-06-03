@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from apscheduler.schedulers.background import BackgroundScheduler
+import uvicorn
 
 from app.core import settings
 from app.api.api_v1.api import api_router
@@ -38,3 +39,7 @@ app.add_middleware(
 app.mount("/static", StaticFiles(directory="./app/static"), name="static")
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
+
+
+if __name__ == "__main__":
+    uvicorn.run("main:app", host="0.0.0.0", port=5555, reload=True)
