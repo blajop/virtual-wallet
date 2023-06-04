@@ -31,18 +31,25 @@ const style = {
   gap: "10px",
 };
 
+type dataState = [string, (e: string) => string];
+
 interface Props {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
+  firstName: dataState;
+  lastName: dataState;
+  email: dataState;
+  phone: dataState;
 }
 
 export default function EditProfile(props: Props) {
-  const [firstName, setFirstName] = useState(props.firstName);
-  const [lastName, setLastName] = useState(props.lastName);
-  const [email, setEmail] = useState(props.email);
-  const [phone, setPhone] = useState(props.phone);
+  const [firstName, setFirstName] = props.firstName;
+  const [lastName, setLastName] = props.lastName;
+  const [email, setEmail] = props.email;
+  const [phone, setPhone] = props.phone;
+
+  const [tempFirstName, setTempFirstName] = useState(props.firstName[0]);
+  const [tempLastName, setTempLastName] = useState(props.lastName[0]);
+  const [tempEmail, setTempEmail] = useState(props.email[0]);
+  const [tempPhone, setTempPhone] = useState(props.phone[0]);
 
   const [editFirstName, setEditFirstName] = useState(false);
   const [editLastName, setEditLastName] = useState(false);
@@ -57,32 +64,35 @@ export default function EditProfile(props: Props) {
     setEditPhone,
   ];
 
+  const [alertEmail, setAlertEmail] = useState(false);
+  const [alertMsgEmail, setAlertMsgEmail] = useState("");
+
+  const [alertPhone, setAlertPhone] = useState(false);
+  const [alertMsgPhone, setAlertMsgPhone] = useState("");
+
   const [open, setOpen] = React.useState(false);
+
   const handleOpen = () => {
     setOpen(true);
     for (const el of setEdit) {
       el(false);
     }
-    setFirstName(props.firstName);
-    setLastName(props.lastName);
-    setEmail(props.email);
-    setPhone(props.phone);
+    setTempFirstName(props.firstName[0]);
+    setTempLastName(props.lastName[0]);
+    setTempEmail(props.email[0]);
+    setTempPhone(props.phone[0]);
   };
 
   const handleClose = () => setOpen(false);
 
-  const [alertEmail, setAlertEmail] = useState(false);
-  const [alertMsgEmail, setAlertMsgEmail] = useState("");
-
   // CUSTOM HOOK EMAIL
-  const debouncedEmail = useDebounce(email, 0);
 
   useValidateEmail(
-    debouncedEmail,
+    tempEmail,
     [
       alertEmail,
       (value: boolean) => {
-        if (email != props.email) {
+        if (email != tempEmail) {
           setAlertEmail(value);
           return value;
         } else {
@@ -94,7 +104,7 @@ export default function EditProfile(props: Props) {
     [
       alertMsgEmail,
       (value: string) => {
-        if (email != props.email) {
+        if (email != tempEmail) {
           setAlertMsgEmail(value);
           return value;
         } else {
@@ -105,18 +115,14 @@ export default function EditProfile(props: Props) {
     ]
   );
 
-  const [alertPhone, setAlertPhone] = useState(false);
-  const [alertMsgPhone, setAlertMsgPhone] = useState("");
-
   // CUSTOM HOOK PHONE
-  const debouncedPhone = useDebounce(phone, 0);
 
   useValidatePhone(
-    debouncedPhone,
+    tempPhone,
     [
       alertPhone,
       (value: boolean) => {
-        if (phone != props.phone) {
+        if (phone != tempPhone) {
           setAlertPhone(value);
           return value;
         } else {
@@ -128,7 +134,7 @@ export default function EditProfile(props: Props) {
     [
       alertMsgPhone,
       (value: string) => {
-        if (phone != props.phone) {
+        if (phone != tempPhone) {
           setAlertMsgPhone(value);
           return value;
         } else {
@@ -165,6 +171,11 @@ export default function EditProfile(props: Props) {
   ]);
 
   const handleApply = () => {
+    setFirstName(tempFirstName);
+    setLastName(tempLastName);
+    setEmail(tempEmail);
+    setPhone(tempPhone);
+
     const finalData = {
       f_name: firstName,
       l_name: lastName,
@@ -210,9 +221,9 @@ export default function EditProfile(props: Props) {
           <Box sx={style}>
             <DataFieldEdit
               data={[
-                firstName,
+                tempFirstName,
                 (value: string) => {
-                  setFirstName(value);
+                  setTempFirstName(value);
                   return value;
                 },
               ]}
@@ -230,9 +241,9 @@ export default function EditProfile(props: Props) {
             ></DataFieldEdit>
             <DataFieldEdit
               data={[
-                lastName,
+                tempLastName,
                 (value: string) => {
-                  setLastName(value);
+                  setTempLastName(value);
                   return value;
                 },
               ]}
@@ -250,9 +261,9 @@ export default function EditProfile(props: Props) {
             ></DataFieldEdit>
             <DataFieldEdit
               data={[
-                email,
+                tempEmail,
                 (value: string) => {
-                  setEmail(value);
+                  setTempEmail(value);
                   return value;
                 },
               ]}
@@ -270,9 +281,9 @@ export default function EditProfile(props: Props) {
             ></DataFieldEdit>
             <DataFieldEdit
               data={[
-                phone,
+                tempPhone,
                 (value: string) => {
-                  setPhone(value);
+                  setTempPhone(value);
                   return value;
                 },
               ]}

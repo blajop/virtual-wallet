@@ -22,8 +22,8 @@ interface Props {
 }
 
 export default function EditProfile(props: Props) {
-  const [editData, setEditData] = props.editData;
   const [data, setData] = props.data;
+  const [editData, setEditData] = props.editData;
   const label = props.label;
   const icon = props.icon;
   const alert = props.alert;
