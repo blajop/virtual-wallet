@@ -182,6 +182,7 @@ export default function EditProfile(props: Props) {
       })
       .catch();
     handleClose();
+    window.location.reload();
   };
 
   return (
