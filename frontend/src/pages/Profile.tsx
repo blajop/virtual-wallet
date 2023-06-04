@@ -45,7 +45,6 @@ export default function Profile() {
     setRefreshFriends("a");
   };
 
-  const [fullName, setFullName] = useState<string>("");
   const [firstName, setFirstName] = useState<string>("");
   const [lastName, setLastName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
@@ -73,7 +72,6 @@ export default function Profile() {
         );
 
         if (response.status === 200) {
-          setFullName(`${response.data.f_name} ${response.data.l_name}`);
           setFirstName(response.data.f_name);
           setLastName(response.data.l_name);
           setEmail(response.data.email);
@@ -164,15 +162,39 @@ export default function Profile() {
         <Box className="flex items-center gap-5">
           <CustomAvatar />
           <Typography variant="h3" sx={{ fontWeight: "700" }}>
-            {fullName}
+            {`${firstName} ${lastName}`}
           </Typography>
         </Box>
 
         <EditProfile
-          firstName={firstName}
-          lastName={lastName}
-          email={email}
-          phone={phone}
+          firstName={[
+            firstName,
+            (value: string) => {
+              setFirstName(value);
+              return value;
+            },
+          ]}
+          lastName={[
+            lastName,
+            (value: string) => {
+              setLastName(value);
+              return value;
+            },
+          ]}
+          email={[
+            email,
+            (value: string) => {
+              setEmail(value);
+              return value;
+            },
+          ]}
+          phone={[
+            phone,
+            (value: string) => {
+              setPhone(value);
+              return value;
+            },
+          ]}
         />
       </Paper>
       {/* WALLETS  */}
