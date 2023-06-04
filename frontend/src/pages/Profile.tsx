@@ -4,14 +4,14 @@ import Typography from "@mui/material/Typography";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { baseUrl } from "../shared.js";
-import WalletCard from "../components/Wallet/WalletCard.js";
+import WalletCard from "../components/ProfilePageComponents/WalletCard.js";
 import SelectSmall from "../components/Select/Select";
 import { Paper } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import CircularLoading from "../components/CircularLoading.js";
-import FriendBox from "../components/FriendBox.js";
+import FriendBox from "../components/ProfilePageComponents/FriendBox.js";
 import CustomAvatar from "../components/Icons/CustomAvatar.tsx";
-import EditProfile from "../components/EditProfile.tsx";
+import EditProfile from "../components/ProfilePageComponents/EditProfile.tsx";
 
 export type Wallet = {
   id: string;
@@ -39,6 +39,11 @@ type UserResponse = {
 export default function Profile() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState<boolean>(false);
+  const [refreshFriends, setRefreshFriends] = useState<string>();
+
+  const handleRefreshFriends = () => {
+    setRefreshFriends("a");
+  };
 
   const [fullName, setFullName] = useState<string>("");
   const [firstName, setFirstName] = useState<string>("");
@@ -149,16 +154,20 @@ export default function Profile() {
         sx={{
           display: "flex",
           alignItems: "center",
+          justifyContent: "space-between",
           gap: "50px",
           height: "100%",
           width: "100%",
           padding: "20px",
         }}
       >
-        <CustomAvatar />
-        <Typography variant="h3" sx={{ fontWeight: "700" }}>
-          {fullName}
-        </Typography>
+        <Box className="flex items-center gap-5">
+          <CustomAvatar />
+          <Typography variant="h3" sx={{ fontWeight: "700" }}>
+            {fullName}
+          </Typography>
+        </Box>
+
         <EditProfile
           firstName={firstName}
           lastName={lastName}
@@ -229,7 +238,11 @@ export default function Profile() {
               height: "100% !important",
             }}
           >
-            <FriendBox email={email} />
+            <FriendBox
+              refreshFriends={refreshFriends!}
+              handleRefreshFriends={handleRefreshFriends}
+              email={email}
+            />
             <br></br>
             <Paper
               elevation={2}

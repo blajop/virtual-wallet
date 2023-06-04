@@ -6,7 +6,8 @@ import DoneIcon from "@mui/icons-material/Done";
 import { useState } from "react";
 import EditIcon from "@mui/icons-material/Edit";
 import AlternateEmailIcon from "@mui/icons-material/AlternateEmail";
-import TagIcon from "@mui/icons-material/Tag";
+import LocalPhoneIcon from "@mui/icons-material/LocalPhone";
+import Tooltip from "@mui/material/Tooltip/Tooltip";
 
 type editDataState = [boolean, (e: boolean) => boolean];
 type dataState = [string, (e: string) => string];
@@ -55,28 +56,32 @@ export default function EditProfile(props: Props) {
             <InputAdornment position="start">
               {icon === "name" && <AccountCircle sx={{ mr: "10px" }} />}
               {icon === "email" && <AlternateEmailIcon sx={{ mr: "10px" }} />}
-              {icon === "phone" && <TagIcon sx={{ mr: "10px" }} />}
+              {icon === "phone" && <LocalPhoneIcon sx={{ mr: "10px" }} />}
               {!editData ? data : null}
             </InputAdornment>
           ),
           endAdornment: (
             <InputAdornment position="end">
               {!editData ? (
-                <EditIcon
-                  onClick={() => {
-                    setEditData(true);
-                  }}
-                ></EditIcon>
+                <Tooltip title="Edit">
+                  <EditIcon
+                    onClick={() => {
+                      setEditData(true);
+                    }}
+                  ></EditIcon>
+                </Tooltip>
               ) : (
-                <DoneIcon
-                  onClick={() => {
-                    setEditData(false);
-                    if (textFieldValue != "") {
-                      setData(textFieldValue);
-                    }
-                    setTextFieldValue("");
-                  }}
-                />
+                <Tooltip title="Accept">
+                  <DoneIcon
+                    onClick={() => {
+                      setEditData(false);
+                      if (textFieldValue != "") {
+                        setData(textFieldValue);
+                      }
+                      setTextFieldValue("");
+                    }}
+                  />
+                </Tooltip>
               )}
             </InputAdornment>
           ),

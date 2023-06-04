@@ -1,11 +1,14 @@
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
-import Logo from "../components/Logo";
+import Logo from "../Logo";
 import Button from "@mui/material/Button";
 import { useNavigate } from "react-router-dom";
+import { useContext } from "react";
+import { LoginContext } from "../../App";
 
 export default function Overview() {
+  const [loggedIn] = useContext(LoginContext);
   const navigate = useNavigate();
   const handleScrollToFeatures = () => {
     const scrollTarget = document.getElementById("features");
@@ -78,42 +81,47 @@ export default function Overview() {
             }}
           >
             <Button
-              // variant="outlined"
+              variant={loggedIn ? "contained" : "text"}
               size="small"
               onClick={handleScrollToFeatures}
               sx={{
                 borderColor: "black",
-                color: "black",
+                color: !loggedIn ? "black" : "white",
                 paddingX: "2rem",
                 textTransform: "none",
+                backgroundColor: loggedIn ? "black" : "transparent",
+
                 "&:hover": {
                   borderColor: "black",
-                  textDecoration: "underline",
+                  color: !loggedIn ? "black" : "unset",
+                  textDecoration: loggedIn ? "unset" : "underline",
                   backgroundColor: "white",
                 },
               }}
             >
               <strong>Learn more</strong>
             </Button>
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={() => navigate("/register")}
-              sx={{
-                paddingY: "0rem",
-                paddingX: "2rem",
-                color: "white",
-                backgroundColor: "black",
-                textTransform: "none",
-                "&:hover": {
-                  backgroundColor: "white",
-                  color: "black",
-                  borderColor: "black",
-                },
-              }}
-            >
-              <strong>Join now</strong>
-            </Button>
+            {loggedIn || (
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => navigate("/register")}
+                sx={{
+                  paddingY: "0rem",
+                  paddingX: "2rem",
+                  color: "white",
+                  backgroundColor: "black",
+                  textTransform: "none",
+                  "&:hover": {
+                    backgroundColor: "white",
+                    color: "black",
+                    borderColor: "black",
+                  },
+                }}
+              >
+                <strong>Join now</strong>
+              </Button>
+            )}
           </Box>
         </Box>
       </Container>

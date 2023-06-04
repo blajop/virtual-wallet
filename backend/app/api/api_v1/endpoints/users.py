@@ -13,11 +13,12 @@ router = APIRouter()
 
 
 @router.get("", response_model=list[User])
-def get_users(
+def search_users(
+    identifier: str,
     db: Session = Depends(deps.get_db),
     logged_user: User = Depends(deps.get_current_user),
 ):
-    return crud.user.get_multi(db)
+    return crud.user.get_multi(db, identifier)
 
 
 @router.post("/profile/avatar", response_model=Msg, status_code=201)

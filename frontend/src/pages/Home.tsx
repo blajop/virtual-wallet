@@ -1,10 +1,10 @@
-import Overview from "../components/Overview";
-import Features from "../components/Features";
+import Overview from "../components/HomePageComponents/Overview";
+import Features from "../components/HomePageComponents/Features";
 import Fab from "@mui/material/Fab/Fab";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import CssBaseline from "@mui/material/CssBaseline/CssBaseline";
 import ScrollTop from "../components/ScrollTop";
-import AboutUs from "../components/AboutUs";
+import AboutUs from "../components/HomePageComponents/AboutUs";
 
 export default function Home() {
   return (

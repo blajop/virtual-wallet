@@ -4,7 +4,7 @@ import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
-import ButtonBlack from "../Buttons/ButtonBlack";
+import ButtonBlack from "../Buttons/ButtonBlack.js";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import SendIcon from "@mui/icons-material/Send";
 import AddIcon from "@mui/icons-material/Add";

@@ -5,14 +5,15 @@ import Modal from "@mui/material/Modal";
 import Fade from "@mui/material/Fade";
 import Button from "@mui/material/Button";
 import EditIcon from "@mui/icons-material/Edit";
-import { baseUrl } from "../shared.js";
-import axios, { AxiosError } from "axios";
+import { baseUrl } from "../../shared.js";
+import axios from "axios";
 import { useEffect, useState } from "react";
 import DataFieldEdit from "./DataFieldEdit.tsx";
-import useDebounce from "../hooks/useDebounce.tsx";
-import useValidateEmail from "../hooks/useValidateEmail.tsx";
-import useValidatePhone from "../hooks/useValidatePhone.tsx";
-import ButtonBlack from "./Buttons/ButtonBlack.tsx";
+import useDebounce from "../../hooks/useDebounce.tsx";
+import useValidateEmail from "../../hooks/useValidateEmail.tsx";
+import useValidatePhone from "../../hooks/useValidatePhone.tsx";
+import ButtonBlack from "../Buttons/ButtonBlack.tsx";
+import Tooltip from "@mui/material/Tooltip/Tooltip";
 
 const style = {
   position: "absolute" as "absolute",
@@ -22,6 +23,7 @@ const style = {
   width: 400,
   bgcolor: "background.paper",
   border: "2px solid #000",
+  borderRadius: "6px",
   boxShadow: 24,
   p: 4,
   display: "flex",
@@ -46,7 +48,7 @@ export default function EditProfile(props: Props) {
   const [editLastName, setEditLastName] = useState(false);
   const [editEmail, setEditEmail] = useState(false);
   const [editPhone, setEditPhone] = useState(false);
-  const [editPwd, setEditPwd] = useState(false);
+  // const [editPwd, setEditPwd] = useState(false);
 
   const setEdit = [
     setEditFirstName,
@@ -187,9 +189,11 @@ export default function EditProfile(props: Props) {
 
   return (
     <div>
-      <Button onClick={handleOpen}>
-        <EditIcon />
-      </Button>
+      <Tooltip title={"Edit profile"}>
+        <Button onClick={handleOpen}>
+          <EditIcon fontSize="large" sx={{ color: "black" }} />
+        </Button>
+      </Tooltip>
       <Modal
         aria-labelledby="transition-modal-title"
         aria-describedby="transition-modal-description"
