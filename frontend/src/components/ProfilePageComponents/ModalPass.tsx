@@ -7,6 +7,7 @@ import ButtonBlack from "../Buttons/ButtonBlack";
 import DataFieldEdit from "./DataFieldEdit";
 import axios from "axios";
 import { baseUrl } from "../../shared";
+import useValidatePwd from "../../hooks/useValidatePwd";
 
 const style = {
   position: "absolute" as "absolute",
@@ -52,7 +53,22 @@ export default function ModalPass(props: Props) {
   };
 
   const handleConfirm = () => {
-    setOpen(false);
+    const finalData = {
+      password: newPwd,
+    };
+    axios
+      .put(`${baseUrl}api/v1/users/profile`, finalData, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      })
+      .then((response) => {
+        if (response.status === 200) {
+          console.log("successful pwd change");
+        }
+      })
+      .catch();
+    handleClose();
   };
 
   // OLD PASS VERIFY
@@ -81,52 +97,66 @@ export default function ModalPass(props: Props) {
     }
   }, [oldPwd]);
 
-  // CUSTOM HOOK PASSWORD
-  //  useValidatePwd(
-  //   password,
-  //   [
-  //     alertPwd,
-  //     (value: boolean) => {
-  //       setAlertPwd(value);
-  //       return value;
-  //     },
-  //   ],
-  //   [
-  //     alertMsgPwd,
-  //     (value: string) => {
-  //       setAlertMsgPwd(value);
-  //       return value;
-  //     },
-  //   ]
-  // );
+  //  HOOK NEW PASSWORD
+  useValidatePwd(
+    newPwd,
+    [
+      alertNewPwd,
+      (value: boolean) => {
+        setAlertNewPwd(value);
+        return value;
+      },
+    ],
+    [
+      alertMsgNewPwd,
+      (value: string) => {
+        setAlertMsgNewPwd(value);
+        return value;
+      },
+    ]
+  );
 
   // PASSWORD MATCH TEST
-  // useEffect(() => {
-  //   if (
-  //     confirmPass != "" &&
-  //     formReg["password"] != "" &&
-  //     confirmPass != formReg["password"]
-  //   ) {
-  //     setalertConfirmPass(true);
-  //   } else {
-  //     setalertConfirmPass(false);
-  //   }
-  // }, [confirmPass, formReg["password"]]);
+  useEffect(() => {
+    if (matchPwd != "" && newPwd != "" && matchPwd != newPwd) {
+      setAlertMatchPwd(true);
+    } else {
+      setAlertMatchPwd(false);
+    }
+  }, [matchPwd, newPwd]);
 
   const [canSubmit, setCanSubmit] = useState(true);
 
-  // useEffect(() => {
-  //   const conditions = [
-
-  //   ];
-  //   if (conditions.every((element) => element === false)) {
-  //     setCanSubmit(true);
-  //   } else {
-  //     setCanSubmit(false);
-  //   }
-  // }, [
-
-  // ]);
+  // CAN SUBMIT TEST
+  useEffect(() => {
+    const conditions = [
+      alertOldPwd,
+      alertNewPwd,
+      alertMatchPwd,
+      editOldPwd,
+      editNewPwd,
+      editMatchPwd,
+    ];
+    const conditions2 = [oldPwd, newPwd, matchPwd];
+    if (
+      conditions.every((element) => element === false) &&
+      conditions2.every((element) => element != "")
+    ) {
+      setCanSubmit(true);
+    } else {
+      setCanSubmit(false);
+    }
+  }, [
+    alertOldPwd,
+    alertNewPwd,
+    alertMatchPwd,
+    editOldPwd,
+    editNewPwd,
+    editMatchPwd,
+    oldPwd,
+    newPwd,
+    matchPwd,
+  ]);
 
   return (
     <>
@@ -179,8 +209,8 @@ export default function ModalPass(props: Props) {
             ]}
             label="New Password"
             icon="password"
-            alert={false}
-            alertMsg={""}
+            alert={alertNewPwd}
+            alertMsg={alertMsgNewPwd}
           ></DataFieldEdit>
 
           <DataFieldEdit
@@ -200,8 +230,8 @@ export default function ModalPass(props: Props) {
             ]}
             label="Confirm New Password"
             icon="password"
-            alert={false}
-            alertMsg={""}
+            alert={alertMatchPwd}
+            alertMsg={"Passwords do not match"}
           ></DataFieldEdit>
           <ButtonBlack
             size="medium"
