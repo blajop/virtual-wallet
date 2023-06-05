@@ -8,6 +8,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import AlternateEmailIcon from "@mui/icons-material/AlternateEmail";
 import LocalPhoneIcon from "@mui/icons-material/LocalPhone";
 import Tooltip from "@mui/material/Tooltip/Tooltip";
+import PasswordIcon from "@mui/icons-material/Password";
 
 type editDataState = [boolean, (e: boolean) => boolean];
 type dataState = [string, (e: string) => string];
@@ -16,7 +17,7 @@ interface Props {
   data: dataState;
   editData: editDataState;
   label: string;
-  icon: "name" | "email" | "phone";
+  icon: "name" | "email" | "phone" | "password";
   alert: boolean;
   alertMsg: string;
 }
@@ -49,6 +50,7 @@ export default function EditProfile(props: Props) {
         value={textFieldValue}
         label={alert && !editData ? alertMsg : label}
         disabled={!editData}
+        type={icon === "password" ? "password" : ""}
         error={!editData && alert}
         onChange={handleInput}
         InputProps={{
@@ -57,6 +59,7 @@ export default function EditProfile(props: Props) {
               {icon === "name" && <AccountCircle sx={{ mr: "10px" }} />}
               {icon === "email" && <AlternateEmailIcon sx={{ mr: "10px" }} />}
               {icon === "phone" && <LocalPhoneIcon sx={{ mr: "10px" }} />}
+              {icon === "password" && <PasswordIcon sx={{ mr: "10px" }} />}
               {!editData ? data : null}
             </InputAdornment>
           ),

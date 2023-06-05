@@ -9,11 +9,11 @@ import { baseUrl } from "../../shared.js";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import DataFieldEdit from "./DataFieldEdit.tsx";
-import useDebounce from "../../hooks/useDebounce.tsx";
 import useValidateEmail from "../../hooks/useValidateEmail.tsx";
 import useValidatePhone from "../../hooks/useValidatePhone.tsx";
 import ButtonBlack from "../Buttons/ButtonBlack.tsx";
 import Tooltip from "@mui/material/Tooltip/Tooltip";
+import ModalPass from "./ModalPass.tsx";
 
 const style = {
   position: "absolute" as "absolute",
@@ -55,7 +55,9 @@ export default function EditProfile(props: Props) {
   const [editLastName, setEditLastName] = useState(false);
   const [editEmail, setEditEmail] = useState(false);
   const [editPhone, setEditPhone] = useState(false);
-  // const [editPwd, setEditPwd] = useState(false);
+
+  const [, setPwd] = useState("");
+  const [editPwd, setEditPwd] = useState(false);
 
   const setEdit = [
     setEditFirstName,
@@ -177,10 +179,10 @@ export default function EditProfile(props: Props) {
     setPhone(tempPhone);
 
     const finalData = {
-      f_name: firstName,
-      l_name: lastName,
-      email: email,
-      phone: phone,
+      f_name: tempFirstName,
+      l_name: tempLastName,
+      email: tempEmail,
+      phone: tempPhone,
     };
     axios
       .put(`${baseUrl}api/v1/users/profile`, finalData, {
@@ -299,7 +301,7 @@ export default function EditProfile(props: Props) {
               alert={alertPhone}
               alertMsg={alertMsgPhone}
             ></DataFieldEdit>
-
+            <ModalPass></ModalPass>
             <ButtonBlack
               size="medium"
               onClick={handleApply}
