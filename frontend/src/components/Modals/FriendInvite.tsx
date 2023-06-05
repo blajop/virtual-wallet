@@ -10,7 +10,7 @@ import { Friend } from "../ProfilePageComponents/FriendBox";
 import axios from "axios";
 import { apiUrl, baseUrl } from "../../shared";
 import useDebounce from "../../hooks/useDebounce";
-import { Avatar, Tooltip } from "@mui/material";
+import { Avatar, CircularProgress, Tooltip } from "@mui/material";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import SendIcon from "@mui/icons-material/Send";
 
@@ -44,6 +44,7 @@ export default function TransitionsModal({
   const handleClose = () => setOpen(false);
 
   const [searchQuery, setSearchQuery] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
 
   const debouncedSearch = useDebounce(searchQuery, 1000);
 
@@ -55,9 +56,11 @@ export default function TransitionsModal({
         .then((response) => {
           setUsers(response.data);
         })
-        .catch((err) => console.log(err));
+        .catch((err) => console.log(err))
+        .finally(() => setLoading(false));
     } else {
       setUsers([]);
+      setLoading(false);
     }
   }, [debouncedSearch]);
 
@@ -110,7 +113,10 @@ export default function TransitionsModal({
             <TextField
               label="Search user"
               sx={{ width: "100%", mb: "20px" }}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setLoading(true);
+                setSearchQuery(e.target.value);
+              }}
             ></TextField>
             {/* Result box */}
             <Box
@@ -119,58 +125,72 @@ export default function TransitionsModal({
                 flexDirection: "column",
                 gap: "5px",
                 width: "100%",
+                height: "250px",
               }}
             >
-              {users?.slice(0, 5).map((user, index) => (
-                <Box
-                  key={index}
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    width: "100%",
-                    borderBottom: "solid gray 0.5px",
-                    justifyContent: "space-between",
-                    paddingBottom: "5px",
-                    marginTop: "5px",
-                  }}
-                >
+              {!loading ? (
+                users?.slice(0, 5).map((user, index) => (
                   <Box
+                    key={index}
                     sx={{
                       display: "flex",
                       alignItems: "center",
-                      gap: "15px",
-                      borderRadius: "15px",
+                      width: "100%",
+                      borderBottom: "solid gray 0.5px",
+                      justifyContent: "space-between",
+                      paddingBottom: "5px",
+                      marginTop: "5px",
                     }}
                   >
-                    <Avatar
-                      sx={{ height: "25px", width: "25px" }}
-                      alt={user?.username}
-                      src={`${baseUrl}static/avatars/${user.id}.png`}
-                    />
-                    <Typography>
-                      <strong>
-                        {user.f_name} {user.l_name}
-                      </strong>
-                    </Typography>
-                  </Box>
-                  <Box sx={{ display: "flex", gap: "5px" }}>
-                    <Tooltip title="Add friend">
-                      <PersonAddIcon
-                        fontSize="small"
-                        sx={{ cursor: "pointer" }}
-                        onClick={() => handleAddFriend(user.username)}
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "15px",
+                        borderRadius: "15px",
+                      }}
+                    >
+                      <Avatar
+                        sx={{ height: "25px", width: "25px" }}
+                        alt={user?.username}
+                        src={`${baseUrl}static/avatars/${user.id}.png`}
                       />
-                    </Tooltip>
+                      <Typography>
+                        <strong>
+                          {user.f_name} {user.l_name}
+                        </strong>
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: "flex", gap: "5px" }}>
+                      <Tooltip title="Add friend">
+                        <PersonAddIcon
+                          fontSize="small"
+                          sx={{ cursor: "pointer" }}
+                          onClick={() => handleAddFriend(user.username)}
+                        />
+                      </Tooltip>
 
-                    <Tooltip title="Send money">
-                      <SendIcon
-                        fontSize="small"
-                        sx={{ cursor: "pointer" }}
-                      ></SendIcon>
-                    </Tooltip>
+                      <Tooltip title="Send money">
+                        <SendIcon
+                          fontSize="small"
+                          sx={{ cursor: "pointer" }}
+                        ></SendIcon>
+                      </Tooltip>
+                    </Box>
                   </Box>
+                ))
+              ) : (
+                <Box
+                  sx={{
+                    height: "100%",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <CircularProgress />
                 </Box>
-              ))}
+              )}
             </Box>
           </Box>
         </Fade>
