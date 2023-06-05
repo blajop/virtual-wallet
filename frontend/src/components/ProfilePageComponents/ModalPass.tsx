@@ -8,6 +8,7 @@ import DataFieldEdit from "./DataFieldEdit";
 import axios from "axios";
 import { baseUrl } from "../../shared";
 import useValidatePwd from "../../hooks/useValidatePwd";
+import Snackbar from "@mui/material/Snackbar";
 
 const style = {
   position: "absolute" as "absolute",
@@ -221,7 +222,7 @@ export default function ModalPass(props: Props) {
             label="New Password"
             icon="password"
             alert={alertNewPwd}
-            alertMsg={alertMsgNewPwd}
+            alertMsg="New Password"
           ></DataFieldEdit>
 
           <DataFieldEdit
@@ -244,6 +245,23 @@ export default function ModalPass(props: Props) {
             alert={alertMatchPwd}
             alertMsg={"Passwords do not match"}
           ></DataFieldEdit>
+
+          <Snackbar
+            anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+            open={alertNewPwd}
+            // onClose={() => (alertNewPwd = false)}
+            message={alertMsgNewPwd}
+            key={"bottom" + "center"}
+            ContentProps={{
+              sx: {
+                display: "flex",
+                color: "white",
+                fontWeight: "700",
+                justifyContent: "center",
+                backgroundColor: "black",
+              },
+            }}
+          />
           <ButtonBlack
             size="medium"
             sx={{ width: "100%" }}
