@@ -53,7 +53,6 @@ function Header(props: HeaderProps) {
 
     if (!isHomePage) {
       setLoading(true);
-      console.log("eituka vlizam");
       navigate(`/`);
       setTimeout(() => {
         const scrollTarget = document.getElementById(elem);
