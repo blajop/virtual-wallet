@@ -51,7 +51,7 @@ const ButtonBlack = React.forwardRef(function ButtonBlack(
             paddingX: "2rem",
             color: invert ? "black" : "white",
             backgroundColor: invert ? "white" : "black",
-            borderColor: !invert ? "white" : "black",
+            borderColor: "black",
             textTransform: "none",
             "&:hover": {
               backgroundColor: invert ? "black" : "white",

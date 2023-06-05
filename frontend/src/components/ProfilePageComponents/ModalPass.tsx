@@ -172,10 +172,14 @@ export default function ModalPass(props: Props) {
 
   return (
     <>
-      <Button onClick={handleOpen}>
-        <KeyIcon />
+      <ButtonBlack
+        invert
+        size="medium"
+        sx={{ marginTop: "15px" }}
+        onClick={handleOpen}
+      >
         Change Password
-      </Button>
+      </ButtonBlack>
       <Modal
         open={open}
         onClose={handleClose}
