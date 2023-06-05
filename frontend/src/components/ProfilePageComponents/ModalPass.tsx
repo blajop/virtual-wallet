@@ -5,6 +5,10 @@ import { useEffect, useState } from "react";
 import KeyIcon from "@mui/icons-material/Key";
 import ButtonBlack from "../Buttons/ButtonBlack";
 import DataFieldEdit from "./DataFieldEdit";
+import axios from "axios";
+import { baseUrl } from "../../shared";
+import useValidatePwd from "../../hooks/useValidatePwd";
+import Snackbar from "@mui/material/Snackbar";
 
 const style = {
   position: "absolute" as "absolute",
@@ -20,14 +24,29 @@ const style = {
   pb: 3,
 };
 
-export default function ModalPass() {
+interface Props {
+  username: string;
+}
+
+export default function ModalPass(props: Props) {
+  const username = props.username;
   const [oldPwd, setOldPwd] = useState("");
   const [newPwd, setNewPwd] = useState("");
   const [matchPwd, setMatchPwd] = useState("");
 
+  const [hiddenOldPwd, setHiddenOldPwd] = useState("");
+  const [hiddenNewPwd, setHiddenNewPwd] = useState("");
+  const [hiddenMatchPwd, setHiddenMatchPwd] = useState("");
+
   const [editNewPwd, setEditNewPwd] = useState(false);
   const [editOldPwd, setEditOldPwd] = useState(false);
   const [editMatchPwd, setEditMatchPwd] = useState(false);
+
+  const [alertOldPwd, setAlertOldPwd] = useState(false);
+  const [alertMsgOldPwd, setAlertMsgOldPwd] = useState("");
+  const [alertNewPwd, setAlertNewPwd] = useState(false);
+  const [alertMsgNewPwd, setAlertMsgNewPwd] = useState("");
+  const [alertMatchPwd, setAlertMatchPwd] = useState(false);
 
   const [open, setOpen] = useState(false);
   const handleOpen = () => {
@@ -38,84 +57,118 @@ export default function ModalPass() {
   };
 
   const handleConfirm = () => {
-    setOpen(false);
+    const finalData = {
+      password: newPwd,
+    };
+    axios
+      .put(`${baseUrl}api/v1/users/profile`, finalData, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      })
+      .then((response) => {
+        if (response.status === 200) {
+          console.log("successful pwd change");
+        }
+      })
+      .catch();
+    handleClose();
   };
 
+  // HIDE PWDS
+
+  useEffect(() => {
+    setHiddenOldPwd("•".repeat(oldPwd.length));
+    setHiddenNewPwd("•".repeat(newPwd.length));
+    setHiddenMatchPwd("•".repeat(matchPwd.length));
+  }, [oldPwd, newPwd, matchPwd]);
+
   // OLD PASS VERIFY
-  // useEffect(() => {
-  //   if (username !== "") {
-  //     if (!USERNAME_REGEX.test(username)) {
-  //       setAlertUsername(true);
-  //       setAlertMsgUsername("Username should be [2,20] chars long");
-  //     } else {
-  //       setAlertUsername(false);
-  //       setAlertMsgUsername("");
+  useEffect(() => {
+    if (oldPwd !== "") {
+      const data = new URLSearchParams();
+      data.append("username", username);
+      data.append("password", oldPwd);
 
-  //       axios
-  //         .get(`${baseUrl}api/v1/username-unique/${username}`)
-  //         .then((response) => {
-  //           if (response.status === 200) {
-  //             setAlertUsername(false);
-  //             setAlertMsgUsername("");
-  //           }
-  //         })
-  //         .catch(() => {
-  //           setAlertUsername(true);
-  //           setAlertMsgUsername("Username is already taken");
-  //         });
-  //     }
-  //   } else {
-  //     setAlertUsername(false);
-  //     setAlertMsgUsername("");
-  //   }
-  // }, [username]);
+      axios
+        .post(`${baseUrl}api/v1/login/access-token`, data, {
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        })
+        .then((response) => {
+          if (response.status === 200) {
+            setAlertOldPwd(false);
+            setAlertMsgOldPwd("");
+          }
+        })
+        .catch(() => {
+          setAlertOldPwd(true);
+          setAlertMsgOldPwd("Incorrect old password");
+        });
+    }
+  }, [oldPwd]);
 
-  // CUSTOM HOOK PASSWORD
-  //  useValidatePwd(
-  //   password,
-  //   [
-  //     alertPwd,
-  //     (value: boolean) => {
-  //       setAlertPwd(value);
-  //       return value;
-  //     },
-  //   ],
-  //   [
-  //     alertMsgPwd,
-  //     (value: string) => {
-  //       setAlertMsgPwd(value);
-  //       return value;
-  //     },
-  //   ]
-  // );
+  //  HOOK NEW PASSWORD
+  useValidatePwd(
+    newPwd,
+    [
+      alertNewPwd,
+      (value: boolean) => {
+        setAlertNewPwd(value);
+        return value;
+      },
+    ],
+    [
+      alertMsgNewPwd,
+      (value: string) => {
+        setAlertMsgNewPwd(value);
+        return value;
+      },
+    ]
+  );
 
   // PASSWORD MATCH TEST
-  // useEffect(() => {
-  //   if (
-  //     confirmPass != "" &&
-  //     formReg["password"] != "" &&
-  //     confirmPass != formReg["password"]
-  //   ) {
-  //     setalertConfirmPass(true);
-  //   } else {
-  //     setalertConfirmPass(false);
-  //   }
-  // }, [confirmPass, formReg["password"]]);
+  useEffect(() => {
+    if (matchPwd != "" && newPwd != "" && matchPwd != newPwd) {
+      setAlertMatchPwd(true);
+    } else {
+      setAlertMatchPwd(false);
+    }
+  }, [matchPwd, newPwd]);
 
   const [canSubmit, setCanSubmit] = useState(true);
 
-  // useEffect(() => {
-  //   const conditions = [
-
-  //   ];
-  //   if (conditions.every((element) => element === false)) {
-  //     setCanSubmit(true);
-  //   } else {
-  //     setCanSubmit(false);
-  //   }
-  // }, [
-
-  // ]);
+  // CAN SUBMIT TEST
+  useEffect(() => {
+    const conditions = [
+      alertOldPwd,
+      alertNewPwd,
+      alertMatchPwd,
+      editOldPwd,
+      editNewPwd,
+      editMatchPwd,
+    ];
+    const conditions2 = [oldPwd, newPwd, matchPwd];
+    if (
+      conditions.every((element) => element === false) &&
+      conditions2.every((element) => element != "")
+    ) {
+      setCanSubmit(true);
+    } else {
+      setCanSubmit(false);
+    }
+  }, [
+    alertOldPwd,
+    alertNewPwd,
+    alertMatchPwd,
+    editOldPwd,
+    editNewPwd,
+    editMatchPwd,
+    oldPwd,
+    newPwd,
+    matchPwd,
+  ]);
 
   return (
     <>
@@ -132,7 +185,7 @@ export default function ModalPass() {
         <Box sx={{ ...style, width: 300 }}>
           <DataFieldEdit
             data={[
-              "",
+              hiddenOldPwd,
               (value: string) => {
                 setOldPwd(value);
                 return value;
@@ -147,13 +200,13 @@ export default function ModalPass() {
             ]}
             label="Old Password"
             icon="password"
-            alert={false}
-            alertMsg={""}
+            alert={alertOldPwd}
+            alertMsg={alertMsgOldPwd}
           ></DataFieldEdit>
 
           <DataFieldEdit
             data={[
-              "",
+              hiddenNewPwd,
               (value: string) => {
                 setNewPwd(value);
                 return value;
@@ -168,13 +221,13 @@ export default function ModalPass() {
             ]}
             label="New Password"
             icon="password"
-            alert={false}
-            alertMsg={""}
+            alert={alertNewPwd}
+            alertMsg="New Password"
           ></DataFieldEdit>
 
           <DataFieldEdit
             data={[
-              "",
+              hiddenMatchPwd,
               (value: string) => {
                 setMatchPwd(value);
                 return value;
@@ -189,9 +242,26 @@ export default function ModalPass() {
             ]}
             label="Confirm New Password"
             icon="password"
-            alert={false}
-            alertMsg={""}
+            alert={alertMatchPwd}
+            alertMsg={"Passwords do not match"}
           ></DataFieldEdit>
+
+          <Snackbar
+            anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+            open={alertNewPwd}
+            // onClose={() => (alertNewPwd = false)}
+            message={alertMsgNewPwd}
+            key={"bottom" + "center"}
+            ContentProps={{
+              sx: {
+                display: "flex",
+                color: "white",
+                fontWeight: "700",
+                justifyContent: "center",
+                backgroundColor: "black",
+              },
+            }}
+          />
           <ButtonBlack
             size="medium"
             sx={{ width: "100%" }}

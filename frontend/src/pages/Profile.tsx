@@ -47,6 +47,7 @@ export default function Profile() {
 
   const [firstName, setFirstName] = useState<string>("");
   const [lastName, setLastName] = useState<string>("");
+  const [username, setUsername] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [phone, setPhone] = useState<string>("");
   const [wallets, setWallets] = useState<Wallet[]>([]);
@@ -74,6 +75,7 @@ export default function Profile() {
         if (response.status === 200) {
           setFirstName(response.data.f_name);
           setLastName(response.data.l_name);
+          setUsername(response.data.username);
           setEmail(response.data.email);
           setPhone(response.data.phone);
 
@@ -181,6 +183,7 @@ export default function Profile() {
               return value;
             },
           ]}
+          username={username}
           email={[
             email,
             (value: string) => {
