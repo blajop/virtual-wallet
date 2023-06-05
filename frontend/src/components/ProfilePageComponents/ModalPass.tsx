@@ -33,6 +33,10 @@ export default function ModalPass(props: Props) {
   const [newPwd, setNewPwd] = useState("");
   const [matchPwd, setMatchPwd] = useState("");
 
+  const [hiddenOldPwd, setHiddenOldPwd] = useState("");
+  const [hiddenNewPwd, setHiddenNewPwd] = useState("");
+  const [hiddenMatchPwd, setHiddenMatchPwd] = useState("");
+
   const [editNewPwd, setEditNewPwd] = useState(false);
   const [editOldPwd, setEditOldPwd] = useState(false);
   const [editMatchPwd, setEditMatchPwd] = useState(false);
@@ -42,7 +46,6 @@ export default function ModalPass(props: Props) {
   const [alertNewPwd, setAlertNewPwd] = useState(false);
   const [alertMsgNewPwd, setAlertMsgNewPwd] = useState("");
   const [alertMatchPwd, setAlertMatchPwd] = useState(false);
-  const [alertMsgMatchPwd, setAlertMsgMatchPwd] = useState("");
 
   const [open, setOpen] = useState(false);
   const handleOpen = () => {
@@ -70,6 +73,14 @@ export default function ModalPass(props: Props) {
       .catch();
     handleClose();
   };
+
+  // HIDE PWDS
+
+  useEffect(() => {
+    setHiddenOldPwd("•".repeat(oldPwd.length));
+    setHiddenNewPwd("•".repeat(newPwd.length));
+    setHiddenMatchPwd("•".repeat(matchPwd.length));
+  }, [oldPwd, newPwd, matchPwd]);
 
   // OLD PASS VERIFY
   useEffect(() => {
@@ -173,7 +184,7 @@ export default function ModalPass(props: Props) {
         <Box sx={{ ...style, width: 300 }}>
           <DataFieldEdit
             data={[
-              "",
+              hiddenOldPwd,
               (value: string) => {
                 setOldPwd(value);
                 return value;
@@ -194,7 +205,7 @@ export default function ModalPass(props: Props) {
 
           <DataFieldEdit
             data={[
-              "",
+              hiddenNewPwd,
               (value: string) => {
                 setNewPwd(value);
                 return value;
@@ -215,7 +226,7 @@ export default function ModalPass(props: Props) {
 
           <DataFieldEdit
             data={[
-              "",
+              hiddenMatchPwd,
               (value: string) => {
                 setMatchPwd(value);
                 return value;
