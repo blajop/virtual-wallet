@@ -39,10 +39,10 @@ type UserResponse = {
 export default function Profile() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState<boolean>(false);
-  const [refreshFriends, setRefreshFriends] = useState<string>();
+  const [refreshFriends, setRefreshFriends] = useState<boolean>(false);
 
   const handleRefreshFriends = () => {
-    setRefreshFriends("a");
+    setRefreshFriends(!refreshFriends);
   };
 
   const [firstName, setFirstName] = useState<string>("");
@@ -261,7 +261,7 @@ export default function Profile() {
             }}
           >
             <FriendBox
-              refreshFriends={refreshFriends!}
+              refreshFriends={refreshFriends}
               handleRefreshFriends={handleRefreshFriends}
               email={email}
             />

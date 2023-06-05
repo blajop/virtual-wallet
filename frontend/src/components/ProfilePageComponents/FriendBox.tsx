@@ -27,7 +27,7 @@ export default function FriendBox({
   handleRefreshFriends,
 }: {
   email: string;
-  refreshFriends: string;
+  refreshFriends: boolean;
   handleRefreshFriends: () => void;
 }) {
   const [friends, setFriends] = useState<Friends>();
