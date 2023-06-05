@@ -71,7 +71,10 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
 
         return user_orm
 
-    def get_multi(self, db: Session, identifier: str) -> Optional[User]:
+    def get_multi(self, db: Session, identifier: str | None) -> Optional[User]:
+        if not identifier:
+            return db.exec(select(User)).unique().all()
+
         search_query = f"%{identifier}%"
 
         return (

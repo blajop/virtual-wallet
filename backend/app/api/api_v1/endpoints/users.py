@@ -14,7 +14,7 @@ router = APIRouter()
 
 @router.get("", response_model=list[User])
 def search_users(
-    identifier: str,
+    identifier: str = None,
     db: Session = Depends(deps.get_db),
     logged_user: User = Depends(deps.get_current_user),
 ):
