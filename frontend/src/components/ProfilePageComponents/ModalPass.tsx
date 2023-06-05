@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import KeyIcon from "@mui/icons-material/Key";
 import ButtonBlack from "../Buttons/ButtonBlack";
 import DataFieldEdit from "./DataFieldEdit";
+import axios from "axios";
+import { baseUrl } from "../../shared";
 
 const style = {
   position: "absolute" as "absolute",
@@ -20,7 +22,12 @@ const style = {
   pb: 3,
 };
 
-export default function ModalPass() {
+interface Props {
+  username: string;
+}
+
+export default function ModalPass(props: Props) {
+  const username = props.username;
   const [oldPwd, setOldPwd] = useState("");
   const [newPwd, setNewPwd] = useState("");
   const [matchPwd, setMatchPwd] = useState("");
@@ -28,6 +35,13 @@ export default function ModalPass() {
   const [editNewPwd, setEditNewPwd] = useState(false);
   const [editOldPwd, setEditOldPwd] = useState(false);
   const [editMatchPwd, setEditMatchPwd] = useState(false);
+
+  const [alertOldPwd, setAlertOldPwd] = useState(false);
+  const [alertMsgOldPwd, setAlertMsgOldPwd] = useState("");
+  const [alertNewPwd, setAlertNewPwd] = useState(false);
+  const [alertMsgNewPwd, setAlertMsgNewPwd] = useState("");
+  const [alertMatchPwd, setAlertMatchPwd] = useState(false);
+  const [alertMsgMatchPwd, setAlertMsgMatchPwd] = useState("");
 
   const [open, setOpen] = useState(false);
   const handleOpen = () => {
@@ -42,33 +56,30 @@ export default function ModalPass() {
   };
 
   // OLD PASS VERIFY
-  // useEffect(() => {
-  //   if (username !== "") {
-  //     if (!USERNAME_REGEX.test(username)) {
-  //       setAlertUsername(true);
-  //       setAlertMsgUsername("Username should be [2,20] chars long");
-  //     } else {
-  //       setAlertUsername(false);
-  //       setAlertMsgUsername("");
+  useEffect(() => {
+    if (oldPwd !== "") {
+      const data = new URLSearchParams();
+      data.append("username", username);
+      data.append("password", oldPwd);
 
-  //       axios
-  //         .get(`${baseUrl}api/v1/username-unique/${username}`)
-  //         .then((response) => {
-  //           if (response.status === 200) {
-  //             setAlertUsername(false);
-  //             setAlertMsgUsername("");
-  //           }
-  //         })
-  //         .catch(() => {
-  //           setAlertUsername(true);
-  //           setAlertMsgUsername("Username is already taken");
-  //         });
-  //     }
-  //   } else {
-  //     setAlertUsername(false);
-  //     setAlertMsgUsername("");
-  //   }
-  // }, [username]);
+      axios
+        .post(`${baseUrl}api/v1/login/access-token`, data, {
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        })
+        .then((response) => {
+          if (response.status === 200) {
+            setAlertOldPwd(false);
+            setAlertMsgOldPwd("");
+          }
+        })
+        .catch(() => {
+          setAlertOldPwd(true);
+          setAlertMsgOldPwd("Incorrect old password");
+        });
+    }
+  }, [oldPwd]);
 
   // CUSTOM HOOK PASSWORD
   //  useValidatePwd(
@@ -147,8 +158,8 @@ export default function ModalPass() {
             ]}
             label="Old Password"
             icon="password"
-            alert={false}
-            alertMsg={""}
+            alert={alertOldPwd}
+            alertMsg={alertMsgOldPwd}
           ></DataFieldEdit>
 
           <DataFieldEdit

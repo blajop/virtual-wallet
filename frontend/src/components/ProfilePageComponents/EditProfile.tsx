@@ -36,6 +36,7 @@ type dataState = [string, (e: string) => string];
 interface Props {
   firstName: dataState;
   lastName: dataState;
+  username: string;
   email: dataState;
   phone: dataState;
 }
@@ -43,6 +44,7 @@ interface Props {
 export default function EditProfile(props: Props) {
   const [firstName, setFirstName] = props.firstName;
   const [lastName, setLastName] = props.lastName;
+  const username = props.username;
   const [email, setEmail] = props.email;
   const [phone, setPhone] = props.phone;
 
@@ -301,7 +303,7 @@ export default function EditProfile(props: Props) {
               alert={alertPhone}
               alertMsg={alertMsgPhone}
             ></DataFieldEdit>
-            <ModalPass></ModalPass>
+            <ModalPass username={username}></ModalPass>
             <ButtonBlack
               size="medium"
               onClick={handleApply}
