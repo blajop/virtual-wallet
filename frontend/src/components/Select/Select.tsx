@@ -18,19 +18,20 @@ export default function SelectSmall({
   const [allWallets, setAllWallets] = React.useState<Wallet[]>([]);
 
   React.useEffect(() => {
-    axios
-      .get<Wallet[]>(apiUrl + `users/${username}/wallets`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.token}`,
-        },
-      })
-      .then((response) => {
-        setAllWallets(response.data);
-        if (response.data.length > 0) {
-          setWallet(response.data[0]);
-          setSelectedWalletId(response.data[0].id);
-        }
-      });
+    if (username)
+      axios
+        .get<Wallet[]>(apiUrl + `users/${username}/wallets`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.token}`,
+          },
+        })
+        .then((response) => {
+          setAllWallets(response.data);
+          if (response.data.length > 0) {
+            setWallet(response.data[0]);
+            setSelectedWalletId(response.data[0].id);
+          }
+        });
   }, [username]);
 
   const handleChange = (event: SelectChangeEvent<string>) => {

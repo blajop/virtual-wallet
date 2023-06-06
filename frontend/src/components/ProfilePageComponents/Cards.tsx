@@ -21,7 +21,6 @@ function Cards({
   return (
     <Card
       sx={{
-        minWidth: 500,
         padding: "1rem",
         backgroundColor: "white",
         display: "flex",

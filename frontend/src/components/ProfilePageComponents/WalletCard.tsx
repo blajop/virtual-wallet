@@ -47,16 +47,18 @@ export default function WalletCard(props: CardProps) {
     baseUrl + `api/v1/users/${username}/wallets/${walletId}/leeches`;
 
   useEffect(() => {
-    if (username) {
-      axios
-        .get(requestUrl, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        })
-        .then((response) => {
-          setLeeches(response.data);
-        });
+    if (walletId) {
+      if (username) {
+        axios
+          .get(requestUrl, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          })
+          .then((response) => {
+            setLeeches(response.data);
+          });
+      }
     }
   }, [walletId]);
 
@@ -138,9 +140,9 @@ export default function WalletCard(props: CardProps) {
 
           <AvatarGroup max={4}>
             {leeches.map((leech, index) => (
-              <Tooltip title={`${leech.f_name} ${leech.l_name}`}>
+              <Tooltip key={index} title={`${leech.f_name} ${leech.l_name}`}>
                 <Avatar
-                  key={index}
+                  key={leech.id}
                   alt={leech.username}
                   sx={{ height: "28px", width: "28px" }}
                   src={`${baseUrl}static/avatars/${leech.id}.png`}

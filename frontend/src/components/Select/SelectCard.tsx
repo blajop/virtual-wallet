@@ -29,17 +29,18 @@ export default function SelectCard({
   };
 
   React.useEffect(() => {
-    axios
-      .get(apiUrl + `cards/user/${username}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((response) => {
-        setAllCards(response.data);
-        if (response.data.length > 0) {
-          setCard(response.data[0]);
-          setSelectedCardId(response.data[0].id); // Set the ID of the first card as the default
-        }
-      });
+    if (username)
+      axios
+        .get(apiUrl + `cards/user/${username}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((response) => {
+          setAllCards(response.data);
+          if (response.data.length > 0) {
+            setCard(response.data[0]);
+            setSelectedCardId(response.data[0].id); // Set the ID of the first card as the default
+          }
+        });
   }, [username]);
 
   return (

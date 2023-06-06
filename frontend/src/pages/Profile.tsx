@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { baseUrl } from "../shared.js";
 import WalletCard from "../components/ProfilePageComponents/WalletCard.js";
 import SelectSmall from "../components/Select/Select";
-import { Paper } from "@mui/material";
+import { Grid, Paper } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import CircularLoading from "../components/CircularLoading.js";
 import FriendBox from "../components/ProfilePageComponents/FriendBox.js";
@@ -14,6 +14,7 @@ import CustomAvatar from "../components/Icons/CustomAvatar.tsx";
 import EditProfile from "../components/ProfilePageComponents/EditProfile.tsx";
 import Cards from "../components/ProfilePageComponents/Cards.tsx";
 import SelectCard from "../components/Select/SelectCard.tsx";
+import TransactionHistory from "../components/ProfilePageComponents/TransactionHistory.tsx";
 
 export type Wallet = {
   id: string;
@@ -107,9 +108,6 @@ export default function Profile() {
     getUser();
   }, []);
 
-  //   Update wallet
-  useEffect(() => {}, [wallet]);
-
   return (
     <Container
       sx={{
@@ -175,76 +173,63 @@ export default function Profile() {
         />
       </Paper>
       {/* WALLETS  */}
-      <Container
-        sx={{
-          display: "flex",
-          flexWrap: "wrap",
-          alignItems: "flex-start",
-          gap: "20px",
-          padding: "0 !important",
-        }}
-      >
-        <>
-          <Box
+      <Grid container spacing={2}>
+        <Grid item xs={12} md={6}>
+          <Paper
+            elevation={2}
             sx={{
               display: "flex",
               flexDirection: "column",
-              flex: "1 !important",
-              height: "100% !important",
+              justifyContent: "center",
+              backgroundColor: "white",
+              height: "auto",
+              width: "auto",
+              padding: "20px",
             }}
           >
-            <Paper
-              elevation={2}
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                backgroundColor: "white",
-                height: "auto",
-                width: "auto",
-                padding: "20px",
-              }}
-            >
-              {loading ? (
-                <CircularLoading />
-              ) : (
-                <>
-                  <WalletCard
-                    username={email}
-                    walletId={wallet?.id ?? ""}
-                    currency={wallet?.currency.toUpperCase()}
-                    balance={wallet?.balance.toFixed(2)}
-                    walletName={wallet?.name || "Wallet"}
-                  />
-
-                  <SelectSmall
-                    username={username}
-                    setWallet={handleSelectWallet}
-                  />
-                </>
-              )}
-              {/* CARDS */}
-              <br />
-              {card && (
-                <Cards
-                  holder={card.holder}
-                  number={card.number}
-                  exp={new Date(card.expiry)}
+            {loading ? (
+              <CircularLoading />
+            ) : (
+              <>
+                <WalletCard
+                  username={email}
+                  walletId={wallet?.id ?? ""}
+                  currency={wallet?.currency.toUpperCase()}
+                  balance={wallet?.balance.toFixed(2)}
+                  walletName={wallet?.name || "Wallet"}
                 />
-              )}
-              <SelectCard
-                username={username}
-                token={localStorage.token}
-                setCard={handleSelectCard}
+
+                <SelectSmall
+                  username={username}
+                  setWallet={handleSelectWallet}
+                />
+              </>
+            )}
+            {/* CARDS */}
+            <br />
+            {card && (
+              <Cards
+                holder={card.holder}
+                number={card.number}
+                exp={new Date(card.expiry)}
               />
-            </Paper>
-          </Box>
-          <Box
+            )}
+            <SelectCard
+              username={username}
+              token={localStorage.token}
+              setCard={handleSelectCard}
+            />
+          </Paper>
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <Paper
+            elevation={2}
             sx={{
               display: "flex",
               flexDirection: "column",
-              flex: "1 !important",
               height: "100% !important",
+              width: "auto",
+              padding: "20px",
             }}
           >
             <FriendBox
@@ -253,32 +238,10 @@ export default function Profile() {
               email={email}
             />
             <br></br>
-            <Paper
-              elevation={2}
-              sx={{
-                display: "flex !important",
-                flexDirection: "column",
-                justifyContent: "center",
-                backgroundColor: "white",
-                height: "100% !important",
-                width: "auto",
-                padding: "20px",
-                flex: "1 !important",
-              }}
-            >
-              {wallet && (
-                <WalletCard
-                  username={email}
-                  walletId={wallet.id}
-                  currency={wallet.currency.toUpperCase()}
-                  balance={wallet.balance.toFixed(2)}
-                  walletName={wallet.name || "Wallet"}
-                />
-              )}
-            </Paper>
-          </Box>
-        </>
-      </Container>
+            <TransactionHistory />
+          </Paper>
+        </Grid>
+      </Grid>
     </Container>
   );
 }
