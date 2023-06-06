@@ -12,6 +12,8 @@ import CircularLoading from "../components/CircularLoading.js";
 import FriendBox from "../components/ProfilePageComponents/FriendBox.js";
 import CustomAvatar from "../components/Icons/CustomAvatar.tsx";
 import EditProfile from "../components/ProfilePageComponents/EditProfile.tsx";
+import Cards from "../components/ProfilePageComponents/Cards.tsx";
+import SelectCard from "../components/Select/SelectCard.tsx";
 
 export type Wallet = {
   id: string;
@@ -29,11 +31,20 @@ export type DefWallet = {
 
 type WalletResponse = Wallet[];
 
+export type Card = {
+  number: string;
+  expiry: string;
+  holder: string;
+  cvc: string;
+  id: string;
+};
+
 type UserResponse = {
   f_name: string;
   l_name: string;
   email: string;
   phone: string;
+  username: string;
 };
 
 export default function Profile() {
@@ -52,9 +63,15 @@ export default function Profile() {
   const [phone, setPhone] = useState<string>("");
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [wallet, setWallet] = useState<Wallet | undefined>();
+  const [card, setCard] = useState<Card | undefined>();
+  const [cards, setCards] = useState<Card[]>([]);
 
   const handleSelectWallet = (wallet: Wallet | undefined) => {
     setWallet(wallet);
+  };
+
+  const handleSelectCard = (card: Card | undefined) => {
+    setCard(card);
   };
 
   useEffect(() => {
@@ -80,8 +97,6 @@ export default function Profile() {
           setPhone(response.data.phone);
 
           setLoading(true);
-          await getWallets(response.data.email);
-          await getDefaultWallet(response.data.email);
         }
       } catch (error) {
         navigate("/");
@@ -94,44 +109,6 @@ export default function Profile() {
 
     getUser();
   }, []);
-  //   GET WALLETS
-  const getWallets = async (email: string) => {
-    try {
-      const response = await axios.get<WalletResponse>(
-        baseUrl + `api/v1/users/${email}/wallets`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-
-      if (response.status === 200) {
-        setWallets(response.data);
-      }
-    } catch (error) {
-      // Handle error
-    }
-  };
-  //   GET DEFAULT WALLET
-  const getDefaultWallet = async (email: string) => {
-    try {
-      const response = await axios.get<DefWallet>(
-        baseUrl + `api/v1/users/${email}/wallets/default`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-
-      if (response.status === 200) {
-        setWallet(response.data);
-      }
-    } catch (error) {
-      // Handle error
-    }
-  };
 
   //   Update wallet
   useEffect(() => {}, [wallet]);
@@ -204,13 +181,21 @@ export default function Profile() {
       <Container
         sx={{
           display: "flex",
+          flexWrap: "wrap",
           alignItems: "flex-start",
           gap: "20px",
           padding: "0 !important",
         }}
       >
         <>
-          <Box>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              flex: "1 !important",
+              height: "100% !important",
+            }}
+          >
             <Paper
               elevation={2}
               sx={{
@@ -236,23 +221,25 @@ export default function Profile() {
                   />
 
                   <SelectSmall
-                    wallets={wallets}
+                    username={username}
                     setWallet={handleSelectWallet}
                   />
                 </>
               )}
               {/* CARDS */}
               <br />
-              {wallet && (
-                <WalletCard
-                  username={email}
-                  walletId={wallet.id}
-                  currency={wallet.currency.toUpperCase()}
-                  balance={wallet.balance.toFixed(2)}
-                  walletName={wallet.name || "Wallet"}
+              {card && (
+                <Cards
+                  holder={card.holder}
+                  number={card.number}
+                  exp={new Date(card.expiry)}
                 />
               )}
-              <SelectSmall wallets={wallets} setWallet={handleSelectWallet} />
+              <SelectCard
+                username={username}
+                token={localStorage.token}
+                setCard={handleSelectCard}
+              />
             </Paper>
           </Box>
           <Box
@@ -291,7 +278,6 @@ export default function Profile() {
                   walletName={wallet.name || "Wallet"}
                 />
               )}
-              <SelectSmall wallets={wallets} setWallet={handleSelectWallet} />
             </Paper>
           </Box>
         </>
