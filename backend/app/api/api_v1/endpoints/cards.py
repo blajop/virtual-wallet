@@ -33,6 +33,18 @@ def get_cards(
     return crud.card.get_multi(db, skip=skip, limit=limit, user=logged_user)
 
 
+@router.get("/user/{username}")
+def get_by_owner(
+    username: str,
+    db: Session = Depends(deps.get_db),
+    logged_user: Session = Depends(deps.get_current_user),
+):
+    if logged_user.username != username:
+        raise HTTPException(status_code=403)
+
+    return crud.card.get_by_owner(db, logged_user)
+
+
 @router.post("", response_model=CardShow)
 def add_card(
     new_card: CardCreate,
