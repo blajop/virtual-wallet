@@ -42,8 +42,8 @@ interface Props {
 }
 
 export default function EditProfile(props: Props) {
-  const [firstName, setFirstName] = props.firstName;
-  const [lastName, setLastName] = props.lastName;
+  const [, setFirstName] = props.firstName;
+  const [, setLastName] = props.lastName;
   const username = props.username;
   const [email, setEmail] = props.email;
   const [phone, setPhone] = props.phone;
@@ -58,8 +58,8 @@ export default function EditProfile(props: Props) {
   const [editEmail, setEditEmail] = useState(false);
   const [editPhone, setEditPhone] = useState(false);
 
-  const [, setPwd] = useState("");
-  const [editPwd, setEditPwd] = useState(false);
+  // const [, setPwd] = useState("");
+  // const [editPwd, setEditPwd] = useState(false);
 
   const setEdit = [
     setEditFirstName,

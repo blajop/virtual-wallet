@@ -29,8 +29,6 @@ export type DefWallet = {
   balance: number;
 };
 
-type WalletResponse = Wallet[];
-
 export type Card = {
   number: string;
   expiry: string;
@@ -61,10 +59,9 @@ export default function Profile() {
   const [username, setUsername] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [phone, setPhone] = useState<string>("");
-  const [wallets, setWallets] = useState<Wallet[]>([]);
+
   const [wallet, setWallet] = useState<Wallet | undefined>();
   const [card, setCard] = useState<Card | undefined>();
-  const [cards, setCards] = useState<Card[]>([]);
 
   const handleSelectWallet = (wallet: Wallet | undefined) => {
     setWallet(wallet);
