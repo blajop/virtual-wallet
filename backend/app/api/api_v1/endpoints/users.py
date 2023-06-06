@@ -56,7 +56,7 @@ def update_profile(
     return crud.user.update(db=db, db_obj=logged_user, obj_in=edit)
 
 
-@router.get("/{identifier}", response_model=UserBase)
+@router.get("/{identifier}", response_model=User)
 def get_user(
     identifier: str,
     db: Session = Depends(deps.get_db),

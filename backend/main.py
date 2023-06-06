@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from apscheduler.schedulers.background import BackgroundScheduler
+from fastapi_pagination import add_pagination
 import uvicorn
 
 from app.core import settings
@@ -35,6 +36,8 @@ app.add_middleware(
 #     scheduler = BackgroundScheduler()
 #     scheduler.add_job(_init_data, "cron", hour=8)
 #     scheduler.start()
+
+add_pagination(app)
 
 app.mount("/static", StaticFiles(directory="./app/static"), name="static")
 

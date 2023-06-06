@@ -8,15 +8,14 @@ from app.error_models import TransactionError
 from app.error_models.transaction_errors import TransactionPermissionError
 from app.models import User, Transaction, TransactionCreate
 from app.models.msg import Msg
-
+from fastapi_pagination import Page, Params
 
 router = APIRouter()
 
 
-@router.get("", response_model=list[Transaction])
+@router.get("", response_model=Page[Transaction])
 def get_transactions(
-    skip: int = 0,
-    limit: int = 100,
+    params: Params = Depends(),
     db: Session = Depends(deps.get_db),
     logged_user: User = Depends(deps.get_current_user),
     from_date: datetime = datetime.now() - timedelta(weeks=4.0),
@@ -24,12 +23,10 @@ def get_transactions(
     recipient: str = None,
     direction: str = "all",
     sort_by: str = "date",
-    sort: str = "asc",
+    sort: str = "desc",
 ):
     return crud.transaction.get_multi(
         db,
-        skip=skip,
-        limit=limit,
         user=logged_user,
         from_date=from_date,
         to_date=to_date,

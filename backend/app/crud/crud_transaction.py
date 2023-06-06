@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from typing import List, Optional, Union
 from sqlmodel import Session, String, cast, or_, select, desc, func, DateTime, asc
 from sqlalchemy import exc as sqlExc
-
+from fastapi_pagination.ext.sqlmodel import paginate
 
 from app import crud
 from app.crud.base import CRUDBase
@@ -47,8 +47,6 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
         self,
         db: Session,
         *,
-        skip: int = 0,
-        limit: int = 100,
         user: Optional[User],
         from_date: datetime = datetime.now() - timedelta(weeks=4.0),
         to_date: datetime = datetime.now(),
@@ -84,20 +82,13 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
                 else True,
             )
         )
-        return (
-            db.exec(
-                selectable.order_by(
-                    (desc if (sort == "desc") else asc)(
-                        Transaction.amount
-                        if sort_by == "amount"
-                        else Transaction.created
-                    )
+        return paginate(
+            db,
+            selectable.order_by(
+                (desc if (sort == "desc") else asc)(
+                    Transaction.amount if sort_by == "amount" else Transaction.created
                 )
-                .offset(skip)
-                .limit(limit)
-            )
-            .unique()
-            .all()
+            ),
         )
 
     def get_recurring(self, db: Session):
