@@ -238,7 +238,7 @@ export default function Profile() {
               email={email}
             />
             <br></br>
-            <TransactionHistory />
+            <TransactionHistory username={username} />
           </Paper>
         </Grid>
       </Grid>
