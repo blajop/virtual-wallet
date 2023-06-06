@@ -4,6 +4,7 @@ import Typography from "@mui/material/Typography";
 import AvatarBox from "./AvatarBox";
 import blago from "../../assets/images/blago.png";
 import stani from "../../assets/images/stani.png";
+import Footer from "../Footer";
 
 export default function AboutUs() {
   const jumpEffectStyle = {
@@ -31,7 +32,7 @@ export default function AboutUs() {
   };
 
   return (
-    <>
+    <Box>
       <Container
         id="contact"
         maxWidth={"sm"}
@@ -90,6 +91,7 @@ export default function AboutUs() {
           </Typography>
         </Box>
       </Container>
-    </>
+      <Footer />
+    </Box>
   );
 }
