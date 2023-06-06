@@ -288,7 +288,7 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
     ) -> Msg | TransactionError | TransactionPermissionError:
         if user.id != transaction.receiving_user:
             raise TransactionPermissionError(
-                "You are not the receiver of the transaction and cannot confirm it"
+                "You are not the receiver of the transaction and cannot decline it"
             )
 
         if transaction.status != "pending":

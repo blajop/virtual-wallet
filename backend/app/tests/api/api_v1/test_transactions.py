@@ -327,10 +327,10 @@ def test_confirm_transaction_returns400_when_transactionAlreadyConfirmed(
     response = client.get(confirmation_link)
     data = response.json()
     assert response.status_code == 400
-    data["detail"] == "Already accepted"
+    assert data["detail"] == "Already accepted"
 
 
-def test_confirm_transaction_returns400_when_confirmationIsAttemptedByNonReceiverUser(
+def test_confirm_transaction_returns403_when_confirmationIsAttemptedByNonReceiverUser(
     session: Session, client: TestClient, user, admin
 ):
     # Arrange
@@ -357,7 +357,7 @@ def test_confirm_transaction_returns400_when_confirmationIsAttemptedByNonReceive
     )
     transaction_id = response.json()["id"]
 
-    # Confirm it by non-receiving user and 400 should be returned
+    # Confirm it by non-receiving user and 403 should be returned
     token_transaction = utils.util_mail.generate_id_link_token(transaction_id)
     token_recipient = utils.util_mail.generate_id_link_token(user().id)
     confirmation_link = (
@@ -366,9 +366,95 @@ def test_confirm_transaction_returns400_when_confirmationIsAttemptedByNonReceive
     response = client.get(confirmation_link)
     data = response.json()
     assert response.status_code == 403
-    data[
-        "detail"
-    ] == "You are not the receiver of the transaction and cannot confirm it"
+    assert (
+        data["detail"]
+        == "You are not the receiver of the transaction and cannot confirm it"
+    )
+
+
+def test_decline_transaction_works_when_allOk(
+    session: Session, client: TestClient, user, admin
+):
+    # Arrange
+    currency_EUR = Currency(currency="EUR", rate=0.9)
+    currency_BGN = Currency(currency="BGN", rate=1.8)
+    currency_USD = Currency(currency="USD", rate=1)
+    wallet_s = random_wallet(user(), "BGN", balance=100)
+    wallet_r = random_wallet(admin(), "EUR", balance=100)
+    session.add_all([wallet_s, wallet_r, currency_EUR, currency_BGN, currency_USD])
+
+    app.dependency_overrides[deps.get_current_user] = user
+
+    transaction_1 = TransactionCreate(
+        wallet_sender=wallet_s.id,
+        wallet_receiver=wallet_r.id,
+        receiving_user=admin().id,
+        currency="BGN",
+        amount=50,
+    )
+
+    # Create the transaction
+    response = client.post(
+        f"/api/v1/transactions", json=jsonable_encoder(transaction_1)
+    )
+    transaction_id = response.json()["id"]
+
+    # Act
+    token_transaction = utils.util_mail.generate_id_link_token(transaction_id)
+    token_recipient = utils.util_mail.generate_id_link_token(admin().id)
+    confirmation_link = (
+        f"/api/v1/transactions/{token_transaction}/decline/{token_recipient}"
+    )
+    response = client.get(confirmation_link)
+    data = response.json()
+    assert response.status_code == 200
+
+    transaction_inDB: Transaction = session.exec(
+        select(Transaction).filter(Transaction.id == transaction_id)
+    ).first()
+    assert transaction_inDB.status == "declined"
+
+
+def test_decline_transaction_returns403_when_AttemptedByNonReceiverUser(
+    session: Session, client: TestClient, user, admin
+):
+    # Arrange
+    currency_EUR = Currency(currency="EUR", rate=0.9)
+    currency_BGN = Currency(currency="BGN", rate=1.8)
+    currency_USD = Currency(currency="USD", rate=1)
+    wallet_s = random_wallet(user(), "BGN", balance=100)
+    wallet_r = random_wallet(admin(), "EUR", balance=100)
+    session.add_all([wallet_s, wallet_r, currency_EUR, currency_BGN, currency_USD])
+
+    app.dependency_overrides[deps.get_current_user] = user
+
+    transaction_1 = TransactionCreate(
+        wallet_sender=wallet_s.id,
+        wallet_receiver=wallet_r.id,
+        receiving_user=admin().id,
+        currency="BGN",
+        amount=50,
+    )
+
+    # Create the transaction
+    response = client.post(
+        f"/api/v1/transactions", json=jsonable_encoder(transaction_1)
+    )
+    transaction_id = response.json()["id"]
+
+    # Confirm it by non-receiving user and 403 should be returned
+    token_transaction = utils.util_mail.generate_id_link_token(transaction_id)
+    token_recipient = utils.util_mail.generate_id_link_token(user().id)
+    confirmation_link = (
+        f"/api/v1/transactions/{token_transaction}/decline/{token_recipient}"
+    )
+    response = client.get(confirmation_link)
+    data = response.json()
+    assert response.status_code == 403
+    assert (
+        data["detail"]
+        == "You are not the receiver of the transaction and cannot decline it"
+    )
 
 
 # TEST GET-ONE ------------------------------------
