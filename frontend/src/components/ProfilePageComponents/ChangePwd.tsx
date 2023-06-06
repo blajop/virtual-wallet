@@ -26,7 +26,7 @@ interface Props {
   username: string;
 }
 
-export default function ModalPass(props: Props) {
+export default function ChangePwd(props: Props) {
   const username = props.username;
   const [oldPwd, setOldPwd] = useState("");
   const [newPwd, setNewPwd] = useState("");
