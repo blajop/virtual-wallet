@@ -75,7 +75,7 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
             .filter(
                 Transaction.created > from_date,
                 Transaction.created < to_date,
-                (Transaction.wallet_receiver == recipient) if recipient else True,
+                (Transaction.receiving_user == recipient) if recipient else True,
                 (Transaction.sending_user == user.id)
                 if ((direction == "out") and user)
                 else True,
@@ -110,7 +110,12 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
         return transactions
 
     def create(
-        self, db: Session, *, new_transaction: TransactionCreate, user: User
+        self,
+        db: Session,
+        *,
+        new_transaction: TransactionCreate,
+        user: User,
+        recipient_user: User,
     ) -> Transaction:
         """
         Creates a transaction.
@@ -129,6 +134,15 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
             Transaction : the created transaction.
         """
         user_wallets = crud.wallet.get_multi_by_owner(db, user) + user.wallets
+        recipient_user_wallets = (
+            crud.wallet.get_multi_by_owner(db, recipient_user) + recipient_user.wallets
+        )
+        if new_transaction.wallet_receiver not in [
+            w.id for w in recipient_user_wallets
+        ]:
+            raise TransactionError(
+                "The wallet receiver passed is not associated with the recipient user."
+            )
 
         # If the sender is a wallet
         if (
@@ -195,18 +209,17 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
 
     def accept(
         self, *, db: Session, transaction: Transaction, user: User
-    ) -> Msg | TransactionError:
-        user_wallets_ids = [w.id for w in crud.wallet.get_multi_by_owner(db, user)] + [
-            w.id for w in user.wallets
-        ]
-
-        if transaction.wallet_receiver not in user_wallets_ids:
+    ) -> Msg | TransactionError | TransactionPermissionError:
+        if user.id != transaction.receiving_user:
             raise TransactionPermissionError(
-                "You are not associated with the wallet receiver of the transaction"
+                "You are not the receiver of the transaction and cannot confirm it"
             )
 
         if transaction.status == "success":
             raise TransactionError("Already accepted")
+
+        if transaction.status != "pending":
+            raise TransactionError("Transaction is not with status pending ")
 
         msg = self._finalise(db=db, transaction=transaction)
         transaction.status = "success"
@@ -257,63 +270,6 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
 
         return Msg(msg="Successfully executed transaction")
 
-        # backup code bellow
-
-        ##
-        ##
-        ##
-
-        # if isinstance(sender, Wallet):
-        #     if transaction.currency == sender.currency:
-        #         sender_currency_amount = amount
-        #     else:
-        #         sender_currency_amount = self.currency_exchange(
-        #             db,
-        #             fro=transaction_curr,
-        #             to=sender_curr,
-        #             amount=amount,
-        #         )
-        #         if sender.balance < sender_currency_amount:
-        #             raise TransactionError(
-        #                 "You do not have enough balance in the sender Wallet in order to make the transfer"
-        #             )
-
-        #     if transaction_curr == receiver_curr:
-        #         receiver_currency_amount = amount
-        #     else:
-        #         receiver_currency_amount = self.currency_exchange(
-        #             db, fro=transaction_curr, to=receiver_curr, amount=amount
-        #         )
-
-        #     sender.balance -= sender_currency_amount
-        #     receiver_wallet.balance += receiver_currency_amount
-
-        #     db.commit()
-
-        #     return Msg(msg="Successfully executed transaction")
-
-        # # if the sender is a Card
-        # else:
-        #     if transaction_curr == receiver_curr:
-        #         receiver_currency_amount = amount
-        #     else:
-        #         receiver_currency_amount = self.currency_exchange(
-        #             db, fro=transaction_curr, to=receiver_curr, amount=amount
-        #         )
-
-        #     # logic for confirmation by the recipient
-
-        #     receiver_wallet.balance += receiver_currency_amount
-        #     db.commit()
-
-        #     return Msg(msg="Successfully executed transaction")
-
-        ##
-        ##
-        ##
-
-        # backup code above
-
     def get_currency(self, db: Session, currency_str: str) -> Currency:
         return db.exec(
             select(Currency).filter(Currency.currency == currency_str.upper())
@@ -326,6 +282,24 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
         in_output = in_USD * to.rate
 
         return in_output
+
+    def decline(
+        self, *, db: Session, transaction: Transaction, user: User
+    ) -> Msg | TransactionError | TransactionPermissionError:
+        if user.id != transaction.receiving_user:
+            raise TransactionPermissionError(
+                "You are not the receiver of the transaction and cannot confirm it"
+            )
+
+        if transaction.status != "pending":
+            raise TransactionError("Transaction is not with status pending")
+
+        transaction.status = "declined"
+        transaction.updated = datetime.now()
+
+        db.commit()
+
+        return Msg(msg="Transaction declined")
 
 
 transaction = CRUDTransaction(Transaction)

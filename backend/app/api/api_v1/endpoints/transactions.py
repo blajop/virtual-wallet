@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta
 from typing import Union
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from sqlmodel import Session
 
-from app import crud, deps
+from app import crud, deps, utils
 from app.error_models import TransactionError
 from app.error_models.transaction_errors import TransactionPermissionError
 from app.models import User, Transaction, TransactionCreate
@@ -57,31 +57,78 @@ def get_transaction(
 @router.post("", response_model=Transaction, status_code=201)
 def create_transaction(
     new_transaction: TransactionCreate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(deps.get_db),
     logged_user: User = Depends(deps.get_current_user),
 ):
+    recipient_user = crud.user.get(db, new_transaction.receiving_user)
     try:
-        return crud.transaction.create(
-            db, new_transaction=new_transaction, user=logged_user
+        created_transaction = crud.transaction.create(
+            db,
+            new_transaction=new_transaction,
+            user=logged_user,
+            recipient_user=recipient_user,
         )
     except TransactionError as err:
         raise HTTPException(status_code=400, detail=err.args[0])
 
+    background_tasks.add_task(
+        utils.util_mail.send_confirm_transaction_email,
+        recipient_user.email,
+        created_transaction,
+        logged_user,
+        recipient_user,
+    )
 
-@router.put("/{id}/confirm")
+    return created_transaction
+
+
+@router.get("/{token_transaction}/confirm/{token_recipient}", response_model=Msg)
 def confirm_transaction(
-    id: str,
+    token_transaction: str,
+    token_recipient: str,
     db: Session = Depends(deps.get_db),
-    logged_user: User = Depends(deps.get_current_user),
 ):
-    transaction = crud.transaction.get(db, id, logged_user)
+    transaction_id = utils.util_mail.verify_email_link_token(token_transaction)
+    recipient_id = utils.util_mail.verify_email_link_token(token_recipient)
+
+    recipient_user = crud.user.get(db, recipient_id)
+    transaction = crud.transaction.get(db, transaction_id, recipient_user)
 
     if not transaction:
         raise HTTPException(status_code=404)
 
     try:
         try:
-            crud.transaction.accept(db=db, transaction=transaction, user=logged_user)
+            return crud.transaction.accept(
+                db=db, transaction=transaction, user=recipient_user
+            )
+        except TransactionPermissionError as err:
+            raise HTTPException(status_code=403, detail=err.args[0])
+    except TransactionError as err:
+        raise HTTPException(status_code=400, detail=err.args[0])
+
+
+@router.get("/{token_transaction}/decline/{token_recipient}", response_model=Msg)
+def decline_transaction(
+    token_transaction: str,
+    token_recipient: str,
+    db: Session = Depends(deps.get_db),
+):
+    transaction_id = utils.util_mail.verify_email_link_token(token_transaction)
+    recipient_id = utils.util_mail.verify_email_link_token(token_recipient)
+
+    recipient_user = crud.user.get(db, recipient_id)
+    transaction = crud.transaction.get(db, transaction_id, recipient_user)
+
+    if not transaction:
+        raise HTTPException(status_code=404)
+
+    try:
+        try:
+            return crud.transaction.decline(
+                db=db, transaction=transaction, user=recipient_user
+            )
         except TransactionPermissionError as err:
             raise HTTPException(status_code=403, detail=err.args[0])
     except TransactionError as err:
