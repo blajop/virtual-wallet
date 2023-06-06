@@ -46,6 +46,7 @@ def test_post_transaction_returns400_when_senderWalletNotInUsersWalls(
     app.dependency_overrides[deps.get_current_user] = lambda: user_4
     transaction_1 = TransactionCreate(
         wallet_sender=wallet_s.id,
+        receiving_user=admin().id,
         wallet_receiver=wallet_r.id,
         currency="BGN",
         amount=120,
@@ -73,6 +74,7 @@ def test_post_transaction_returns400_when_notEnoughAmountSameCurr(
 
     transaction_1 = TransactionCreate(
         wallet_sender=wallet_s.id,
+        receiving_user=admin().id,
         wallet_receiver=wallet_r.id,
         currency="BGN",
         amount=120,
@@ -111,6 +113,7 @@ def test_post_transaction_returns400_when_senderCardNotInUsersCards(
     app.dependency_overrides[deps.get_current_user] = user
     transaction_1 = TransactionCreate(
         card_sender=card_db_id,
+        receiving_user=admin().id,
         wallet_receiver=wallet_r.id,
         currency="BGN",
         amount=120,
@@ -136,6 +139,7 @@ def test_post_transaction_returns400_when_senderCardInUsersCardsButWalletReceive
 
     transaction_1 = TransactionCreate(
         card_sender=card_db_id,
+        receiving_user=admin().id,
         wallet_receiver=wallet_r.id,
         currency="BGN",
         amount=120,
@@ -173,6 +177,7 @@ def test_post_transaction_returns400_when_senRecItemsPassedIncorrectly(
     transaction_1 = TransactionCreate(
         card_sender=card_db_id,
         wallet_sender=wallet_s.id,
+        receiving_user=admin().id,
         wallet_receiver=wallet_r.id,
         currency="BGN",
         amount=120,
@@ -186,9 +191,10 @@ def test_post_transaction_returns400_when_senRecItemsPassedIncorrectly(
     assert response.status_code == 400
     assert data["detail"] == "You should pass either valid wallet or valid card sender"
 
-    # Should fail with both params passed
+    # Should fail neither of the params passed
     transaction_2 = TransactionCreate(
         wallet_receiver=wallet_r.id,
+        receiving_user=admin().id,
         currency="BGN",
         amount=120,
     )
@@ -199,21 +205,6 @@ def test_post_transaction_returns400_when_senRecItemsPassedIncorrectly(
     data = response.json()
     assert response.status_code == 400
     assert data["detail"] == "You should pass either valid wallet or valid card sender"
-
-    # Should fail with same wallet_s & wallet_r passed
-    transaction_3 = TransactionCreate(
-        wallet_sender=wallet_s.id,
-        wallet_receiver=wallet_s.id,
-        currency="BGN",
-        amount=120,
-    )
-    # Act
-    response = client.post(
-        f"/api/v1/transactions", json=jsonable_encoder(transaction_3)
-    )
-    data = response.json()
-    assert response.status_code == 400
-    assert data["detail"] == "The sender and receiver wallets are the same"
 
 
 # TRANSACTION ACCEPT & FINALIZATION - WALLET TO WALLET WITH EXCHANGE
@@ -230,10 +221,10 @@ def test_postAndConfirm_transaction_work_when_allOkWithCrossExchange(
     wallet_r = random_wallet(admin(), "EUR", balance=100)
     session.add_all([wallet_s, wallet_r, currency_EUR, currency_BGN, currency_USD])
 
-    # Should fail with both params passed
     transaction_1 = TransactionCreate(
         wallet_sender=wallet_s.id,
         wallet_receiver=wallet_r.id,
+        receiving_user=admin().id,
         currency="USD",
         amount=50,
     )
@@ -261,8 +252,14 @@ def test_postAndConfirm_transaction_work_when_allOkWithCrossExchange(
     assert transaction_inDB.status == "pending"
 
     # Act - confirm the transaction
+    token_transaction = utils.util_mail.generate_id_link_token(transaction_id)
+    token_recipient = utils.util_mail.generate_id_link_token(admin().id)
+    confirmation_link = (
+        f"/api/v1/transactions/{token_transaction}/confirm/{token_recipient}"
+    )
+
     app.dependency_overrides[deps.get_current_user] = admin
-    response = client.put(f"/api/v1/transactions/{transaction_id}/confirm")
+    response = client.get(confirmation_link)
     data = response.json()
     assert response.status_code == 200
 
@@ -301,10 +298,10 @@ def test_confirm_transaction_returns400_when_transactionAlreadyConfirmed(
 
     app.dependency_overrides[deps.get_current_user] = user
 
-    # Should fail with both params passed
     transaction_1 = TransactionCreate(
         wallet_sender=wallet_s.id,
         wallet_receiver=wallet_r.id,
+        receiving_user=admin().id,
         currency="BGN",
         amount=50,
     )
@@ -317,12 +314,17 @@ def test_confirm_transaction_returns400_when_transactionAlreadyConfirmed(
 
     app.dependency_overrides[deps.get_current_user] = admin
     # Confirm it once and update the status to 'success'
-    response = client.put(f"/api/v1/transactions/{transaction_id}/confirm")
+    token_transaction = utils.util_mail.generate_id_link_token(transaction_id)
+    token_recipient = utils.util_mail.generate_id_link_token(admin().id)
+    confirmation_link = (
+        f"/api/v1/transactions/{token_transaction}/confirm/{token_recipient}"
+    )
+    response = client.get(confirmation_link)
     data = response.json()
     assert response.status_code == 200
 
     # Confirm it again and 400 should be returned
-    response = client.put(f"/api/v1/transactions/{transaction_id}/confirm")
+    response = client.get(confirmation_link)
     data = response.json()
     assert response.status_code == 400
     data["detail"] == "Already accepted"
@@ -341,10 +343,10 @@ def test_confirm_transaction_returns400_when_confirmationIsAttemptedByNonReceive
 
     app.dependency_overrides[deps.get_current_user] = user
 
-    # Should fail with both params passed
     transaction_1 = TransactionCreate(
         wallet_sender=wallet_s.id,
         wallet_receiver=wallet_r.id,
+        receiving_user=admin().id,
         currency="BGN",
         amount=50,
     )
@@ -356,12 +358,17 @@ def test_confirm_transaction_returns400_when_confirmationIsAttemptedByNonReceive
     transaction_id = response.json()["id"]
 
     # Confirm it by non-receiving user and 400 should be returned
-    response = client.put(f"/api/v1/transactions/{transaction_id}/confirm")
+    token_transaction = utils.util_mail.generate_id_link_token(transaction_id)
+    token_recipient = utils.util_mail.generate_id_link_token(user().id)
+    confirmation_link = (
+        f"/api/v1/transactions/{token_transaction}/confirm/{token_recipient}"
+    )
+    response = client.get(confirmation_link)
     data = response.json()
     assert response.status_code == 403
     data[
         "detail"
-    ] == "You are not associated with the wallet receiver of the transaction"
+    ] == "You are not the receiver of the transaction and cannot confirm it"
 
 
 # TEST GET-ONE ------------------------------------
@@ -391,6 +398,7 @@ def test_get_transaction_returnsTransaction_when_existingAndUserIsSender(
     transaction_1 = TransactionCreate(
         wallet_sender=wallet_s.id,
         wallet_receiver=wallet_r.id,
+        receiving_user=admin().id,
         currency="BGN",
         amount=120,
     )
@@ -428,6 +436,7 @@ def test_get_transaction_returnsTransaction_when_existingAndUserIsOwnerReceiverW
     transaction_1 = TransactionCreate(
         wallet_sender=wallet_s.id,
         wallet_receiver=wallet_r.id,
+        receiving_user=user().id,
         currency="BGN",
         amount=120,
     )
@@ -465,6 +474,7 @@ def test_get_transaction_returnsTransaction_when_existingAndUserIsParticipantInR
     transaction_1 = TransactionCreate(
         wallet_sender=wallet_s.id,
         wallet_receiver=wallet_r.id,
+        receiving_user=user().id,
         currency="BGN",
         amount=120,
     )
@@ -497,6 +507,7 @@ def test_get_transaction_returns404_when_existingAndUserNotAssociated(
     transaction_1 = TransactionCreate(
         wallet_sender=wallet_s.id,
         wallet_receiver=wallet_r.id,
+        receiving_user=user_3.id,
         currency="BGN",
         amount=120,
     )
@@ -528,6 +539,7 @@ def test_get_transaction_returnsTransaction_when_notAssociatedAndViaAdminPanel(
     transaction_1 = TransactionCreate(
         wallet_sender=wallet_s.id,
         wallet_receiver=wallet_r.id,
+        receiving_user=user_3.id,
         currency="BGN",
         amount=120,
     )
@@ -586,6 +598,7 @@ def test_get_transactions_showsCorrectly_when_viaAdminPanelSortAmount(
     transaction_1 = TransactionCreate(
         wallet_sender=wallet_1.id,
         wallet_receiver=wallet_2.id,
+        receiving_user=admin().id,
         currency="BGN",
         amount=5,
     )
@@ -597,6 +610,7 @@ def test_get_transactions_showsCorrectly_when_viaAdminPanelSortAmount(
     transaction_2 = TransactionCreate(
         wallet_sender=wallet_2.id,
         wallet_receiver=wallet_1.id,
+        receiving_user=user().id,
         currency="BGN",
         amount=10,
     )
@@ -608,6 +622,7 @@ def test_get_transactions_showsCorrectly_when_viaAdminPanelSortAmount(
     transaction_3 = TransactionCreate(
         wallet_sender=wallet_3.id,
         wallet_receiver=wallet_2.id,
+        receiving_user=admin().id,
         currency="BGN",
         amount=20,
     )
@@ -619,6 +634,7 @@ def test_get_transactions_showsCorrectly_when_viaAdminPanelSortAmount(
     transaction_4 = TransactionCreate(
         wallet_sender=wallet_1.id,
         wallet_receiver=wallet_3.id,
+        receiving_user=user_3.id,
         currency="BGN",
         amount=30,
     )
@@ -687,6 +703,7 @@ def test_get_transactions_showsCorrectly_when_viaAdminPanelRecipientFilter(
     transaction_1 = TransactionCreate(
         wallet_sender=wallet_1.id,
         wallet_receiver=wallet_2.id,
+        receiving_user=admin().id,
         currency="BGN",
         amount=5,
     )
@@ -698,6 +715,7 @@ def test_get_transactions_showsCorrectly_when_viaAdminPanelRecipientFilter(
     transaction_2 = TransactionCreate(
         wallet_sender=wallet_2.id,
         wallet_receiver=wallet_1.id,
+        receiving_user=user().id,
         currency="BGN",
         amount=10,
     )
@@ -709,6 +727,7 @@ def test_get_transactions_showsCorrectly_when_viaAdminPanelRecipientFilter(
     transaction_3 = TransactionCreate(
         wallet_sender=wallet_3.id,
         wallet_receiver=wallet_2.id,
+        receiving_user=admin().id,
         currency="BGN",
         amount=20,
     )
@@ -720,6 +739,7 @@ def test_get_transactions_showsCorrectly_when_viaAdminPanelRecipientFilter(
     transaction_4 = TransactionCreate(
         wallet_sender=wallet_1.id,
         wallet_receiver=wallet_3.id,
+        receiving_user=user_3.id,
         currency="BGN",
         amount=30,
     )
@@ -738,7 +758,7 @@ def test_get_transactions_showsCorrectly_when_viaAdminPanelRecipientFilter(
                 "from_date": datetime_to_str(datetime.now() - timedelta(minutes=1)),
                 "to_date": datetime_to_str(datetime.now() + timedelta(minutes=1)),
                 "sort_by": "amount",
-                "recipient": wallet_2.id,
+                "recipient": admin().id,
             }
         ),
     )
@@ -767,6 +787,7 @@ def test_get_transactions_showsCorrectly_when_viaAdminPanelWithUserParam(
     transaction_1 = TransactionCreate(
         wallet_sender=wallet_1.id,
         wallet_receiver=wallet_2.id,
+        receiving_user=admin().id,
         currency="BGN",
         amount=5,
     )
@@ -778,6 +799,7 @@ def test_get_transactions_showsCorrectly_when_viaAdminPanelWithUserParam(
     transaction_2 = TransactionCreate(
         wallet_sender=wallet_2.id,
         wallet_receiver=wallet_1.id,
+        receiving_user=user().id,
         currency="BGN",
         amount=10,
     )
@@ -789,6 +811,7 @@ def test_get_transactions_showsCorrectly_when_viaAdminPanelWithUserParam(
     transaction_3 = TransactionCreate(
         wallet_sender=wallet_3.id,
         wallet_receiver=wallet_2.id,
+        receiving_user=admin().id,
         currency="BGN",
         amount=20,
     )
@@ -800,6 +823,7 @@ def test_get_transactions_showsCorrectly_when_viaAdminPanelWithUserParam(
     transaction_4 = TransactionCreate(
         wallet_sender=wallet_1.id,
         wallet_receiver=wallet_3.id,
+        receiving_user=user_3.id,
         currency="BGN",
         amount=30,
     )
@@ -846,6 +870,7 @@ def test_get_transactions_showsCorrectly_when_viaUserPanel(
     transaction_1 = TransactionCreate(
         wallet_sender=wallet_1.id,
         wallet_receiver=wallet_2.id,
+        receiving_user=admin().id,
         currency="BGN",
         amount=5,
     )
@@ -857,6 +882,7 @@ def test_get_transactions_showsCorrectly_when_viaUserPanel(
     transaction_2 = TransactionCreate(
         wallet_sender=wallet_2.id,
         wallet_receiver=wallet_1.id,
+        receiving_user=user().id,
         currency="BGN",
         amount=10,
     )
@@ -868,6 +894,7 @@ def test_get_transactions_showsCorrectly_when_viaUserPanel(
     transaction_3 = TransactionCreate(
         wallet_sender=wallet_3.id,
         wallet_receiver=wallet_2.id,
+        receiving_user=admin().id,
         currency="BGN",
         amount=20,
     )
@@ -879,6 +906,7 @@ def test_get_transactions_showsCorrectly_when_viaUserPanel(
     transaction_4 = TransactionCreate(
         wallet_sender=wallet_1.id,
         wallet_receiver=wallet_3.id,
+        receiving_user=user_3.id,
         currency="BGN",
         amount=30,
     )
