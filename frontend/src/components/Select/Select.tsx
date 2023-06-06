@@ -4,21 +4,38 @@ import FormControl from "@mui/material/FormControl";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import WalletIcon from "@mui/icons-material/Wallet";
 import { Wallet } from "../../pages/Profile";
+import axios from "axios";
+import { apiUrl } from "../../shared";
 
 export default function SelectSmall({
-  wallets,
+  username,
   setWallet,
-  invert,
 }: {
-  wallets: Wallet[];
+  username: string;
   setWallet: (wallet: Wallet | undefined) => void;
-  invert?: boolean;
 }) {
   const [selectedWalletId, setSelectedWalletId] = React.useState<string>("");
+  const [allWallets, setAllWallets] = React.useState<Wallet[]>([]);
+
+  React.useEffect(() => {
+    axios
+      .get<Wallet[]>(apiUrl + `users/${username}/wallets`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.token}`,
+        },
+      })
+      .then((response) => {
+        setAllWallets(response.data);
+        if (response.data.length > 0) {
+          setWallet(response.data[0]);
+          setSelectedWalletId(response.data[0].id);
+        }
+      });
+  }, [username]);
 
   const handleChange = (event: SelectChangeEvent<string>) => {
     setSelectedWalletId(event.target.value);
-    const selectedWallet = wallets.find(
+    const selectedWallet = allWallets.find(
       (wallet) => wallet.id === event.target.value
     );
     setWallet(selectedWallet);
@@ -29,8 +46,8 @@ export default function SelectSmall({
       sx={{
         mt: 1,
         width: "100%",
-        backgroundColor: invert ? "black" : "white",
-        color: invert ? "white" : "black",
+        backgroundColor: "white",
+        color: "black",
         display: "flex",
         paddingY: "0px",
       }}
@@ -43,10 +60,10 @@ export default function SelectSmall({
         value={selectedWalletId}
         onChange={handleChange}
         sx={{
-          color: invert ? "white" : "black",
+          color: "black",
         }}
       >
-        {wallets.map((wallet, index) => (
+        {allWallets.map((wallet, index) => (
           <MenuItem
             key={index}
             value={wallet.id}

@@ -21,13 +21,14 @@ interface CardProps {
   balance?: string;
   walletId?: string;
   username?: string;
-  invert?: boolean;
   buttons?: string[];
 }
 
 type Leech = {
   id: number;
   username: string;
+  f_name: string;
+  l_name: string;
 };
 
 export default function WalletCard(props: CardProps) {
@@ -38,7 +39,6 @@ export default function WalletCard(props: CardProps) {
   const balance = props.balance;
   const walletId = props.walletId;
   const username = props.username;
-  const invert = props.invert || false;
   const buttons = props.buttons || [`deposit`, `send`, `invite`];
 
   const [leeches, setLeeches] = useState<Leech[]>([]);
@@ -63,9 +63,8 @@ export default function WalletCard(props: CardProps) {
   return (
     <Card
       sx={{
-        minWidth: 500,
         padding: "1rem",
-        backgroundColor: invert ? "black" : "white",
+        backgroundColor: "white",
       }}
     >
       <CardContent>
@@ -74,37 +73,35 @@ export default function WalletCard(props: CardProps) {
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            borderBottom: invert ? "solid white 1px" : "solid black 1px",
+            borderBottom: "solid black 1px",
           }}
         >
-          <Typography
-            variant="h5"
-            component="div"
-            sx={{ color: invert ? "white" : "black" }}
-          >
+          <Typography variant="h5" component="div" sx={{ color: "black" }}>
             {walletName}
           </Typography>
-          <Typography variant="h5" sx={{ color: invert ? "white" : "black" }}>
+          <Typography variant="h5" sx={{ color: "black" }}>
             {balance} {currency}
             <br />
           </Typography>
         </Box>
         {name && (
-          <Typography
-            variant="h5"
-            component="div"
-            sx={{ color: invert ? "white" : "black" }}
-          >
+          <Typography variant="h5" component="div" sx={{ color: "black" }}>
             {name}
           </Typography>
         )}
         <Box
-          sx={{ display: "flex", justifyContent: "space-between", mt: "20px" }}
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            mt: "20px",
+            paddingTop: "10px",
+          }}
         >
           <Box
             sx={{
               display: "flex",
               justifyContent: "space-between",
+              alignItems: "center",
               gap: "5px",
             }}
           >
@@ -112,11 +109,8 @@ export default function WalletCard(props: CardProps) {
             {buttons && buttons.includes("deposit") && (
               <Tooltip title={"Add money"}>
                 <span>
-                  <ButtonBlack invert={invert}>
-                    <AddIcon
-                      fontSize="medium"
-                      sx={{ color: invert ? "black" : "white" }}
-                    />
+                  <ButtonBlack>
+                    <AddIcon fontSize="medium" sx={{ color: "white" }} />
                   </ButtonBlack>
                 </span>
               </Tooltip>
@@ -125,11 +119,8 @@ export default function WalletCard(props: CardProps) {
             {buttons && buttons.includes("send") && (
               <Tooltip title={"Send money"}>
                 <span>
-                  <ButtonBlack invert={invert}>
-                    <SendIcon
-                      fontSize="medium"
-                      sx={{ color: invert ? "black" : "white" }}
-                    />
+                  <ButtonBlack>
+                    <SendIcon fontSize="medium" sx={{ color: "white" }} />
                   </ButtonBlack>
                 </span>
               </Tooltip>
@@ -137,11 +128,8 @@ export default function WalletCard(props: CardProps) {
             {buttons && buttons.includes("invite") && (
               <Tooltip title={"Invite people"}>
                 <span>
-                  <ButtonBlack invert={invert}>
-                    <PersonAddIcon
-                      fontSize="medium"
-                      sx={{ color: invert ? "black" : "white" }}
-                    />
+                  <ButtonBlack>
+                    <PersonAddIcon fontSize="medium" sx={{ color: "white" }} />
                   </ButtonBlack>
                 </span>
               </Tooltip>
@@ -150,11 +138,14 @@ export default function WalletCard(props: CardProps) {
 
           <AvatarGroup max={4}>
             {leeches.map((leech, index) => (
-              <Avatar
-                key={index}
-                alt={leech.username}
-                src={`${baseUrl}static/avatars/${leech.id}.png`}
-              />
+              <Tooltip title={`${leech.f_name} ${leech.l_name}`}>
+                <Avatar
+                  key={index}
+                  alt={leech.username}
+                  sx={{ height: "28px", width: "28px" }}
+                  src={`${baseUrl}static/avatars/${leech.id}.png`}
+                />
+              </Tooltip>
             ))}
           </AvatarGroup>
         </Box>
