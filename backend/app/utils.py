@@ -17,6 +17,7 @@ from cryptography.hazmat.primitives import padding
 import base64
 
 from app.models import Currency, User
+from app.models.transaction import Transaction
 
 
 class EmailUtility:
@@ -99,6 +100,35 @@ class EmailUtility:
             },
         )
 
+    def send_confirm_transaction_email(
+        self, email_to: str, transaction: Transaction, sender: User, recipient: User
+    ) -> None:
+        project_name = settings.PROJECT_NAME
+        subject = f"{project_name} - Transaction pending for your confirmation"
+        token_transaction = self.generate_id_link_token(transaction.id)
+        token_recipient = self.generate_id_link_token(recipient.id)
+        with open(Path(settings.EMAIL_TEMPLATES_DIR) / "transaction_confirm.html") as f:
+            template_str = f.read()
+        link_confirm = f"{settings.SERVER_HOST}{settings.API_V1_STR}/transactions/{token_transaction}/confirm/{token_recipient}"
+        link_decline = f"{settings.SERVER_HOST}{settings.API_V1_STR}/transactions/{token_transaction}/decline/{token_recipient}"
+        detail = transaction.detail
+        date = transaction.created.strftime("%d/%m/%Y, %H:%M")
+
+        self.send_email(
+            email_to=email_to,
+            subject_template=subject,
+            html_template=template_str,
+            environment={
+                "project_name": settings.PROJECT_NAME,
+                "sender": sender.username,
+                "amount": f"{transaction.currency} {transaction.amount}",
+                "link_confirm": link_confirm,
+                "link_decline": link_decline,
+                "detail": detail,
+                "date": date,
+            },
+        )
+
     def send_refferal_email(self, email_to: str, refferer: User):
         # Needs a new html done and the link needs to connect to the client server
         project_name = settings.PROJECT_NAME
@@ -131,6 +161,18 @@ class EmailUtility:
         exp = expires.timestamp()
         encoded_jwt = jwt.encode(
             {"exp": exp, "nbf": now, "sub": email},
+            settings.SECRET_KEY,
+            algorithm=settings.ALGORITHM,
+        )
+        return encoded_jwt
+
+    def generate_id_link_token(self, id: str) -> str:
+        delta = timedelta(hours=settings.EMAIL_RESET_TOKEN_EXPIRE_HOURS)
+        now = datetime.utcnow()
+        expires = now + delta
+        exp = expires.timestamp()
+        encoded_jwt = jwt.encode(
+            {"exp": exp, "nbf": now, "sub": id},
             settings.SECRET_KEY,
             algorithm=settings.ALGORITHM,
         )

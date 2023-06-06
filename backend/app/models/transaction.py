@@ -10,6 +10,7 @@ from app.models.user import User
 class TransactionBase(SQLModel):
     wallet_sender: Optional[str] = Field(default=None, foreign_key="wallets.id")
     card_sender: Optional[str] = Field(default=None, foreign_key="cards.id")
+    receiving_user: Optional[str] = Field(default=None)
     wallet_receiver: str = Field(foreign_key="wallets.id")
     currency: constr(regex="^(USD|EUR|BGN|CAD|AUD|CHF|CNY|JPY|GBP|NOK)$")
     amount: float
@@ -20,8 +21,9 @@ class TransactionBase(SQLModel):
 class Transaction(TransactionBase, table=True):
     __tablename__ = "transactions"
     sending_user: Optional[str] = Field(default=None, foreign_key="users.id")
+    receiving_user: Optional[str] = Field(default=None, foreign_key="users.id")
     id: Optional[str] = Field(primary_key=True)
-    status: Optional[constr(regex="^pending|success|cancelled$")] = Field(
+    status: Optional[constr(regex="^pending|success|cancelled|declined$")] = Field(
         default="pending"
     )
     spending_category_id: Optional[int] = Field(
@@ -39,6 +41,10 @@ class Transaction(TransactionBase, table=True):
 
     sending_user_obj: "User" = Relationship(
         sa_relationship_kwargs=dict(primaryjoin="User.id==Transaction.sending_user")
+    )
+
+    receiving_user_obj: "User" = Relationship(
+        sa_relationship_kwargs=dict(primaryjoin="User.id==Transaction.receiving_user")
     )
 
     card_sen_obj: Optional["Card"] = Relationship(

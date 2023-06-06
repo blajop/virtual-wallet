@@ -13,7 +13,7 @@ import useValidateEmail from "../../hooks/useValidateEmail.tsx";
 import useValidatePhone from "../../hooks/useValidatePhone.tsx";
 import ButtonBlack from "../Buttons/ButtonBlack.tsx";
 import Tooltip from "@mui/material/Tooltip/Tooltip";
-import ModalPass from "./ModalPass.tsx";
+import ChangePwd from "./ChangePwd.tsx";
 
 const style = {
   position: "absolute" as "absolute",
@@ -303,7 +303,7 @@ export default function EditProfile(props: Props) {
               alert={alertPhone}
               alertMsg={alertMsgPhone}
             ></DataFieldEdit>
-            <ModalPass username={username}></ModalPass>
+            <ChangePwd username={username}></ChangePwd>
             <ButtonBlack
               size="medium"
               onClick={handleApply}
