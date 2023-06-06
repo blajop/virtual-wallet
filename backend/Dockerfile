@@ -14,5 +14,5 @@ COPY . /root
 
 EXPOSE 5555
 
-CMD ["python3", "-m" , "main"]
+ENTRYPOINT ["python3", "-m" , "main"]
 
