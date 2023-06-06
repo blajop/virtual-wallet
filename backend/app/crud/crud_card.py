@@ -81,6 +81,14 @@ class CRUDCard(CRUDBase[Card, CardBase, CardCreate]):
 
         return result
 
+    def get_by_owner(self, db: Session, owner: User):
+        result = db.exec(select(Card).where(Card.users.contains(owner))).unique().all()
+        for card in result:
+            card.number = util_crypt.decrypt(card.number)
+            card.cvc = util_crypt.decrypt(card.cvc)
+
+        return result
+
     def add_card(
         self, db: Session, user: User, new_card: CardCreate
     ) -> Card | Msg | CardDataError:
