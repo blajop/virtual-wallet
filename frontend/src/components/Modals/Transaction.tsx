@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import SelectSmall from "../Select/Select.tsx";
 import { Wallet } from "../../pages/Profile.tsx";
 import LabelCheckbox from "../Icons/CheckboxRecurr.tsx";
-import Recurrence from "../Select/Recurrence.tsx";
+import SelectMisc from "../Select/SelectMisc.tsx";
 import { Friend } from "../ProfilePageComponents/FriendBox.tsx";
 import axios from "axios";
 import { apiUrl } from "../../shared.ts";
@@ -102,7 +102,11 @@ export default function Transaction(props: Props) {
           ]}
         />
         {recurringChecked && (
-          <Recurrence recurrence={[recurrence, selectRecurrence]}></Recurrence>
+          <SelectMisc
+            selectable={[recurrence, selectRecurrence]}
+            options={["month", "year"]}
+            label="Recurrence"
+          ></SelectMisc>
         )}
       </Box>
     </div>

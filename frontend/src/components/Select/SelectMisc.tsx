@@ -7,28 +7,31 @@ import Select, { SelectChangeEvent } from "@mui/material/Select";
 type dataState = [string, (e: string) => string];
 
 interface Props {
-  recurrence: dataState;
+  selectable: dataState;
+  options: string[];
+  label: string;
 }
 
-export default function Recurrence(props: Props) {
-  const [recurrence, setRecurrence] = props.recurrence;
-  const recurrOptions = ["month", "year"];
+export default function SelectMisc(props: Props) {
+  const [selectable, setSelectable] = props.selectable;
+  const options = props.options;
+  const label = props.label;
 
   const handleChange = (event: SelectChangeEvent) => {
-    setRecurrence(event.target.value);
+    setSelectable(event.target.value);
   };
 
   return (
     <FormControl sx={{ minWidth: 120, width: "100%" }}>
-      <InputLabel id="demo-simple-select-helper-label">Recurrence</InputLabel>
+      <InputLabel id="demo-simple-select-helper-label">{label}</InputLabel>
       <Select
         labelId="demo-simple-select-helper-label"
         id="demo-simple-select-helper"
-        value={recurrence}
-        label="Recurrence"
+        value={selectable}
+        label={label}
         onChange={handleChange}
       >
-        {recurrOptions.map((option) => (
+        {options.map((option) => (
           <MenuItem value={option}>{option}</MenuItem>
         ))}
       </Select>
