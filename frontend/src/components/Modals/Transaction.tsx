@@ -13,7 +13,7 @@ import { Card, Wallet } from "../../pages/Profile.tsx";
 import SelectCard from "../Select/SelectCard.tsx";
 import LabelCheckbox from "../Icons/CheckboxRecurr.tsx";
 import Checkbox from "@mui/material/Checkbox";
-import { Select } from "@mui/material";
+import { Select, Tooltip } from "@mui/material";
 import Recurrence from "../Select/Recurrence.tsx";
 
 const style = {
@@ -42,6 +42,11 @@ export default function Transaction(props: Props) {
   const [wallet, setWallet] = useState<Wallet | undefined>();
   //   const [card, setCard] = useState<Card | undefined>();
   const username = props.username;
+
+  // Transaction data
+  const [recurringChecked, setRecurringChecked] = useState(false);
+  const [recurrence, setRecurrence] = useState("");
+
   const [open, setOpen] = React.useState(false);
 
   const handleOpen = () => {
@@ -53,9 +58,6 @@ export default function Transaction(props: Props) {
   const handleSelectWallet = (wallet: Wallet | undefined) => {
     setWallet(wallet);
   };
-
-  const [recurringChecked, setRecurringChecked] = useState(false);
-  const [recurrence, setRecurrence] = useState("");
 
   const selectRecurrence = (value: string) => {
     setRecurrence(value);
@@ -90,9 +92,13 @@ export default function Transaction(props: Props) {
 
   return (
     <div>
-      <ButtonBlack onClick={handleOpen}>
-        <SendIcon fontSize="medium" sx={{ color: "white" }} />
-      </ButtonBlack>
+      <Tooltip title="Send money">
+        <SendIcon
+          fontSize="medium"
+          sx={{ color: "black", cursor: "pointer" }}
+          onClick={handleOpen}
+        />
+      </Tooltip>
       <Modal
         aria-labelledby="transition-modal-title"
         aria-describedby="transition-modal-description"

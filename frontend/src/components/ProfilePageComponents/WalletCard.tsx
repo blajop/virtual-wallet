@@ -122,7 +122,9 @@ export default function WalletCard(props: CardProps) {
             {buttons && buttons.includes("send") && (
               <Tooltip title={"Send money"}>
                 <span>
-                  <Transaction username={username}></Transaction>
+                  <ButtonBlack>
+                    <SendIcon fontSize="medium" sx={{ color: "white" }} />
+                  </ButtonBlack>
                 </span>
               </Tooltip>
             )}

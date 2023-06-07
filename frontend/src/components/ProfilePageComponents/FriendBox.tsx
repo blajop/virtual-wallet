@@ -7,6 +7,8 @@ import { apiUrl, baseUrl } from "../../shared";
 import Tooltip from "@mui/material/Tooltip/Tooltip";
 import AddIcon from "@mui/icons-material/Add";
 import FriendInvite from "../Modals/FriendInvite";
+import FriendView from "../Modals/FriendView";
+import Box from "@mui/material/Box";
 
 export type Friends = Friend[];
 
@@ -32,6 +34,13 @@ export default function FriendBox({
 }) {
   const [friends, setFriends] = useState<Friends>();
   const [open, setOpen] = useState(false);
+
+  const [friendOpen, setFriendOpen] = useState(false);
+  const [focusFriend, setFocusFriend] = useState<Friend>();
+  const handleFriendOpen = (value: boolean) => {
+    setFriendOpen(value);
+    return value;
+  };
 
   const token: string = localStorage.token;
 
@@ -76,14 +85,27 @@ export default function FriendBox({
           ></FriendInvite>
           {friends?.map((friend, index) => (
             <Tooltip key={index} title={`${friend.f_name} ${friend.l_name}`}>
-              <Avatar
-                sx={{ cursor: "pointer" }}
-                key={index}
-                alt={friend?.username}
-                src={`${baseUrl}static/avatars/${friend.id}.png`}
-              />
+              <Box>
+                <Avatar
+                  sx={{ cursor: "pointer" }}
+                  key={index}
+                  alt={friend?.username}
+                  src={`${baseUrl}static/avatars/${friend.id}.png`}
+                  onClick={() => {
+                    setFriendOpen(true);
+                    setFocusFriend(friend);
+                  }}
+                />
+              </Box>
             </Tooltip>
           ))}
+          {focusFriend && (
+            <FriendView
+              open={[friendOpen, handleFriendOpen]}
+              friend={focusFriend}
+            ></FriendView>
+          )}
+          ;
         </AvatarGroup>
       </Paper>
     </>
