@@ -90,10 +90,12 @@ def get_default_wallet(
     db: Session = Depends(deps.get_db),
     logged_user: User = Depends(deps.get_current_user),
 ):
-    if user != logged_user and not crud.user.is_admin(logged_user):
-        raise HTTPException(
-            status_code=403, detail="Cannot view others's default wallets"
-        )
+    # we should be able to find others' default wallets
+
+    # if user != logged_user and not crud.user.is_admin(logged_user):
+    #     raise HTTPException(
+    #         status_code=403, detail="Cannot view others's default wallets"
+    #     )
     return (
         user.user_settings_obj.default_wallet_obj
     )  # crud.wallet.get(db=db, id=user.user_settings_obj.default_wallet_id)
