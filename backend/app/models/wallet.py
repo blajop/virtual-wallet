@@ -22,7 +22,7 @@ class WalletCreate(SQLModel):
 
 class WalletBase(WalletCreate):
     owner_id: Optional[str] = Field(default=None, foreign_key="users.id")
-    balance: Optional[float] = Field(default=0)
+    balance: Optional[float] = Field(default=0, ge=0)
 
 
 class Wallet(WalletBase, table=True):

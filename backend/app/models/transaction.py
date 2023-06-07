@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional, List
-from pydantic import BaseModel, constr
+from pydantic import BaseModel, constr, confloat
 from sqlmodel import Field, Relationship, SQLModel
 from app.models.card import Card
 from app.models.wallet import Wallet
@@ -13,7 +13,7 @@ class TransactionBase(SQLModel):
     receiving_user: Optional[str] = Field(default=None)
     wallet_receiver: str = Field(foreign_key="wallets.id")
     currency: constr(regex="^(USD|EUR|BGN|CAD|AUD|CHF|CNY|JPY|GBP|NOK)$")
-    amount: float
+    amount: confloat(gt=0)
     recurring: Optional[constr(regex="^month|year")] = Field(default=None)
     detail: Optional[str] = Field(default=None)
 
