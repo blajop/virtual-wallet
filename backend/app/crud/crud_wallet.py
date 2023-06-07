@@ -46,6 +46,13 @@ class CRUDWallet(CRUDBase[Wallet, WalletCreate, WalletUpdate]):
 
         return wallet_orm
 
+    def get(self, db: Session, user: User, wallet_id: str) -> Wallet:
+        user_wallets = self.get_multi_by_owner(db, user) + user.wallets
+        found_wallet = super().get(db, wallet_id)
+        if found_wallet not in user_wallets:
+            raise WalletNameError("You are not associated with such a wallet.")
+        return found_wallet
+
     def get_by_owner(self, db: Session, owner: User, wallet_id: str) -> Wallet:
         return db.exec(
             select(self.model).filter(
