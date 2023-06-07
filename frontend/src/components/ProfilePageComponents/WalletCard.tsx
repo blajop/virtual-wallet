@@ -12,6 +12,7 @@ import Tooltip from "@mui/material/Tooltip/Tooltip";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { baseUrl } from "../../shared.js";
+import Transaction from "../Modals/Transaction.js";
 
 interface CardProps {
   name?: string;
@@ -121,9 +122,7 @@ export default function WalletCard(props: CardProps) {
             {buttons && buttons.includes("send") && (
               <Tooltip title={"Send money"}>
                 <span>
-                  <ButtonBlack>
-                    <SendIcon fontSize="medium" sx={{ color: "white" }} />
-                  </ButtonBlack>
+                  <Transaction username={username}></Transaction>
                 </span>
               </Tooltip>
             )}
