@@ -4,6 +4,7 @@ from sqlmodel import Session
 from app import crud, deps
 from app.error_models.wallet_errors import WalletNameError
 from app.models import User, WalletCreate
+from app.models.wallet import Wallet
 
 router = APIRouter()
 
@@ -19,6 +20,22 @@ def get_wallets(
         raise HTTPException(status_code=403)
 
     return crud.wallet.get_multi_by_owner(db, user)
+
+
+@router.get("/{wallet_id}", response_model=Wallet)
+def get_wallets(
+    wallet_id: str,
+    user: User = Depends(deps.get_user_from_path),
+    db: Session = Depends(deps.get_db),
+    logged_user: User = Depends(deps.get_current_user),
+):
+    if user != logged_user and not crud.user.is_admin(logged_user):
+        # admin can look up whoever
+        raise HTTPException(status_code=403)
+    try:
+        return crud.wallet.get(db, user=logged_user, wallet_id=wallet_id)
+    except WalletNameError as err:
+        raise HTTPException(status_code=403, detail=err.args[0])
 
 
 @router.post("")
