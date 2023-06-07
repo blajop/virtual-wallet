@@ -7,6 +7,7 @@ import SelectMisc from "../Select/SelectMisc.tsx";
 import { Friend } from "../ProfilePageComponents/FriendBox.tsx";
 import axios from "axios";
 import { apiUrl } from "../../shared.ts";
+import TextField from "@mui/material/TextField";
 
 interface Props {
   friend: Friend;
@@ -49,24 +50,45 @@ export default function Transaction(props: Props) {
       .catch((err) => console.log(err));
   }, []);
 
-  // Transaction data
-  const [recurringChecked, setRecurringChecked] = useState(false);
-  const [recurrence, setRecurrence] = useState("");
-
+  // TRANSACTION DATA
   const handleSelectWallet = (wallet: Wallet | undefined) => {
     setWallet(wallet);
   };
 
+  const [recurringChecked, setRecurringChecked] = useState(false);
+  const [recurrence, setRecurrence] = useState("");
   const selectRecurrence = (value: string) => {
     setRecurrence(value);
     return value;
   };
-
   useEffect(() => {
     if (recurringChecked === false) {
       setRecurrence("");
     }
   }, [recurringChecked]);
+
+  const [currency, setCurrency] = useState("");
+  const selectCurrency = (value: string) => {
+    setCurrency(value);
+    return value;
+  };
+
+  const [amount, setAmount] = useState("");
+  const [focusAmount, setFocusAmount] = useState(false);
+  const [alertAmount, setAlertAmount] = useState(false);
+  useEffect(() => {
+    if (amount != "") {
+      try {
+        if (parseFloat(amount) <= 0) {
+          setAlertAmount(true);
+        } else {
+          setAlertAmount(false);
+        }
+      } catch (err) {
+        setAlertAmount(true);
+      }
+    }
+  }, [amount]);
 
   //   const handleSend = () => {
 
@@ -108,6 +130,40 @@ export default function Transaction(props: Props) {
             label="Recurrence"
           ></SelectMisc>
         )}
+        <SelectMisc
+          selectable={[currency, selectCurrency]}
+          options={[
+            "USD",
+            "EUR",
+            "BGN",
+            "CAD",
+            "AUD",
+            "CHF",
+            "CNY",
+            "JPY",
+            "GBP",
+            "NOK",
+          ]}
+          label="Currency"
+        ></SelectMisc>
+        <TextField
+          required
+          label={"Amount"}
+          name="amount"
+          value={
+            focusAmount
+              ? amount
+              : amount === ""
+              ? ""
+              : parseFloat(amount).toFixed(2)
+          }
+          onFocus={() => setFocusAmount(true)}
+          onBlur={() => setFocusAmount(false)}
+          error={alertAmount}
+          onChange={(e) => {
+            setAmount(e.target.value);
+          }}
+        />
       </Box>
     </div>
   );
