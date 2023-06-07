@@ -9,6 +9,7 @@ import { Friend } from "../ProfilePageComponents/FriendBox.tsx";
 import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
 import CallReceivedIcon from "@mui/icons-material/CallReceived";
 import Transaction from "./Transaction.tsx";
+import { useState } from "react";
 
 const style = {
   position: "absolute" as "absolute",
@@ -35,11 +36,14 @@ interface Props {
 
 export default function FriendView(props: Props) {
   const [open, setOpen] = props.open;
+  const [transactionOpen, setTransactionOpen] = useState(false);
+
   const friend = props.friend;
 
-  const handleOpen = () => setOpen(true);
-
-  const handleClose = () => setOpen(false);
+  const handleClose = () => {
+    setOpen(false);
+    setTransactionOpen(false);
+  };
 
   //   const handleSend = () => {
 
@@ -85,7 +89,15 @@ export default function FriendView(props: Props) {
           {friend.f_name} {friend.l_name}
         </Typography>
         <Box sx={{ display: "flex", gap: "20px" }}>
-          <Transaction username="blago"></Transaction>
+          <Tooltip title="Send money">
+            <SendIcon
+              fontSize="medium"
+              sx={{ color: "black", cursor: "pointer" }}
+              onClick={() => {
+                setTransactionOpen(!transactionOpen);
+              }}
+            />
+          </Tooltip>
 
           <Tooltip title="Request money">
             <CallReceivedIcon
@@ -105,7 +117,7 @@ export default function FriendView(props: Props) {
             />
           </Tooltip>
         </Box>
-        KUR ZA {friend.f_name}
+        {transactionOpen && <Transaction friend={friend}></Transaction>}
       </Box>
     </Modal>
   );
