@@ -6,11 +6,16 @@ import LabelCheckbox from "../Icons/CheckboxRecurr.tsx";
 import SelectMisc from "../Select/SelectMisc.tsx";
 import { Friend } from "../ProfilePageComponents/FriendBox.tsx";
 import axios from "axios";
-import { apiUrl } from "../../shared.ts";
+import { apiUrl, baseUrl } from "../../shared.ts";
 import TextField from "@mui/material/TextField";
+import ButtonBlack from "../Buttons/ButtonBlack.tsx";
+import Typography from "@mui/material/Typography";
+
+type dataState = [boolean, (e: boolean) => boolean];
 
 interface Props {
   friend: Friend;
+  transactionOpen: dataState;
 }
 
 export type User = {
@@ -27,11 +32,16 @@ export type User = {
 export default function Transaction(props: Props) {
   const [wallet, setWallet] = useState<Wallet | undefined>();
   const friend = props.friend;
+  const [friendDefWallet, setFriendDefWallet] = useState("");
   const [loggedUsername, setLoggedUsername] = useState("");
 
+  const [transactionOpen, setTransactionOpen] = props.transactionOpen;
+
+  const [successfulBanner, setSuccessfulBanner] = useState(false);
+
+  // GET LOGGED USER - UPON LOAD
   useEffect(() => {
     const url = apiUrl + `users/profile`;
-
     axios
       .get(url, { headers: { Authorization: `Bearer ${localStorage.token}` } })
       .then((response) => {
@@ -50,11 +60,24 @@ export default function Transaction(props: Props) {
       .catch((err) => console.log(err));
   }, []);
 
-  // TRANSACTION DATA
+  // GET RECEIVER DEFAULT WALLET
+  useEffect(() => {
+    const url = apiUrl + `users/${friend.id}/wallets/default`;
+    axios
+      .get(url, { headers: { Authorization: `Bearer ${localStorage.token}` } })
+      .then((response) => {
+        const walletId: string = response.data.id;
+        setFriendDefWallet(walletId);
+      })
+      .catch((err) => console.log(err));
+  }, []);
+
+  // EMITTING WALLET
   const handleSelectWallet = (wallet: Wallet | undefined) => {
     setWallet(wallet);
   };
 
+  // RECURRENCE
   const [recurringChecked, setRecurringChecked] = useState(false);
   const [recurrence, setRecurrence] = useState("");
   const selectRecurrence = (value: string) => {
@@ -67,19 +90,21 @@ export default function Transaction(props: Props) {
     }
   }, [recurringChecked]);
 
+  // CURRENCY
   const [currency, setCurrency] = useState("");
   const selectCurrency = (value: string) => {
     setCurrency(value);
     return value;
   };
 
+  // AMOUNT
   const [amount, setAmount] = useState("");
   const [focusAmount, setFocusAmount] = useState(false);
   const [alertAmount, setAlertAmount] = useState(false);
   useEffect(() => {
     if (amount != "") {
       try {
-        if (parseFloat(amount) <= 0) {
+        if (parseFloat(amount) <= 0 || wallet!.balance < parseFloat(amount)) {
           setAlertAmount(true);
         } else {
           setAlertAmount(false);
@@ -87,31 +112,61 @@ export default function Transaction(props: Props) {
       } catch (err) {
         setAlertAmount(true);
       }
+    } else {
+      setAlertAmount(false);
     }
-  }, [amount]);
+  }, [amount, wallet]);
 
-  //   const handleSend = () => {
+  // DETAIL
+  const [detail, setDetail] = useState("");
 
-  //     const finalData = {
+  // CONDITIONS
 
-  //     };
-  //     axios
-  //       .put(`${baseUrl}api/v1/users/profile`, finalData, {
-  //         headers: {
-  //           Authorization: `Bearer ${localStorage.getItem("token")}`,
-  //         },
-  //       })
-  //       .then((response) => {
-  //         if (response.status === 200) {
-  //           console.log(response);
-  //         }
-  //       })
-  //       .catch();
-  //     handleClose();
-  //   };
+  const [canConfirm, setCanConfirm] = useState(false);
+
+  useEffect(() => {
+    const conditions = [currency, amount, detail];
+
+    if (conditions.every((element) => element != "") && alertAmount === false) {
+      setCanConfirm(true);
+    } else {
+      setCanConfirm(false);
+    }
+  }, [currency, amount, detail, alertAmount]);
+
+  // CONFIRM AND CREATE THE TRANSACTION
+  const handleConfirm = () => {
+    const finalData = {
+      wallet_sender: wallet!.id,
+      card_sender: null,
+      receiving_user: friend.id,
+      wallet_receiver: friendDefWallet,
+      currency: currency,
+      amount: amount,
+      recurring: recurrence != "" ? recurrence : null,
+      detail: detail,
+    };
+    axios
+      .post(`${apiUrl}transactions`, finalData, {
+        headers: {
+          Authorization: `Bearer ${localStorage.token}`,
+        },
+      })
+      .then((response) => {
+        if (response.status === 201) {
+          console.log(response);
+          setSuccessfulBanner(true);
+          setTimeout(() => {
+            setSuccessfulBanner(false);
+            setTransactionOpen(false);
+          }, 3000);
+        }
+      })
+      .catch();
+  };
 
   return (
-    <div>
+    <>
       <Box>
         <SelectSmall username={loggedUsername} setWallet={handleSelectWallet} />
         <LabelCheckbox
@@ -148,6 +203,7 @@ export default function Transaction(props: Props) {
         ></SelectMisc>
         <TextField
           required
+          sx={{ width: "100%" }}
           label={"Amount"}
           name="amount"
           value={
@@ -164,7 +220,28 @@ export default function Transaction(props: Props) {
             setAmount(e.target.value);
           }}
         />
+        <TextField
+          required
+          sx={{ width: "100%" }}
+          label={"Detail"}
+          name="detail"
+          value={detail}
+          onChange={(e) => {
+            setDetail(e.target.value);
+          }}
+        />
       </Box>
-    </div>
+      <ButtonBlack
+        invert={canConfirm ? true : false}
+        onClick={handleConfirm}
+        size="medium"
+        disabled={!canConfirm}
+        text={"Confirm Transaction"}
+        disabledText="Please fill in the data"
+      ></ButtonBlack>
+      {successfulBanner ? (
+        <Typography>Successful transaction!</Typography>
+      ) : null}
+    </>
   );
 }

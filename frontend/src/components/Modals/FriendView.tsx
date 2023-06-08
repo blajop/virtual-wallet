@@ -36,7 +36,12 @@ interface Props {
 
 export default function FriendView(props: Props) {
   const [open, setOpen] = props.open;
+
   const [transactionOpen, setTransactionOpen] = useState(false);
+  const handleTransactionOpen = (value: boolean) => {
+    setTransactionOpen(value);
+    return value;
+  };
 
   const friend = props.friend;
 
@@ -117,7 +122,12 @@ export default function FriendView(props: Props) {
             />
           </Tooltip>
         </Box>
-        {transactionOpen && <Transaction friend={friend}></Transaction>}
+        {transactionOpen && (
+          <Transaction
+            friend={friend}
+            transactionOpen={[transactionOpen, handleTransactionOpen]}
+          ></Transaction>
+        )}
       </Box>
     </Modal>
   );
