@@ -9,6 +9,7 @@ from app.models.user import User
 
 class TransactionBase(SQLModel):
     wallet_sender: Optional[str] = Field(default=None, foreign_key="wallets.id")
+    blocked_sender_amt: Optional[float] = Field(default=None)
     card_sender: Optional[str] = Field(default=None, foreign_key="cards.id")
     receiving_user: Optional[str] = Field(default=None)
     wallet_receiver: str = Field(foreign_key="wallets.id")

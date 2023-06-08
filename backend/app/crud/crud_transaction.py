@@ -160,6 +160,8 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
                 raise TransactionError(
                     "You do not have enough balance in the sender Wallet in order to make the transfer"
                 )
+            # block the sender_currency_amount within the transaction until acceptance/decline
+            sender_item_obj.balance -= sender_currency_amount
 
         # Card -> Wallet (depositing) - only from user's registered card to
         # wallet connected with the user
@@ -194,7 +196,9 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
             db, obj_in=new_transaction, generated_id=util_id.generate_id()
         )
         transaction.sending_user = user.id
+        transaction.blocked_sender_amt = sender_currency_amount
         transaction.created = transaction.updated = datetime.now()
+
         db.commit()
         return transaction
 
@@ -222,13 +226,11 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
 
     def _finalise(self, db: Session, *, transaction: Transaction) -> Msg:
         """
-        Finalises a transaction, exchanging the amount between the wallets.
+        Finalises a transaction, adding the amount to the receiver durring acceptance.
         """
-        sender: Wallet | Card = transaction.card_sen_obj or transaction.wallet_sen_obj
         receiver: Wallet = transaction.wallet_rec_obj
 
         transaction_curr: Currency = self.get_currency(db, transaction.currency)
-        sender_curr: Currency = self.get_currency(db, sender.currency)
         receiver_curr: Currency = self.get_currency(db, receiver.currency)
 
         amount: float = transaction.amount
@@ -240,22 +242,8 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
                 base=transaction_curr, to=receiver_curr, amount=amount
             )
 
-        if isinstance(sender, Card):
-            receiver.balance += receiver_currency_amount
-            db.commit()
-            # Return when a card deposit
-            return Msg(msg="Successfully executed transaction")
-
-        # Transfer between wallets
-        if transaction_curr == sender_curr:
-            sender_currency_amount = amount
-        else:
-            sender_currency_amount = self.currency_exchange(
-                base=transaction_curr, to=sender_curr, amount=amount
-            )
-
-        sender.balance -= sender_currency_amount
         receiver.balance += receiver_currency_amount
+        transaction.blocked_sender_amt = 0
 
         db.commit()
 
@@ -286,6 +274,9 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
             raise TransactionError("Transaction is not with status pending")
 
         transaction.status = "declined"
+        if transaction.wallet_sen_obj:
+            transaction.wallet_sen_obj.balance += transaction.blocked_sender_amt
+            transaction.blocked_sender_amt = 0
         transaction.updated = datetime.now()
 
         db.commit()
