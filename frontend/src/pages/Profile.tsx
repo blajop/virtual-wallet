@@ -15,6 +15,7 @@ import EditProfile from "../components/ProfilePageComponents/EditProfile.tsx";
 import Cards from "../components/ProfilePageComponents/Cards.tsx";
 import SelectCard from "../components/Select/SelectCard.tsx";
 import TransactionHistory from "../components/ProfilePageComponents/TransactionHistory.tsx";
+import TransactionPanel from "../components/ProfilePageComponents/TransactionPanel.tsx";
 
 export type Wallet = {
   id: string;
@@ -238,7 +239,7 @@ export default function Profile() {
               email={email}
             />
             <br></br>
-            <TransactionHistory username={username} />
+            <TransactionPanel username={username} />
           </Paper>
         </Grid>
       </Grid>

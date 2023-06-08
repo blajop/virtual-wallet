@@ -6,7 +6,7 @@ import LabelCheckbox from "../Icons/CheckboxRecurr.tsx";
 import SelectMisc from "../Select/SelectMisc.tsx";
 import { Friend } from "../ProfilePageComponents/FriendBox.tsx";
 import axios from "axios";
-import { apiUrl, baseUrl } from "../../shared.ts";
+import { apiUrl } from "../../shared.ts";
 import TextField from "@mui/material/TextField";
 import ButtonBlack from "../Buttons/ButtonBlack.tsx";
 import Typography from "@mui/material/Typography";
@@ -31,9 +31,9 @@ export type User = {
 
 export default function Transaction(props: Props) {
   const [wallet, setWallet] = useState<Wallet | undefined>();
-  const friend = props.friend;
   const [friendDefWallet, setFriendDefWallet] = useState("");
   const [loggedUsername, setLoggedUsername] = useState("");
+  const friend = props.friend;
 
   const [transactionOpen, setTransactionOpen] = props.transactionOpen;
 
@@ -91,7 +91,7 @@ export default function Transaction(props: Props) {
   }, [recurringChecked]);
 
   // CURRENCY
-  const [currency, setCurrency] = useState("");
+  const [currency, setCurrency] = useState("BGN");
   const selectCurrency = (value: string) => {
     setCurrency(value);
     return value;
@@ -167,8 +167,65 @@ export default function Transaction(props: Props) {
 
   return (
     <>
-      <Box>
+      <hr className="mt-[20px]"></hr>
+      <Box sx={{ marginTop: "10px" }}>
         <SelectSmall username={loggedUsername} setWallet={handleSelectWallet} />
+
+        <Box
+          sx={{
+            display: "flex",
+            gap: "10px",
+            marginBottom: "10px",
+            marginTop: "30px",
+          }}
+        >
+          <TextField
+            required
+            sx={{ width: "100%", flex: 2 }}
+            label={"Amount"}
+            name="amount"
+            value={
+              focusAmount
+                ? amount
+                : amount === ""
+                ? ""
+                : parseFloat(amount).toFixed(2)
+            }
+            onFocus={() => setFocusAmount(true)}
+            onBlur={() => setFocusAmount(false)}
+            error={alertAmount}
+            onChange={(e) => {
+              setAmount(e.target.value);
+            }}
+          />
+          <SelectMisc
+            selectable={[currency, selectCurrency]}
+            options={[
+              "USD",
+              "EUR",
+              "BGN",
+              "CAD",
+              "AUD",
+              "CHF",
+              "CNY",
+              "JPY",
+              "GBP",
+              "NOK",
+            ]}
+            label="Currency"
+            sx={{ flex: 1 }}
+          ></SelectMisc>
+        </Box>
+        <TextField
+          required
+          sx={{ width: "100%" }}
+          label={"Detail"}
+          name="detail"
+          value={detail}
+          onChange={(e) => {
+            setDetail(e.target.value);
+          }}
+        />
         <LabelCheckbox
           isChecked={[
             recurringChecked,
@@ -180,64 +237,21 @@ export default function Transaction(props: Props) {
         />
         {recurringChecked && (
           <SelectMisc
+            sx={{ width: "100%", marginBottom: "10px" }}
             selectable={[recurrence, selectRecurrence]}
-            options={["month", "year"]}
+            options={["Monthly", "Annually"]}
             label="Recurrence"
           ></SelectMisc>
         )}
-        <SelectMisc
-          selectable={[currency, selectCurrency]}
-          options={[
-            "USD",
-            "EUR",
-            "BGN",
-            "CAD",
-            "AUD",
-            "CHF",
-            "CNY",
-            "JPY",
-            "GBP",
-            "NOK",
-          ]}
-          label="Currency"
-        ></SelectMisc>
-        <TextField
-          required
-          sx={{ width: "100%" }}
-          label={"Amount"}
-          name="amount"
-          value={
-            focusAmount
-              ? amount
-              : amount === ""
-              ? ""
-              : parseFloat(amount).toFixed(2)
-          }
-          onFocus={() => setFocusAmount(true)}
-          onBlur={() => setFocusAmount(false)}
-          error={alertAmount}
-          onChange={(e) => {
-            setAmount(e.target.value);
-          }}
-        />
-        <TextField
-          required
-          sx={{ width: "100%" }}
-          label={"Detail"}
-          name="detail"
-          value={detail}
-          onChange={(e) => {
-            setDetail(e.target.value);
-          }}
-        />
       </Box>
       <ButtonBlack
         invert={canConfirm ? true : false}
+        sx={{ marginTop: "20px" }}
         onClick={handleConfirm}
         size="medium"
         disabled={!canConfirm}
         text={"Confirm Transaction"}
-        disabledText="Please fill in the data"
+        disabledText="Please fill in the form"
       ></ButtonBlack>
       {successfulBanner ? (
         <Typography>Successful transaction!</Typography>

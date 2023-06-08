@@ -10,6 +10,8 @@ import CreditCardIcon from "@mui/icons-material/CreditCard";
 import LocalDiningIcon from "@mui/icons-material/LocalDining";
 import React from "react";
 import Pagination from "@mui/material/Pagination/Pagination";
+import TransactionDetail from "../Modals/TransactionIncomingDetail.tsx";
+import CircularLoading from "../CircularLoading.tsx";
 
 type User = Friend;
 
@@ -60,17 +62,29 @@ const spendingIcons = [
   <LocalAtmIcon />,
 ];
 
-function TransactionHistory({ username }: { username: string }) {
+function TransactionPending({ username }: { username: string }) {
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const handleLoading = (value: boolean) => setLoading(value);
+
   const [transactions, setTransactions] = useState<Transaction[]>();
   const [sendingUsers, setSendingUsers] = useState<User[]>([]);
   const [receivingUsers, setReceivingUsers] = useState<User[]>([]);
 
+  const [detailedTransaction, setDetailedTransaction] = useState<Transaction>();
+  const [open, setOpen] = useState<boolean>(false);
+
   const [page, setPage] = useState<number>(1);
   const [pageNumber, setPageNumber] = useState<number>();
 
+  const handleDetailOpen = (value: boolean) => {
+    setLoading(true);
+    setOpen(value);
+  };
+
   useEffect(() => {
     axios
-      .get(apiUrl + `transactions?status=finished&size=5&page=${page}`, {
+      .get(apiUrl + `transactions?status=active&size=5&page=${page}`, {
         headers: { Authorization: `Bearer ${localStorage.token}` },
       })
       .then((response) => {
@@ -124,6 +138,14 @@ function TransactionHistory({ username }: { username: string }) {
         height: "100%",
       }}
     >
+      {detailedTransaction && (
+        <TransactionDetail
+          username={username}
+          open={[open, handleDetailOpen]}
+          transaction={detailedTransaction}
+          handleLoading={handleLoading}
+        ></TransactionDetail>
+      )}
       <Box
         sx={{
           display: "flex",
@@ -132,7 +154,15 @@ function TransactionHistory({ username }: { username: string }) {
         }}
       >
         {transactions?.map((transaction, index) => (
-          <Box key={transaction.id}>
+          <Box
+            key={transaction.id}
+            sx={{ cursor: "pointer" }}
+            onClick={() => {
+              setLoading(true);
+              setOpen(true);
+              setDetailedTransaction(transaction);
+            }}
+          >
             <Box
               sx={{
                 display: "flex",
@@ -207,4 +237,4 @@ function TransactionHistory({ username }: { username: string }) {
   );
 }
 
-export default TransactionHistory;
+export default TransactionPending;
