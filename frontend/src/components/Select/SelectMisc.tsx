@@ -10,19 +10,21 @@ interface Props {
   selectable: dataState;
   options: string[];
   label: string;
+  sx?: React.CSSProperties;
 }
 
 export default function SelectMisc(props: Props) {
   const [selectable, setSelectable] = props.selectable;
   const options = props.options;
   const label = props.label;
+  const sx = props.sx;
 
   const handleChange = (event: SelectChangeEvent) => {
     setSelectable(event.target.value);
   };
 
   return (
-    <FormControl sx={{ minWidth: 120, width: "100%" }}>
+    <FormControl sx={sx}>
       <InputLabel id="demo-simple-select-helper-label">{label}</InputLabel>
       <Select
         labelId="demo-simple-select-helper-label"

@@ -10,6 +10,8 @@ import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
 import CallReceivedIcon from "@mui/icons-material/CallReceived";
 import Transaction from "./Transaction.tsx";
 import { useState } from "react";
+import Button from "@mui/material/Button/Button";
+import ButtonBlack from "../Buttons/ButtonBlack.tsx";
 
 const style = {
   position: "absolute" as "absolute",
@@ -85,35 +87,31 @@ export default function FriendView(props: Props) {
       }}
     >
       <Box sx={style}>
-        <Avatar
-          sx={{ cursor: "pointer" }}
-          alt={friend?.username}
-          src={`${baseUrl}static/avatars/${friend.id}.png`}
-        />
-        <Typography>
-          {friend.f_name} {friend.l_name}
-        </Typography>
-        <Box sx={{ display: "flex", gap: "20px" }}>
-          <Tooltip title="Send money">
-            <SendIcon
-              fontSize="medium"
-              sx={{ color: "black", cursor: "pointer" }}
-              onClick={() => {
-                setTransactionOpen(!transactionOpen);
-              }}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: "30px",
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: "20px" }}>
+            <Avatar
+              alt={friend?.username}
+              src={`${baseUrl}static/avatars/${friend.id}.png`}
             />
-          </Tooltip>
-
-          <Tooltip title="Request money">
-            <CallReceivedIcon
-              fontSize="medium"
+            <Box
               sx={{
-                color: "black",
-                cursor: "pointer",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-end",
               }}
-              onClick={() => {}}
-            />
-          </Tooltip>
+            >
+              <Typography variant="h6">
+                {friend.f_name} {friend.l_name}
+              </Typography>
+            </Box>
+          </Box>
           <Tooltip title="Unfriend">
             <PersonRemoveIcon
               fontSize="medium"
@@ -121,6 +119,25 @@ export default function FriendView(props: Props) {
               onClick={() => {}}
             />
           </Tooltip>
+        </Box>
+        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+          <ButtonBlack
+            invert
+            sx={{ width: "150px", paddingX: "5px" }}
+            variant="outlined"
+            onClick={() => {
+              setTransactionOpen(!transactionOpen);
+            }}
+          >
+            Send money
+          </ButtonBlack>
+          <ButtonBlack
+            invert
+            sx={{ width: "150px", paddingX: "5px" }}
+            variant="outlined"
+          >
+            Request money
+          </ButtonBlack>
         </Box>
         {transactionOpen && (
           <Transaction

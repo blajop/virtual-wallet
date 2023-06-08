@@ -21,9 +21,15 @@ export default function LabelCheckbox(props: Props) {
       <FormControlLabel
         value="end"
         control={
-          <Checkbox checked={isChecked} onChange={handleCheckboxChange} />
+          <Checkbox
+            checked={isChecked}
+            color="default"
+            sx={{ color: "black" }}
+            size="small"
+            onChange={handleCheckboxChange}
+          />
         }
-        label="Recurring transaction"
+        label="Make a recurring transaction?"
         labelPlacement="end"
       />
     </FormGroup>
