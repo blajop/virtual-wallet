@@ -52,26 +52,6 @@ export default function FriendView(props: Props) {
     setTransactionOpen(false);
   };
 
-  //   const handleSend = () => {
-
-  //     const finalData = {
-
-  //     };
-  //     axios
-  //       .put(`${baseUrl}api/v1/users/profile`, finalData, {
-  //         headers: {
-  //           Authorization: `Bearer ${localStorage.getItem("token")}`,
-  //         },
-  //       })
-  //       .then((response) => {
-  //         if (response.status === 200) {
-  //           console.log(response);
-  //         }
-  //       })
-  //       .catch();
-  //     handleClose();
-  //   };
-
   return (
     <Modal
       aria-labelledby="transition-modal-title"
