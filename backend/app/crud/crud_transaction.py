@@ -143,7 +143,7 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
                 raise TransactionError(
                     "The wallet sender passed is not in your associated wallets"
                 )
-            sender_item_obj: Wallet = crud.wallet.get(db, sender_item_id)
+            sender_item_obj: Wallet = crud.wallet.get(db, user, sender_item_id)
             new_transaction.card_sender = None
 
             if new_transaction.currency == sender_item_obj.currency:
