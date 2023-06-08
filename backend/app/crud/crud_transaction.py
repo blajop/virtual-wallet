@@ -54,7 +54,11 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
         direction: str = "all",
         sort_by: str = "date",
         sort: str = "asc",
+        status: str = None,
     ) -> List[Transaction]:
+        if status not in [None, "finished", "active"]:
+            status = None
+
         if user:
             user_wallets_ids = [
                 w.id for w in crud.wallet.get_multi_by_owner(db, user)
@@ -79,6 +83,12 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
                 else True,
                 (Transaction.sending_user != user.id)
                 if ((direction == "in") and user)
+                else True,
+                (Transaction.status != "pending")
+                if status and status == "finished"
+                else True,
+                (Transaction.status == "pending")
+                if status and status == "active"
                 else True,
             )
         )

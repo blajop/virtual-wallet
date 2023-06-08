@@ -21,6 +21,7 @@ def get_transactions(
     from_date: datetime = datetime.now() - timedelta(weeks=4.0),
     to_date: datetime = datetime.now(),
     recipient: str = None,
+    status: str = None,
     direction: str = "all",
     sort_by: str = "date",
     sort: str = "desc",
@@ -34,6 +35,7 @@ def get_transactions(
         direction=direction,
         sort_by=sort_by,
         sort=sort,
+        status=status,
     )
 
 
