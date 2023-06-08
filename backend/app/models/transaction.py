@@ -17,6 +17,9 @@ class TransactionBase(SQLModel):
     amount: confloat(gt=0)
     recurring: Optional[constr(regex="^month|year")] = Field(default=None)
     detail: Optional[str] = Field(default=None)
+    spending_category_id: Optional[int] = Field(
+        default=3, foreign_key="spending_categories.id"
+    )
 
 
 class Transaction(TransactionBase, table=True):
@@ -26,9 +29,6 @@ class Transaction(TransactionBase, table=True):
     id: Optional[str] = Field(primary_key=True)
     status: Optional[constr(regex="^pending|success|cancelled|declined$")] = Field(
         default="pending"
-    )
-    spending_category_id: Optional[int] = Field(
-        default=1, foreign_key="spending_categories.id"
     )
     created: Optional[datetime] = Field(default=None)
     updated: Optional[datetime] = Field(default=None)
