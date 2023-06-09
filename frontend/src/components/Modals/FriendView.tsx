@@ -9,7 +9,7 @@ import { Friend } from "../ProfilePageComponents/FriendBox.tsx";
 import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
 import CallReceivedIcon from "@mui/icons-material/CallReceived";
 import Transaction from "./Transaction.tsx";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Button from "@mui/material/Button/Button";
 import ButtonBlack from "../Buttons/ButtonBlack.tsx";
 
@@ -34,10 +34,13 @@ type dataState = [boolean, (e: boolean) => boolean];
 interface Props {
   open: dataState;
   friend: Friend;
+  refreshFriends: boolean;
+  handleRefreshFriends: Function;
 }
 
 export default function FriendView(props: Props) {
   const [open, setOpen] = props.open;
+  const handleRefreshFriends = props.handleRefreshFriends;
 
   const [transactionOpen, setTransactionOpen] = useState(false);
   const handleTransactionOpen = (value: boolean) => {
@@ -51,6 +54,10 @@ export default function FriendView(props: Props) {
     setOpen(false);
     setTransactionOpen(false);
   };
+
+  useEffect(() => {
+    handleRefreshFriends();
+  }, [transactionOpen]);
 
   return (
     <Modal

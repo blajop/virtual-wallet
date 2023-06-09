@@ -10,9 +10,11 @@ import { apiUrl } from "../../shared";
 export default function SelectSmall({
   username,
   setWallet,
+  refreshFriends,
 }: {
   username: string;
   setWallet: (wallet: Wallet | undefined) => void;
+  refreshFriends: boolean;
 }) {
   const [selectedWalletId, setSelectedWalletId] = React.useState<string>("");
   const [allWallets, setAllWallets] = React.useState<Wallet[]>([]);
@@ -32,7 +34,7 @@ export default function SelectSmall({
             setSelectedWalletId(response.data[0].id);
           }
         });
-  }, [username]);
+  }, [username, refreshFriends]);
 
   const handleChange = (event: SelectChangeEvent<string>) => {
     setSelectedWalletId(event.target.value);
