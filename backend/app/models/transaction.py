@@ -15,7 +15,7 @@ class TransactionBase(SQLModel):
     wallet_receiver: str = Field(foreign_key="wallets.id")
     currency: constr(regex="^(USD|EUR|BGN|CAD|AUD|CHF|CNY|JPY|GBP|NOK)$")
     amount: confloat(gt=0)
-    recurring: Optional[constr(regex="^month|year")] = Field(default=None)
+    recurring: Optional[constr(regex="^Monthly|Annually")] = Field(default=None)
     detail: Optional[str] = Field(default=None)
     spending_category_id: Optional[int] = Field(
         default=3, foreign_key="spending_categories.id"

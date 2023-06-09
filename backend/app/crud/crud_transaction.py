@@ -55,6 +55,7 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
         sort_by: str = "date",
         sort: str = "asc",
         status: str = None,
+        recurring: bool | None = None,
     ) -> List[Transaction]:
         if status not in [None, "finished", "active"]:
             status = None
@@ -90,6 +91,8 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
                 (Transaction.status == "pending")
                 if status and status == "active"
                 else True,
+                (Transaction.recurring != None) if recurring == True else True,
+                (Transaction.recurring == None) if recurring == False else True,
             )
         )
         return paginate(

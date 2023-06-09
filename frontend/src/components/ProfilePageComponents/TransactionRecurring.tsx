@@ -10,8 +10,7 @@ import CreditCardIcon from "@mui/icons-material/CreditCard";
 import LocalDiningIcon from "@mui/icons-material/LocalDining";
 import React from "react";
 import Pagination from "@mui/material/Pagination/Pagination";
-import TransactionDetail from "../Modals/TransactionIncomingDetail.tsx";
-import CircularLoading from "../CircularLoading.tsx";
+import TransactionRecurringDetail from "../Modals/TransactionRecurringDetail.tsx";
 
 type User = Friend;
 
@@ -34,7 +33,10 @@ export interface Transaction {
 
 type CustomDate = { day: string; month: string };
 
-function formatDateTime(dateTime: string): CustomDate {
+export function formatDateTime(
+  dateTime: string,
+  monthly?: boolean
+): CustomDate {
   const date = new Date(dateTime);
   const day = date.getDate().toString();
   const monthAbbreviations = [
@@ -51,7 +53,12 @@ function formatDateTime(dateTime: string): CustomDate {
     "Nov",
     "Dec",
   ];
-  const month = monthAbbreviations[date.getMonth()];
+  let month = "";
+  {
+    monthly
+      ? (month = monthAbbreviations[date.getMonth() + 1])
+      : (month = monthAbbreviations[date.getMonth()]);
+  }
 
   return { day: day, month: month };
 }
@@ -62,11 +69,7 @@ const spendingIcons = [
   <LocalAtmIcon />,
 ];
 
-function TransactionPending({ username }: { username: string }) {
-  const [loading, setLoading] = useState<boolean>(false);
-
-  const handleLoading = (value: boolean) => setLoading(value);
-
+function TransactionRecurring({ username }: { username: string }) {
   const [transactions, setTransactions] = useState<Transaction[]>();
   const [sendingUsers, setSendingUsers] = useState<User[]>([]);
   const [receivingUsers, setReceivingUsers] = useState<User[]>([]);
@@ -78,7 +81,6 @@ function TransactionPending({ username }: { username: string }) {
   const [pageNumber, setPageNumber] = useState<number>();
 
   const handleDetailOpen = (value: boolean) => {
-    setLoading(true);
     setOpen(value);
   };
 
@@ -86,7 +88,7 @@ function TransactionPending({ username }: { username: string }) {
     axios
       .get(
         apiUrl +
-          `transactions?recurring=False&status=active&size=5&page=${page}`,
+          `transactions?recurring=True&direction=out&size=5&page=${page}`,
         {
           headers: { Authorization: `Bearer ${localStorage.token}` },
         }
@@ -143,11 +145,11 @@ function TransactionPending({ username }: { username: string }) {
       }}
     >
       {detailedTransaction && (
-        <TransactionDetail
+        <TransactionRecurringDetail
           username={username}
           open={[open, handleDetailOpen]}
           transaction={detailedTransaction}
-        ></TransactionDetail>
+        ></TransactionRecurringDetail>
       )}
       <Box
         sx={{
@@ -161,7 +163,6 @@ function TransactionPending({ username }: { username: string }) {
             key={transaction.id}
             sx={{ cursor: "pointer" }}
             onClick={() => {
-              setLoading(true);
               setOpen(true);
               setDetailedTransaction(transaction);
             }}
@@ -186,7 +187,9 @@ function TransactionPending({ username }: { username: string }) {
                     {formatDateTime(transaction.created).day}
                   </Typography>
                   <Typography sx={{ lineHeight: 1 }}>
-                    {formatDateTime(transaction.created).month}
+                    {transaction.recurring === "Monthly"
+                      ? formatDateTime(transaction.created, true).month
+                      : formatDateTime(transaction.created).month}
                   </Typography>
                 </Box>
                 {React.cloneElement(
@@ -213,16 +216,12 @@ function TransactionPending({ username }: { username: string }) {
                   alignItems: "flex-end",
                 }}
               >
-                <Typography>{transaction.detail}</Typography>
-                {receivingUsers[index]?.username == username ? (
-                  <Typography sx={{ fontWeight: 700, lineHeight: 1 }}>
-                    {transaction.amount.toFixed(2)} {transaction.currency}
-                  </Typography>
-                ) : (
-                  <Typography sx={{ fontWeight: 700, lineHeight: 1 }}>
-                    - {transaction.amount.toFixed(2)} {transaction.currency}
-                  </Typography>
-                )}
+                <Typography>
+                  {transaction.recurring}: {transaction.detail}
+                </Typography>
+                <Typography sx={{ fontWeight: 700, lineHeight: 1 }}>
+                  {transaction.amount.toFixed(2)} {transaction.currency}
+                </Typography>
               </Box>
             </Box>
           </Box>
@@ -240,4 +239,4 @@ function TransactionPending({ username }: { username: string }) {
   );
 }
 
-export default TransactionPending;
+export default TransactionRecurring;
