@@ -143,22 +143,37 @@ export default function Transaction(props: Props) {
   // DETAIL
   const [detail, setDetail] = useState("");
 
+  // CATEGORY
+  const [category, setCategory] = useState("Transfer");
+  const selectCategory = (value: string) => {
+    setCategory(value);
+    return value;
+  };
+
   // CONDITIONS
 
   const [canConfirm, setCanConfirm] = useState(false);
 
   useEffect(() => {
-    const conditions = [currency, amount, detail];
+    const conditions = [currency, amount, detail, category];
 
-    if (conditions.every((element) => element != "") && alertAmount === false) {
-      setCanConfirm(true);
+    if (
+      conditions.every((element) => element != "") &&
+      alertAmount === false &&
+      focusAmount === false
+    ) {
+      setTimeout(() => {
+        setCanConfirm(true);
+      }, 100);
     } else {
       setCanConfirm(false);
     }
-  }, [currency, amount, detail, alertAmount]);
+  }, [currency, amount, detail, alertAmount, focusAmount, category]);
 
   // CONFIRM AND CREATE THE TRANSACTION
   const handleConfirm = () => {
+    const lst = ["Food", "Transfer", "Trip", "Entertainment"];
+    const idx = lst.indexOf(category) + 2;
     const finalData = {
       wallet_sender: wallet!.id,
       card_sender: null,
@@ -168,6 +183,7 @@ export default function Transaction(props: Props) {
       amount: amount,
       recurring: recurrence != "" ? recurrence : null,
       detail: detail,
+      spending_category_id: idx,
     };
     axios
       .post(`${apiUrl}transactions`, finalData, {
@@ -241,7 +257,7 @@ export default function Transaction(props: Props) {
         </Box>
         <TextField
           required
-          sx={{ width: "100%" }}
+          sx={{ width: "100%", marginBottom: "10px" }}
           label={"Detail"}
           name="detail"
           value={detail}
@@ -249,6 +265,12 @@ export default function Transaction(props: Props) {
             setDetail(e.target.value);
           }}
         />
+        <SelectMisc
+          sx={{ width: "100%", marginBottom: "10px" }}
+          selectable={[category, selectCategory]}
+          options={["Food", "Transfer", "Trip", "Entertainment"]}
+          label="Category"
+        ></SelectMisc>
         <LabelCheckbox
           isChecked={[
             recurringChecked,
