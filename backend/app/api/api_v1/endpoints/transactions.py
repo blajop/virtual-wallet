@@ -22,6 +22,7 @@ def get_transactions(
     to_date: datetime = datetime.now(),
     recipient: str = None,
     status: str = None,
+    recurring: bool | None = None,
     direction: str = "all",
     sort_by: str = "date",
     sort: str = "desc",
@@ -36,6 +37,7 @@ def get_transactions(
         sort_by=sort_by,
         sort=sort,
         status=status,
+        recurring=recurring,
     )
 
 
