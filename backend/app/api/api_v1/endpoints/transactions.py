@@ -41,6 +41,28 @@ def get_transactions(
     )
 
 
+@router.get("/confirm_balance")
+def confirm_balance(
+    wallet_id: str,
+    amount: float,
+    currency: str,
+    db: Session = Depends(deps.get_db),
+    logged_user: User = Depends(deps.get_current_user),
+):
+    user_wallets_ids = [
+        w.id for w in crud.wallet.get_multi_by_owner(db, logged_user)
+    ] + [w.id for w in logged_user.wallets]
+    if wallet_id not in user_wallets_ids and not crud.user.is_admin(logged_user):
+        raise HTTPException(
+            status_code=403, detail="Wallet passed is not associated with you"
+        )
+    wallet = crud.wallet.get(db, logged_user, wallet_id)
+    if crud.transaction.confirm_balance(db, wallet, logged_user, amount, currency):
+        return Msg(msg="You have enough balance")
+    else:
+        raise HTTPException(status_code=400, detail="Insufficient balance")
+
+
 @router.get("/{id}", response_model=Transaction)
 def get_transaction(
     id: str,
