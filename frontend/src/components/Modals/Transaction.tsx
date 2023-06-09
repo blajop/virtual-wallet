@@ -101,21 +101,44 @@ export default function Transaction(props: Props) {
   const [amount, setAmount] = useState("");
   const [focusAmount, setFocusAmount] = useState(false);
   const [alertAmount, setAlertAmount] = useState(false);
-  useEffect(() => {
+  useEffect(() => {}, [amount, wallet]);
+
+  const checkAmount = () => {
+    setFocusAmount(false);
     if (amount != "") {
       try {
-        if (parseFloat(amount) <= 0 || wallet!.balance < parseFloat(amount)) {
+        const parsed = parseFloat(amount);
+        if (parsed <= 0) {
           setAlertAmount(true);
-        } else {
-          setAlertAmount(false);
+          return;
         }
       } catch (err) {
         setAlertAmount(true);
+        return;
       }
-    } else {
-      setAlertAmount(false);
+
+      const url =
+        apiUrl +
+        `transactions/confirm_balance?wallet_id=${
+          wallet!.id
+        }&amount=${amount}&currency=${currency}`;
+      axios
+        .get(url, {
+          headers: { Authorization: `Bearer ${localStorage.token}` },
+        })
+        .then((response) => {
+          if (response.status === 200) {
+            setAlertAmount(false);
+            console.log(response);
+          }
+        })
+        .catch(() => setAlertAmount(true));
     }
-  }, [amount, wallet]);
+  };
+
+  useEffect(() => {
+    checkAmount();
+  }, [wallet, currency]);
 
   // DETAIL
   const [detail, setDetail] = useState("");
@@ -192,7 +215,7 @@ export default function Transaction(props: Props) {
                 : parseFloat(amount).toFixed(2)
             }
             onFocus={() => setFocusAmount(true)}
-            onBlur={() => setFocusAmount(false)}
+            onBlur={checkAmount}
             error={alertAmount}
             onChange={(e) => {
               setAmount(e.target.value);
