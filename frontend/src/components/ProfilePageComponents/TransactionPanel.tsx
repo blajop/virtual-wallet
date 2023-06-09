@@ -6,6 +6,7 @@ import TabPanel from "@mui/lab/TabPanel/TabPanel";
 import TabContext from "@mui/lab/TabContext/TabContext";
 import TransactionHistory from "./TransactionHistory";
 import TransactionPending from "./TransactionPending";
+import TransactionRecurring from "./TransactionRecurring";
 
 export default function TransactionPanel({ username }: { username: string }) {
   const [value, setValue] = React.useState("1");
@@ -66,7 +67,7 @@ export default function TransactionPanel({ username }: { username: string }) {
           <TransactionPending username={username} />
         </TabPanel>
         <TabPanel value="3" sx={{ height: "100%" }}>
-          Item One
+          <TransactionRecurring username={username}></TransactionRecurring>
         </TabPanel>
       </TabContext>
     </Paper>

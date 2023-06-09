@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import retrieveUser from "../../functions/retrieveUser.ts";
 import { Friend } from "../ProfilePageComponents/FriendBox.tsx";
 import ButtonBlack from "../Buttons/ButtonBlack.tsx";
+import { formatDateTime } from "../ProfilePageComponents/TransactionRecurring.tsx";
 
 const style = {
   position: "absolute" as "absolute",
@@ -87,32 +88,29 @@ export default function TransactionDetail(props: Props) {
         },
       }}
     >
-      {sender && receiver && sender.username !== username ? (
-        <Box sx={style}>
-          {sender && (
-            <Typography>
-              {sender.f_name} {sender.l_name} is trying to send you{" "}
-              {transaction.amount.toFixed(2)} {transaction.currency}
-            </Typography>
-          )}
-          <Box sx={{ display: "flex", gap: "10px" }}>
-            <ButtonBlack>Accept</ButtonBlack>
-            <ButtonBlack>Decline</ButtonBlack>
-          </Box>
+      <Box sx={style}>
+        {transaction.recurring === "Monthly"
+          ? receiver && (
+              <Typography>
+                Recurring transaction for {transaction.amount.toFixed(2)}{" "}
+                {transaction.currency} to {receiver.f_name} {receiver.l_name}.
+                Next billing is on {formatDateTime(transaction.created).day}{" "}
+                {formatDateTime(transaction.created, true).month}
+              </Typography>
+            )
+          : receiver && (
+              <Typography>
+                Recurring transaction for {transaction.amount.toFixed(2)}{" "}
+                {transaction.currency} to {receiver.f_name} {receiver.l_name}.
+                Next billing is on {formatDateTime(transaction.created).day}{" "}
+                {formatDateTime(transaction.created).month}{" "}
+                {new Date().getFullYear() + 1}
+              </Typography>
+            )}
+        <Box sx={{ display: "flex", gap: "10px" }}>
+          <ButtonBlack>Cancel payment</ButtonBlack>
         </Box>
-      ) : (
-        <Box sx={style}>
-          {receiver && (
-            <Typography>
-              You have sent {transaction.amount.toFixed(2)}{" "}
-              {transaction.currency} to {receiver.f_name} {receiver.l_name}.
-            </Typography>
-          )}
-          <Box sx={{ display: "flex", gap: "10px" }}>
-            <ButtonBlack>I changed my mind</ButtonBlack>
-          </Box>
-        </Box>
-      )}
+      </Box>
     </Modal>
   );
 }
