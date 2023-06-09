@@ -100,6 +100,8 @@ export default function FriendBox({
             <FriendView
               open={[friendOpen, handleFriendOpen]}
               friend={focusFriend}
+              refreshFriends={refreshFriends}
+              handleRefreshFriends={handleRefreshFriends}
             ></FriendView>
           )}
           ;

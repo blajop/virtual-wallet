@@ -203,6 +203,7 @@ export default function Profile() {
                 <SelectSmall
                   username={username}
                   setWallet={handleSelectWallet}
+                  refreshFriends={refreshFriends}
                 />
               </>
             )}
