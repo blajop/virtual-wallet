@@ -293,5 +293,19 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
 
         return Msg(msg="Transaction declined")
 
+    def confirm_balance(
+        self, db: Session, wallet: Wallet, user: User, amount: float, currency: str
+    ):
+        if wallet.currency != currency:
+            wallet_currency = self.get_currency(db, wallet.currency)
+            transaction_currency = self.get_currency(db, currency)
+            wallet_curr_amount = self.currency_exchange(
+                base=transaction_currency, to=wallet_currency, amount=amount
+            )
+        else:
+            wallet_curr_amount = amount
+
+        return wallet_curr_amount <= wallet.balance
+
 
 transaction = CRUDTransaction(Transaction)
