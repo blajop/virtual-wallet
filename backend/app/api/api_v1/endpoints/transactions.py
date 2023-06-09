@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Union
+from typing import Annotated, Union
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from sqlmodel import Session
 
@@ -9,13 +9,15 @@ from app.error_models.transaction_errors import TransactionPermissionError
 from app.models import User, Transaction, TransactionCreate
 from app.models.msg import Msg
 from fastapi_pagination import Page, Params
+from fastapi_pagination.ext.sqlmodel import paginate
+
 
 router = APIRouter()
 
 
 @router.get("", response_model=Page[Transaction])
 def get_transactions(
-    params: Params = Depends(),
+    params: Annotated[Params, Depends()],
     db: Session = Depends(deps.get_db),
     logged_user: User = Depends(deps.get_current_user),
     from_date: datetime = datetime.now() - timedelta(weeks=4.0),
@@ -27,8 +29,24 @@ def get_transactions(
     sort_by: str = "date",
     sort: str = "desc",
 ):
+    # return paginate(
+    #     *crud.transaction.get_multi(
+    #         db,
+    #         user=logged_user,
+    #         from_date=from_date,
+    #         to_date=to_date,
+    #         recipient=recipient,
+    #         direction=direction,
+    #         sort_by=sort_by,
+    #         sort=sort,
+    #         status=status,
+    #         recurring=recurring,
+    #     ),
+    #     params=params,
+    # )
     return crud.transaction.get_multi(
         db,
+        params,
         user=logged_user,
         from_date=from_date,
         to_date=to_date,

@@ -46,6 +46,7 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
     def get_multi(
         self,
         db: Session,
+        params,
         *,
         user: Optional[User],
         from_date: datetime = datetime.now() - timedelta(weeks=4.0),
@@ -99,7 +100,7 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
                 else True,
             )
         )
-        db.commit()
+
         return paginate(
             db,
             selectable.order_by(
@@ -107,6 +108,7 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
                     Transaction.amount if sort_by == "amount" else Transaction.created
                 )
             ),
+            params=params,
         )
 
     def get_recurring(self, db: Session):

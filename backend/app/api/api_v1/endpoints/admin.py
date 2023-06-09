@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Union
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi_pagination import Page, Params
 from sqlmodel import Session
 
 from app import crud, deps
@@ -67,10 +68,9 @@ def get_transaction(
     return result
 
 
-@admin_router.get("/transactions", response_model=list[Transaction])
+@admin_router.get("/transactions", response_model=Page[Transaction])
 def get_transactions(
-    skip: int = 0,
-    limit: int = 100,
+    params: Params = Depends(),
     db: Session = Depends(deps.get_db),
     logged_user: User = Depends(deps.get_admin),
     from_date: datetime = datetime.now() - timedelta(weeks=4.0),
@@ -86,8 +86,7 @@ def get_transactions(
 
     return crud.transaction.get_multi(
         db,
-        skip=skip,
-        limit=limit,
+        params,
         user=user,
         from_date=from_date,
         to_date=to_date,

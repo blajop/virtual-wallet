@@ -62,7 +62,7 @@ def remove_wallet(
     db: Session = Depends(deps.get_db),
     logged_user: User = Depends(deps.get_current_user),
 ):
-    wallet = crud.wallet.get(db=db, id=wallet_id)
+    wallet = crud.wallet.get(db=db, user=user, wallet_id=wallet_id)
 
     if not wallet:
         raise HTTPException(status_code=404, detail="No such wallet!")
