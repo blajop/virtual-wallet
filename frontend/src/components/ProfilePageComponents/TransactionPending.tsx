@@ -11,7 +11,6 @@ import LocalDiningIcon from "@mui/icons-material/LocalDining";
 import React from "react";
 import Pagination from "@mui/material/Pagination/Pagination";
 import TransactionDetail from "../Modals/TransactionIncomingDetail.tsx";
-import CircularLoading from "../CircularLoading.tsx";
 
 type User = Friend;
 
@@ -63,10 +62,6 @@ const spendingIcons = [
 ];
 
 function TransactionPending({ username }: { username: string }) {
-  const [loading, setLoading] = useState<boolean>(false);
-
-  const handleLoading = (value: boolean) => setLoading(value);
-
   const [transactions, setTransactions] = useState<Transaction[]>();
   const [sendingUsers, setSendingUsers] = useState<User[]>([]);
   const [receivingUsers, setReceivingUsers] = useState<User[]>([]);
@@ -78,7 +73,6 @@ function TransactionPending({ username }: { username: string }) {
   const [pageNumber, setPageNumber] = useState<number>();
 
   const handleDetailOpen = (value: boolean) => {
-    setLoading(true);
     setOpen(value);
   };
 
@@ -161,7 +155,6 @@ function TransactionPending({ username }: { username: string }) {
             key={transaction.id}
             sx={{ cursor: "pointer" }}
             onClick={() => {
-              setLoading(true);
               setOpen(true);
               setDetailedTransaction(transaction);
             }}

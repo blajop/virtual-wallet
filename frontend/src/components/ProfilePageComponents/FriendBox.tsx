@@ -69,7 +69,7 @@ export default function FriendBox({
           flex: "0 !important",
         }}
       >
-        <AvatarGroup max={6}>
+        <AvatarGroup max={10}>
           <Tooltip title="Add friend">
             <Avatar sx={{ cursor: "pointer" }} onClick={() => setOpen(true)}>
               <AddIcon />
