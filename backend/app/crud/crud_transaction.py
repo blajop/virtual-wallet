@@ -49,7 +49,7 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
         *,
         user: Optional[User],
         from_date: datetime = datetime.now() - timedelta(weeks=4.0),
-        to_date: datetime = datetime.now(),
+        to_date: datetime | None = None,
         recipient: str = None,
         direction: str = "all",
         sort_by: str = "date",
@@ -77,7 +77,7 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
             )
             .filter(
                 Transaction.created > from_date,
-                Transaction.created < to_date,
+                (Transaction.created < to_date) if to_date else True,
                 (Transaction.receiving_user == recipient) if recipient else True,
                 (Transaction.sending_user == user.id)
                 if ((direction == "out") and user)
@@ -86,15 +86,20 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
                 if ((direction == "in") and user)
                 else True,
                 (Transaction.status != "pending")
-                if status and status == "finished"
+                if (status and status == "finished")
                 else True,
                 (Transaction.status == "pending")
-                if status and status == "active"
+                if (status and status == "active")
                 else True,
-                (Transaction.recurring != None) if recurring == True else True,
-                (Transaction.recurring == None) if recurring == False else True,
+                (Transaction.recurring != None)
+                if (recurring and recurring == True)
+                else True,
+                (Transaction.recurring == None)
+                if (recurring and recurring == False)
+                else True,
             )
         )
+        db.commit()
         return paginate(
             db,
             selectable.order_by(

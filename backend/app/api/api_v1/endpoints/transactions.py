@@ -19,7 +19,7 @@ def get_transactions(
     db: Session = Depends(deps.get_db),
     logged_user: User = Depends(deps.get_current_user),
     from_date: datetime = datetime.now() - timedelta(weeks=4.0),
-    to_date: datetime = datetime.now(),
+    to_date: datetime | None = None,
     recipient: str = None,
     status: str = None,
     recurring: bool | None = None,
