@@ -36,7 +36,11 @@ const features: Item[] = [
       </p>
     ),
   },
-  { id: 4, text: <p>Invite friends and claim rewards!</p> },
+  {
+    id: 4,
+    text: <p>Set up recurring payments and never track due dates again!</p>,
+  },
+  { id: 5, text: <p>Invite friends and claim rewards!</p> },
 ];
 
 export default function Features() {
