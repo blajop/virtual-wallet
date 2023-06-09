@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Union
+from typing import Annotated, Union
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi_pagination import Page, Params
 from sqlmodel import Session
@@ -70,11 +70,11 @@ def get_transaction(
 
 @admin_router.get("/transactions", response_model=Page[Transaction])
 def get_transactions(
-    params: Params = Depends(),
+    params: Annotated[Params, Depends()],
     db: Session = Depends(deps.get_db),
     logged_user: User = Depends(deps.get_admin),
     from_date: datetime = datetime.now() - timedelta(weeks=4.0),
-    to_date: datetime = datetime.now(),
+    to_date: datetime | None = None,
     recipient: str = None,
     direction: str = "all",
     sort_by: str = "date",

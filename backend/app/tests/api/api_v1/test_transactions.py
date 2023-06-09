@@ -733,8 +733,6 @@ def test_get_transactions_showsCorrectly_when_viaAdminPanelSortAmount(
     # TEST THE SORT_BY AMOUNT AND ASC & DESC
     # Act 1
     app.dependency_overrides[deps.get_admin] = admin
-    params = Params(page=1, size=100)
-    app.dependency_overrides[Params] = lambda: params
 
     response = client.get(
         "/api/v1/admin/transactions",
@@ -743,10 +741,11 @@ def test_get_transactions_showsCorrectly_when_viaAdminPanelSortAmount(
                 "from_date": datetime_to_str(datetime.now() - timedelta(minutes=1)),
                 "to_date": datetime_to_str(datetime.now() + timedelta(minutes=1)),
                 "sort_by": "amount",
+                "params": Params(page=1, size=100),
             }
         ),
     )
-    data = response.json()
+    data = response.json()["items"]
 
     # Assert
     assert response.status_code == 200
@@ -758,7 +757,6 @@ def test_get_transactions_showsCorrectly_when_viaAdminPanelSortAmount(
 
     # Act 2
     app.dependency_overrides[deps.get_admin] = admin
-    app.dependency_overrides[add_pagination] = add_pagination
 
     response = client.get(
         "/api/v1/admin/transactions",
@@ -768,12 +766,11 @@ def test_get_transactions_showsCorrectly_when_viaAdminPanelSortAmount(
                 "to_date": datetime_to_str(datetime.now() + timedelta(minutes=1)),
                 "sort_by": "amount",
                 "sort": "desc",
-                "page": 1,
-                "size": 100,
+                "params": Params(page=1, size=100),
             }
         ),
     )
-    data = response.json()
+    data = response.json()["items"]
 
     # Assert
     assert response.status_code == 200
@@ -785,7 +782,7 @@ def test_get_transactions_showsCorrectly_when_viaAdminPanelSortAmount(
 
 
 def test_get_transactions_showsCorrectly_when_viaAdminPanelRecipientFilter(
-    session: Session, client: TestClient, user, admin, monkeypatch
+    session: Session, client: TestClient, user, admin
 ):
     # Arrange
     user_3 = random_usermodel()
@@ -846,8 +843,6 @@ def test_get_transactions_showsCorrectly_when_viaAdminPanelRecipientFilter(
     # Act
     app.dependency_overrides[deps.get_admin] = admin
 
-    monkeypatch.setattr("fastapi_pagination.Params", lambda: Params(page=1, size=100))
-
     response = client.get(
         "/api/v1/admin/transactions",
         params={
@@ -855,9 +850,10 @@ def test_get_transactions_showsCorrectly_when_viaAdminPanelRecipientFilter(
             "to_date": datetime_to_str(datetime.now() + timedelta(minutes=1)),
             "sort_by": "amount",
             "recipient": admin().id,
+            "params": Params(page=1, size=100),
         },
     )
-    data = response.json()
+    data = response.json()["items"]
 
     # Assert
     assert response.status_code == 200
@@ -930,7 +926,7 @@ def test_get_transactions_showsCorrectly_when_viaAdminPanelWithUserParam(
     # Act
     app.dependency_overrides[deps.get_admin] = admin
 
-    response = client.get(
+    get_response = client.get(
         "/api/v1/admin/transactions",
         params=QueryParams(
             {
@@ -942,10 +938,10 @@ def test_get_transactions_showsCorrectly_when_viaAdminPanelWithUserParam(
             }
         ),
     )
-    data = response.json()
+    data = get_response.json()["items"]
 
     # Assert
-    assert response.status_code == 200
+    assert get_response.status_code == 200
     assert len(data) == 2
     assert data[0]["id"] == transaction_3_id
     assert data[1]["id"] == transaction_4_id
@@ -1014,8 +1010,6 @@ def test_get_transactions_showsCorrectly_when_viaUserPanel(
 
     # Act 1 - USER
     app.dependency_overrides[deps.get_current_user] = user
-    params = Params(page=1, size=100)
-    app.dependency_overrides[Params] = lambda: params
 
     response = client.get(
         "/api/v1/transactions",
@@ -1023,10 +1017,11 @@ def test_get_transactions_showsCorrectly_when_viaUserPanel(
             {
                 "from_date": datetime_to_str(datetime.now() - timedelta(minutes=1)),
                 "to_date": datetime_to_str(datetime.now() + timedelta(minutes=1)),
+                "params": Params(page=1, size=100),
             }
         ),
     )
-    data = response.json()
+    data = response.json()["items"]
 
     # Assert
     assert response.status_code == 200
@@ -1047,19 +1042,17 @@ def test_get_transactions_showsCorrectly_when_viaUserPanel(
 
     # Act 2 USER_3
     app.dependency_overrides[deps.get_current_user] = lambda: user_3
-    params = Params(page=1, size=100)
-    app.dependency_overrides[Params] = add_pagination
     response = client.get(
         "/api/v1/transactions",
         params=QueryParams(
             {
                 "from_date": datetime_to_str(datetime.now() - timedelta(minutes=1)),
                 "to_date": datetime_to_str(datetime.now() + timedelta(minutes=1)),
-                "params": params,
+                "params": Params(page=1, size=100),
             }
         ),
     )
-    data = response.json()
+    data = response.json()["items"]
 
     # Assert
     assert response.status_code == 200
@@ -1073,8 +1066,6 @@ def test_get_transactions_showsCorrectly_when_viaUserPanel(
 
     # Act 3 - USER_3 OUT
     app.dependency_overrides[deps.get_current_user] = lambda: user_3
-    params = Params(page=1, size=100)
-    app.dependency_overrides[Params] = add_pagination
 
     response = client.get(
         "/api/v1/transactions",
@@ -1083,11 +1074,11 @@ def test_get_transactions_showsCorrectly_when_viaUserPanel(
                 "from_date": datetime_to_str(datetime.now() - timedelta(minutes=1)),
                 "to_date": datetime_to_str(datetime.now() + timedelta(minutes=1)),
                 "direction": "out",
-                "params": params,
+                "params": Params(page=1, size=100),
             }
         ),
     )
-    data = response.json()
+    data = response.json()["items"]
 
     # Assert
     assert response.status_code == 200
@@ -1097,8 +1088,6 @@ def test_get_transactions_showsCorrectly_when_viaUserPanel(
 
     # Act 4 - USER_3 IN
     app.dependency_overrides[deps.get_current_user] = lambda: user_3
-    params = Params(page=1, size=100)
-    app.dependency_overrides[Params] = add_pagination
 
     response = client.get(
         "/api/v1/transactions",
@@ -1107,10 +1096,11 @@ def test_get_transactions_showsCorrectly_when_viaUserPanel(
                 "from_date": datetime_to_str(datetime.now() - timedelta(minutes=1)),
                 "to_date": datetime_to_str(datetime.now() + timedelta(minutes=1)),
                 "direction": "in",
+                "params": Params(page=1, size=100),
             }
         ),
     )
-    data = response.json()
+    data = response.json()["items"]
 
     # Assert
     assert response.status_code == 200
