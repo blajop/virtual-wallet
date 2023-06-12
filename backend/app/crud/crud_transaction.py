@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
-from typing import List, Optional, Union
-from sqlmodel import Session, String, cast, or_, select, desc, func, DateTime, asc
-from sqlalchemy import exc as sqlExc
+from typing import List, Optional
+from sqlmodel import Session, or_, select, desc, asc
 from fastapi_pagination.ext.sqlmodel import paginate
 
 from app import crud
@@ -10,14 +9,12 @@ from app.error_models import TransactionError
 from app.error_models.transaction_errors import TransactionPermissionError
 from app.models import (
     Card,
-    UserCardLink,
     Transaction,
     TransactionBase,
     TransactionCreate,
     User,
     Msg,
     Wallet,
-    UserWalletLink,
     Currency,
 )
 from app.utils import util_id, util_crypt
@@ -128,22 +125,6 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
         user: User,
         recipient_user: User,
     ) -> Transaction:
-        """
-        Creates a transaction.
-        - Option 1: Transfers money Card -> Wallet (depositing from card to a wallet -
-        ONLY card registered on the user's account to wallet), according to the transaction data
-        - Option 2: Wallet -> Wallet transer from a wallet in which the user is the owner | user,
-        according to the transaction data
-
-        If different currencies arise, they are exchanged on cross-USD rate.
-
-        Arguments:
-            db: Session
-            new_transaction: TransactionCreate model
-            user: User model
-        Returns:
-            Transaction : the created transaction.
-        """
         user_wallets = crud.wallet.get_multi_by_owner(db, user) + user.wallets
         recipient_user_wallets = (
             crud.wallet.get_multi_by_owner(db, recipient_user) + recipient_user.wallets
@@ -198,7 +179,6 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
                 raise TransactionError(
                     "You can't deposit money to a wallet not connected with your acoount"
                 )
-            # the obtained Card is with the number and cvc deciphered, so we cipher them back straight away
             sender_item_obj: Card = crud.card.get(db, sender_item_id)
             sender_item_obj.number = util_crypt.encrypt(sender_item_obj.number)
             sender_item_obj.cvc = util_crypt.encrypt(sender_item_obj.cvc)
@@ -245,9 +225,6 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
         return msg
 
     def _finalise(self, db: Session, *, transaction: Transaction) -> Msg:
-        """
-        Finalises a transaction, adding the amount to the receiver durring acceptance.
-        """
         receiver: Wallet = transaction.wallet_rec_obj
 
         transaction_curr: Currency = self.get_currency(db, transaction.currency)

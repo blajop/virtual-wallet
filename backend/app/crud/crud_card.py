@@ -1,6 +1,5 @@
 from typing import List, Optional
 from sqlmodel import Session, or_, select
-from app import crud
 from app.crud.base import CRUDBase
 from app.error_models import CardDataError, CardNotFoundError
 from app.models import Card, CardBase, CardCreate, CardShow, User, Msg
@@ -17,18 +16,6 @@ class CRUDCard(CRUDBase[Card, CardBase, CardCreate]):
         user: Optional[User] = None,
         admin_r: bool = False,
     ) -> Card | None:
-        """
-        Gets a card available to the passed user (registered for his account or any card for admin_r=True).
-        Note: The output is a Card object with plain text number and cvc,
-        so before updating it in the DB, they should be encrypted back.
-
-        Arguments:
-            db: Session
-            user: User model
-        Returns:
-            Card model
-
-        """
         found_card: Card = db.exec(
             select(Card).filter(
                 or_(
@@ -92,18 +79,6 @@ class CRUDCard(CRUDBase[Card, CardBase, CardCreate]):
     def add_card(
         self, db: Session, user: User, new_card: CardCreate
     ) -> Card | Msg | CardDataError:
-        """
-        Registers a card attached to the account of the passed user.
-
-        Arguments:
-            db: Session
-            user: User model
-        Returns:
-            CardShow model
-        Raises:
-            CardDataError
-
-        """
         card_orm = Card(
             number=util_crypt.encrypt(new_card.number),
             expiry=new_card.expiry.datetime_,
@@ -131,10 +106,11 @@ class CRUDCard(CRUDBase[Card, CardBase, CardCreate]):
             card_orm.id = util_id.generate_id()
 
         card_orm.users.append(user)
+
         if found_card:
             db.add(card_orm)
         db.commit()
-        # db.refresh(card_orm) # breaks the session of the tests and not needed in code for now
+
         return CardShow(
             number=util_crypt.decrypt(card_orm.number),
             expiry=card_orm.expiry.strftime("%m/%y"),
@@ -163,11 +139,9 @@ class CRUDCard(CRUDBase[Card, CardBase, CardCreate]):
             db.commit()
 
     def remove(self, db: Session, card_identifier: str):
-        """
-        Admin delete a card.
-        """
         if not (found_card := self.get(db, card_identifier)):
             raise CardNotFoundError("There is no such card")
+
         found_card.users.clear()
         db.delete(found_card)
         db.commit()

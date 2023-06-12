@@ -5,7 +5,7 @@ from sqlmodel import Session, select
 from app import crud, utils
 from app.crud.base import CRUDBase
 from app.error_models.wallet_errors import WalletNameError
-from app.models import Card, User, Wallet, WalletCreate, WalletUpdate
+from app.models import  User, Wallet, WalletCreate, WalletUpdate
 from app.models.wallet import UserWalletLink
 
 

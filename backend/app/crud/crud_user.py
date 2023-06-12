@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import Optional
-from fastapi import File, HTTPException, Response, UploadFile
+from fastapi import Response, UploadFile
 from sqlmodel import Session, or_, select
 
 from app import utils
@@ -8,7 +8,7 @@ from app.core import security
 from app.crud.base import CRUDBase
 from app.error_models import DataTakenError
 from app.error_models.user_errors import FileError
-from app.models import User, UserBase, UserCreate, UserUpdate, Scope, Msg
+from app.models import User, UserCreate, UserUpdate, Scope, Msg
 from app.models.user import UserSettings
 
 import os
@@ -19,17 +19,6 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
     def create(
         self, db: Session, new_user: UserCreate, referrer: User | None
     ) -> User | DataTakenError:
-        """
-        Registers a new user.
-
-        Arguments:
-            db: Session
-            new_user: UserCreate model
-        Returns:
-            User model
-        Raises:
-            DataTakenError: Username/Email/Phone number already taken
-        """
         if not self.user_data_taken(db, user=new_user):
             # Create the user object
             user_orm = User.from_orm(new_user)
@@ -54,19 +43,12 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         db.add(user_orm)
         db.commit()
         db.refresh(user_orm)
-        # check referrer for referrals left. deduct if available and send both money
-        # seperate in another func and call it here
+
         if referrer:
             if referrer.user_settings_obj.referrals_left > 0:
                 referrer.user_settings_obj.referrals_left - 1
-                # get the currency of main wallet
-                # figure out what do if no wallets/no main wallet.
-                # referrer should be asked to create a wallet when he send a referral link
-                # just store money in the user account? maybe start with a default wallet?
-                #
-                # perform the transaction
+
                 referrer.user_settings_obj.default_wallet_obj.balance + 20
-                # a default wallet needs to be created upon registration if we choose that approach
                 user_orm.user_settings_obj.default_wallet_obj + 20
 
         return user_orm
@@ -167,11 +149,9 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         return False
 
     def refer_friend(self, *, user: User, email: str, db: Session):
-        # check if email in system
         if self.get(db, identifier=email):
             return Response(status_code=400, content="User is already registered")
 
-        # send email with invite link
         utils.util_mail.send_refferal_email(email_to=email, refferer=user)
 
         return Response(status_code=200)
@@ -208,17 +188,14 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         cwd = os.getcwd()
         try:
             with Image.open(file.file, mode="r") as img:
-                # Calculate the size of the square
                 size = min(img.size)
 
-                # Crop the image to a square
                 left = (img.width - size) // 2
                 top = 0
                 right = left + size
                 bottom = size
                 cropped_img = img.crop((left, top, right, bottom))
 
-                # Resize the img
                 resized_img = cropped_img.resize((600, 600))
                 resized_img.save(
                     f"app/static/avatars/{user.id}.png",
