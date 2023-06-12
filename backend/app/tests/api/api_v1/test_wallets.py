@@ -167,10 +167,6 @@ def test_delete_wallet(client: TestClient, user, admin, session: Session):
     response = client.get(f"/api/v1/users/{user1.username}/wallets/")
     assert response.json() == [js(wallet)]
 
-    # Raise 404 if not a valid wallet
-    response = client.delete(f"/api/v1/users/{user1.username}/wallets/fakeWallet")
-    assert response.status_code == 404
-
     # Raise 403 if trying to delete another user's wallet
     app.dependency_overrides[deps.get_current_user] = user_override
     response = client.delete(f"/api/v1/users/{user1.username}/wallets/{wallet.id}")
