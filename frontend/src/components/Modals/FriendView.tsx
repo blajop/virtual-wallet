@@ -1,16 +1,12 @@
-import * as React from "react";
 import Backdrop from "@mui/material/Backdrop";
 import Box from "@mui/material/Box";
 import Modal from "@mui/material/Modal";
-import { apiUrl, baseUrl } from "../../shared.js";
-import SendIcon from "@mui/icons-material/Send";
+import { baseUrl } from "../../shared.js";
 import { Avatar, Tooltip, Typography } from "@mui/material";
 import { Friend } from "../ProfilePageComponents/FriendBox.tsx";
 import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
-import CallReceivedIcon from "@mui/icons-material/CallReceived";
 import Transaction from "./Transaction.tsx";
 import { useEffect, useState } from "react";
-import Button from "@mui/material/Button/Button";
 import ButtonBlack from "../Buttons/ButtonBlack.tsx";
 
 const style = {

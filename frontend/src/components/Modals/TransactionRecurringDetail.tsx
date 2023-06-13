@@ -53,9 +53,8 @@ interface Props {
 export default function TransactionDetail(props: Props) {
   const [open, setOpen] = props.open;
   const transaction = props.transaction;
-  const username = props.username;
 
-  const [sender, setSender] = useState<Friend>();
+  const [, setSender] = useState<Friend>();
   const [receiver, setReceiver] = useState<Friend>();
 
   const handleClose = () => {
