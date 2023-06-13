@@ -103,6 +103,7 @@ def create_transaction(
     logged_user: User = Depends(deps.get_current_user),
 ):
     recipient_user = crud.user.get(db, new_transaction.receiving_user)
+
     try:
         created_transaction = crud.transaction.create(
             db,
@@ -118,7 +119,8 @@ def create_transaction(
         recipient_user.email,
         created_transaction,
         logged_user,
-        recipient_user,
+        created_transaction.link_accept,
+        created_transaction.link_decline,
     )
 
     return created_transaction

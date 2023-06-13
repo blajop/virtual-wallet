@@ -4,6 +4,7 @@ from sqlmodel import Session, or_, select, desc, asc
 from fastapi_pagination.ext.sqlmodel import paginate
 
 from app import crud
+from app import utils
 from app.crud.base import CRUDBase
 from app.error_models import TransactionError
 from app.error_models.transaction_errors import TransactionPermissionError
@@ -197,6 +198,12 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
         )
         transaction.sending_user = user.id
         transaction.blocked_sender_amt = sender_currency_amount
+
+        (
+            transaction.link_accept,
+            transaction.link_decline,
+        ) = utils.util_mail.generate_acc_dec_links(transaction, recipient_user)
+
         transaction.created = transaction.updated = datetime.now()
 
         db.commit()
@@ -218,6 +225,7 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
 
         msg = self._finalise(db=db, transaction=transaction)
         transaction.status = "success"
+        transaction.link_accept = transaction.link_decline = None
         transaction.updated = datetime.now()
 
         db.commit()
@@ -274,6 +282,7 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
         if transaction.wallet_sen_obj:
             transaction.wallet_sen_obj.balance += transaction.blocked_sender_amt
             transaction.blocked_sender_amt = 0
+            transaction.link_accept = transaction.link_decline = None
         transaction.updated = datetime.now()
 
         db.commit()

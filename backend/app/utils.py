@@ -17,7 +17,7 @@ from cryptography.hazmat.primitives import padding
 import base64
 
 from app.models import Currency, User
-from app.models.transaction import Transaction
+from app.models.transaction import Transaction, TransactionCreate
 
 
 class EmailUtility:
@@ -100,17 +100,26 @@ class EmailUtility:
             },
         )
 
+    def generate_acc_dec_links(self, transaction: TransactionCreate, recipient: User):
+        token_transaction = self.generate_id_link_token(transaction.id)
+        token_recipient = self.generate_id_link_token(recipient.id)
+        link_accept = f"{settings.SERVER_HOST}{settings.API_V1_STR}/transactions/{token_transaction}/confirm/{token_recipient}"
+        link_decline = f"{settings.SERVER_HOST}{settings.API_V1_STR}/transactions/{token_transaction}/decline/{token_recipient}"
+
+        return link_accept, link_decline
+
     def send_confirm_transaction_email(
-        self, email_to: str, transaction: Transaction, sender: User, recipient: User
+        self,
+        email_to: str,
+        transaction: Transaction,
+        sender: User,
+        link_accept: str,
+        link_decline: str,
     ) -> None:
         project_name = settings.PROJECT_NAME
         subject = f"{project_name} - Transaction pending for your confirmation"
-        token_transaction = self.generate_id_link_token(transaction.id)
-        token_recipient = self.generate_id_link_token(recipient.id)
         with open(Path(settings.EMAIL_TEMPLATES_DIR) / "transaction_confirm.html") as f:
             template_str = f.read()
-        link_confirm = f"{settings.SERVER_HOST}{settings.API_V1_STR}/transactions/{token_transaction}/confirm/{token_recipient}"
-        link_decline = f"{settings.SERVER_HOST}{settings.API_V1_STR}/transactions/{token_transaction}/decline/{token_recipient}"
         detail = transaction.detail
         date = transaction.created.strftime("%d/%m/%Y, %H:%M")
 
@@ -122,7 +131,7 @@ class EmailUtility:
                 "project_name": settings.PROJECT_NAME,
                 "sender": sender.username,
                 "amount": f"{transaction.currency} {transaction.amount}",
-                "link_confirm": link_confirm,
+                "link_confirm": link_accept,
                 "link_decline": link_decline,
                 "detail": detail,
                 "date": date,
