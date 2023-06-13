@@ -5,7 +5,7 @@
       "use": "@vercel/python",
       "config": {
         "maxDuration": 300,
-        "installCommand": "apt-get update && apt-get install -y libmariadb-dev"
+        "installCommand": "apt-get update && apt-get install -y libmariadb-dev && pip3 install -r requirements.txt"
       }
     }
   ],
