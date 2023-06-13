@@ -62,3 +62,4 @@ tzdata==2023.3
 tzlocal==5.0.1
 urllib3==2.0.2
 uvicorn==0.22.0
+fastapi-pagination == 0.12.4
