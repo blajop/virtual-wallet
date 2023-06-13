@@ -12,7 +12,6 @@ import Tooltip from "@mui/material/Tooltip/Tooltip";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { baseUrl } from "../../shared.js";
-import Transaction from "../Modals/Transaction.js";
 
 interface CardProps {
   name?: string;

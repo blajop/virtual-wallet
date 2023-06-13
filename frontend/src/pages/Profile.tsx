@@ -14,7 +14,6 @@ import CustomAvatar from "../components/Icons/CustomAvatar.tsx";
 import EditProfile from "../components/ProfilePageComponents/EditProfile.tsx";
 import Cards from "../components/ProfilePageComponents/Cards.tsx";
 import SelectCard from "../components/Select/SelectCard.tsx";
-import TransactionHistory from "../components/ProfilePageComponents/TransactionHistory.tsx";
 import TransactionPanel from "../components/ProfilePageComponents/TransactionPanel.tsx";
 
 export type Wallet = {

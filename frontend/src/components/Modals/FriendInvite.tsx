@@ -64,24 +64,24 @@ export default function TransitionsModal({
     }
   }, [debouncedSearch]);
 
-  function retrieveFriends(): Promise<Friend[]> {
-    return axios
-      .get(apiUrl + `users/${email}/friends`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((response) => response.data);
-  }
+  // function retrieveFriends(): Promise<Friend[]> {
+  //   return axios
+  //     .get(apiUrl + `users/${email}/friends`, {
+  //       headers: { Authorization: `Bearer ${token}` },
+  //     })
+  //     .then((response) => response.data);
+  // }
 
-  const [isFriend, setIsFriend] = React.useState(false);
+  // const [, setIsFriend] = React.useState(false);
 
-  const checkFriendIn = (friendUsername: string) => {
-    retrieveFriends().then((friends) => {
-      const isFriend = friends.some(
-        (friend) => friend.username === friendUsername
-      );
-      setIsFriend(isFriend);
-    });
-  };
+  // const checkFriendIn = (friendUsername: string) => {
+  //   retrieveFriends().then((friends) => {
+  //     const isFriend = friends.some(
+  //       (friend) => friend.username === friendUsername
+  //     );
+  //     setIsFriend(isFriend);
+  //   });
+  // };
 
   const handleAddFriend = (friend: string) => {
     const friendUrl = apiUrl + `users/${email}/friends?id=${friend}`;

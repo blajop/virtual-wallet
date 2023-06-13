@@ -35,7 +35,7 @@ export default function Transaction(props: Props) {
   const [loggedUsername, setLoggedUsername] = useState("");
   const friend = props.friend;
 
-  const [transactionOpen, setTransactionOpen] = props.transactionOpen;
+  const [, setTransactionOpen] = props.transactionOpen;
 
   const [successfulBanner, setSuccessfulBanner] = useState(false);
 

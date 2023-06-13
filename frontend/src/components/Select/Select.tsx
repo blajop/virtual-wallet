@@ -14,7 +14,7 @@ export default function SelectSmall({
 }: {
   username: string;
   setWallet: (wallet: Wallet | undefined) => void;
-  refreshFriends: boolean;
+  refreshFriends?: boolean;
 }) {
   const [selectedWalletId, setSelectedWalletId] = React.useState<string>("");
   const [allWallets, setAllWallets] = React.useState<Wallet[]>([]);
