@@ -20,6 +20,8 @@ class TransactionBase(SQLModel):
     spending_category_id: Optional[int] = Field(
         default=3, foreign_key="spending_categories.id"
     )
+    link_accept: Optional[str] = Field(default=None)
+    link_decline: Optional[str] = Field(default=None)
 
 
 class Transaction(TransactionBase, table=True):
