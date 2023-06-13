@@ -1,4 +1,10 @@
 {
+  "preBuild": {
+    "commands": [
+      "sudo apt update",
+      "sudo apt install -y libmariadb-dev"
+    ]
+  },
     "builds": [
       {
         "src": "main.py",
