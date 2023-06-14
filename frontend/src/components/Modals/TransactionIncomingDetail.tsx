@@ -49,12 +49,14 @@ interface Props {
   open: dataState;
   transaction: Transaction;
   username: string;
+  refresh: dataState;
 }
 
 export default function TransactionDetail(props: Props) {
   const [open, setOpen] = props.open;
   const transaction = props.transaction;
   const username = props.username;
+  const [refresh, setRefresh] = props.refresh;
 
   const [cancelled, setCancelled] = useState(false);
   const [sender, setSender] = useState<Friend>();
@@ -75,6 +77,7 @@ export default function TransactionDetail(props: Props) {
         .then((response) => {
           if (response.status === 200) {
             setCancelled(true);
+            setRefresh(!refresh);
             setTimeout(() => {
               setCancelled(false);
               handleClose();

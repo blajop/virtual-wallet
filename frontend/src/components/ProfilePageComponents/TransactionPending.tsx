@@ -35,6 +35,8 @@ export interface Transaction {
 
 type CustomDate = { day: string; month: string };
 
+type dataState = [boolean, (e: boolean) => void];
+
 function formatDateTime(dateTime: string): CustomDate {
   const date = new Date(dateTime);
   const day = date.getDate().toString();
@@ -63,10 +65,17 @@ const spendingIcons = [
   <LocalAtmIcon />,
 ];
 
-function TransactionPending({ username }: { username: string }) {
+function TransactionPending({
+  username,
+  refreshTr,
+}: {
+  username: string;
+  refreshTr: dataState;
+}) {
   const [transactions, setTransactions] = useState<Transaction[]>();
   const [sendingUsers, setSendingUsers] = useState<User[]>([]);
   const [receivingUsers, setReceivingUsers] = useState<User[]>([]);
+  const [refresh, setRefresh] = refreshTr;
 
   const [detailedTransaction, setDetailedTransaction] = useState<Transaction>();
   const [open, setOpen] = useState<boolean>(false);
@@ -76,6 +85,10 @@ function TransactionPending({ username }: { username: string }) {
 
   const handleDetailOpen = (value: boolean) => {
     setOpen(value);
+  };
+
+  const handleRefresh = (value: boolean) => {
+    setRefresh(value);
   };
 
   useEffect(() => {
@@ -91,7 +104,7 @@ function TransactionPending({ username }: { username: string }) {
         setPageNumber(response.data.pages);
         setTransactions(response.data.items);
       });
-  }, [page]);
+  }, [page, refresh]);
 
   useEffect(() => {
     const fetchSenders = async () => {
@@ -143,6 +156,7 @@ function TransactionPending({ username }: { username: string }) {
           username={username}
           open={[open, handleDetailOpen]}
           transaction={detailedTransaction}
+          refresh={[refresh, handleRefresh]}
         ></TransactionDetail>
       )}
       <Box
