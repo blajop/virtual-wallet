@@ -7,6 +7,8 @@ import { useEffect, useState } from "react";
 import retrieveUser from "../../functions/retrieveUser.ts";
 import { Friend } from "../ProfilePageComponents/FriendBox.tsx";
 import ButtonBlack from "../Buttons/ButtonBlack.tsx";
+import axios from "axios";
+import { apiUrl } from "../../shared.ts";
 
 const style = {
   position: "absolute" as "absolute",
@@ -47,18 +49,44 @@ interface Props {
   open: dataState;
   transaction: Transaction;
   username: string;
+  refresh: dataState;
 }
 
 export default function TransactionDetail(props: Props) {
   const [open, setOpen] = props.open;
   const transaction = props.transaction;
   const username = props.username;
+  const [refresh, setRefresh] = props.refresh;
 
+  const [cancelled, setCancelled] = useState(false);
   const [sender, setSender] = useState<Friend>();
   const [receiver, setReceiver] = useState<Friend>();
 
   const handleClose = () => {
     setOpen(false);
+  };
+
+  const handleCancel = () => {
+    try {
+      axios
+        .put(apiUrl + `transactions/${transaction.id}/cancel`, null, {
+          headers: {
+            Authorization: `Bearer ${localStorage.token}`,
+          },
+        })
+        .then((response) => {
+          if (response.status === 200) {
+            setCancelled(true);
+            setRefresh(!refresh);
+            setTimeout(() => {
+              setCancelled(false);
+              handleClose();
+            }, 3000);
+          }
+        });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   useEffect(() => {
@@ -109,7 +137,8 @@ export default function TransactionDetail(props: Props) {
             </Typography>
           )}
           <Box sx={{ display: "flex", gap: "10px" }}>
-            <ButtonBlack>I changed my mind</ButtonBlack>
+            <ButtonBlack onClick={handleCancel}>I changed my mind</ButtonBlack>
+            <Typography>{cancelled && "Transaction cancelled!"}</Typography>
           </Box>
         </Box>
       )}

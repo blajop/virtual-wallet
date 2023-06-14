@@ -8,8 +8,17 @@ import TransactionHistory from "./TransactionHistory";
 import TransactionPending from "./TransactionPending";
 import TransactionRecurring from "./TransactionRecurring";
 
-export default function TransactionPanel({ username }: { username: string }) {
+type dataState = [boolean, (e: boolean) => void];
+
+export default function TransactionPanel({
+  username,
+  refreshFr,
+}: {
+  username: string;
+  refreshFr: dataState;
+}) {
   const [value, setValue] = React.useState("1");
+  const [refresh, setRefresh] = refreshFr;
 
   const handleChange = (event: React.SyntheticEvent, newValue: string) => {
     event;
@@ -64,7 +73,10 @@ export default function TransactionPanel({ username }: { username: string }) {
           <TransactionHistory username={username}></TransactionHistory>
         </TabPanel>
         <TabPanel value="2" sx={{ height: "100%" }}>
-          <TransactionPending username={username} />
+          <TransactionPending
+            username={username}
+            refreshTr={[refresh, setRefresh]}
+          />
         </TabPanel>
         <TabPanel value="3" sx={{ height: "100%" }}>
           <TransactionRecurring username={username}></TransactionRecurring>

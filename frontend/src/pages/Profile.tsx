@@ -265,7 +265,10 @@ export default function Profile() {
               email={email}
             />
             <br></br>
-            <TransactionPanel username={username} />
+            <TransactionPanel
+              username={username}
+              refreshFr={[refreshFriends, setRefreshFriends]}
+            />
           </Paper>
         </Grid>
       </Grid>
