@@ -176,3 +176,23 @@ def decline_transaction(
             raise HTTPException(status_code=403, detail=err.args[0])
     except TransactionError as err:
         raise HTTPException(status_code=400, detail=err.args[0])
+
+
+@router.put("/{transaction_id}/cancel", response_model=Msg)
+def cancel_transaction(
+    transaction_id: str,
+    db: Session = Depends(deps.get_db),
+    logged_user: User = Depends(deps.get_current_user),
+):
+    transaction = crud.transaction.get(db, transaction_id, logged_user)
+    if not transaction:
+        raise HTTPException(status_code=404)
+    try:
+        try:
+            return crud.transaction.cancel(
+                db=db, transaction=transaction, user=logged_user
+            )
+        except TransactionPermissionError as err:
+            raise HTTPException(status_code=403, detail=err.args[0])
+    except TransactionError as err:
+        raise HTTPException(status_code=400, detail=err.args[0])

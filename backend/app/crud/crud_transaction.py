@@ -289,6 +289,28 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionBase])
 
         return Msg(msg="Transaction declined")
 
+    def cancel(
+        self, *, db: Session, transaction: Transaction, user: User
+    ) -> Msg | TransactionError | TransactionPermissionError:
+        if transaction.status != "pending":
+            raise TransactionError("Transaction is not with status pending")
+
+        if user.id != transaction.sending_user:
+            raise TransactionPermissionError(
+                "You can only cancel pending transactions that you sent",
+            )
+
+        transaction.status = "cancelled"
+        if transaction.wallet_sen_obj:
+            transaction.wallet_sen_obj.balance += transaction.blocked_sender_amt
+            transaction.blocked_sender_amt = 0
+            transaction.link_accept = transaction.link_decline = None
+        transaction.updated = datetime.now()
+
+        db.commit()
+
+        return Msg(msg="Transaction cancelled")
+
     def confirm_balance(
         self, db: Session, wallet: Wallet, user: User, amount: float, currency: str
     ):
