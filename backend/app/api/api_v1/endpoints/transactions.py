@@ -10,6 +10,7 @@ from app.models import User, Transaction, TransactionCreate
 from app.models.msg import Msg
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlmodel import paginate
+from app.core import settings
 
 
 router = APIRouter()
@@ -29,21 +30,6 @@ def get_transactions(
     sort_by: str = "date",
     sort: str = "desc",
 ):
-    # return paginate(
-    #     *crud.transaction.get_multi(
-    #         db,
-    #         user=logged_user,
-    #         from_date=from_date,
-    #         to_date=to_date,
-    #         recipient=recipient,
-    #         direction=direction,
-    #         sort_by=sort_by,
-    #         sort=sort,
-    #         status=status,
-    #         recurring=recurring,
-    #     ),
-    #     params=params,
-    # )
     return crud.transaction.get_multi(
         db,
         params,
@@ -119,8 +105,8 @@ def create_transaction(
         recipient_user.email,
         created_transaction,
         logged_user,
-        created_transaction.link_accept,
-        created_transaction.link_decline,
+        f"{settings.SERVER_HOST}{settings.API_V1_STR}/{created_transaction.link_accept}",
+        f"{settings.SERVER_HOST}{settings.API_V1_STR}/{created_transaction.link_decline}",
     )
 
     return created_transaction

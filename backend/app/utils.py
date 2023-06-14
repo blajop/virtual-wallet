@@ -103,8 +103,8 @@ class EmailUtility:
     def generate_acc_dec_links(self, transaction: TransactionCreate, recipient: User):
         token_transaction = self.generate_id_link_token(transaction.id)
         token_recipient = self.generate_id_link_token(recipient.id)
-        link_accept = f"{settings.SERVER_HOST}{settings.API_V1_STR}/transactions/{token_transaction}/confirm/{token_recipient}"
-        link_decline = f"{settings.SERVER_HOST}{settings.API_V1_STR}/transactions/{token_transaction}/decline/{token_recipient}"
+        link_accept = f"transactions/{token_transaction}/confirm/{token_recipient}"
+        link_decline = f"transactions/{token_transaction}/decline/{token_recipient}"
 
         return link_accept, link_decline
 
