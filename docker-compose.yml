@@ -1,15 +1,14 @@
 version: "3.9"
 services:
   backend-api:
-    image: python-backend:latest
-    # build: ./backend
+    # image: python-backend:latest
+    build: ./backend
     depends_on:
       - database
     ports:
       - "8000:5555"
     restart: on-failure
     env_file: .env
-    # volumes: ???
 
 
 
