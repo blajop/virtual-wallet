@@ -216,7 +216,7 @@ function TransactionRecurring({ username }: { username: string }) {
                   alignItems: "flex-end",
                 }}
               >
-                <Typography>
+                <Typography align="right">
                   {transaction.recurring}: {transaction.detail}
                 </Typography>
                 <Typography sx={{ fontWeight: 700, lineHeight: 1 }}>

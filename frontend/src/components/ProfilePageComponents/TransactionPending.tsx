@@ -222,7 +222,7 @@ function TransactionPending({
                   alignItems: "flex-end",
                 }}
               >
-                <Typography>{transaction.detail}</Typography>
+                <Typography align="right">{transaction.detail}</Typography>
                 {receivingUsers[index]?.username == username ? (
                   <Typography sx={{ fontWeight: 700, lineHeight: 1 }}>
                     {transaction.amount.toFixed(2)} {transaction.currency}
