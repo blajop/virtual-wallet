@@ -29,6 +29,8 @@ export interface Transaction {
   spending_category_id: number;
   created: string;
   updated: string;
+  link_accept: string;
+  link_decline: string;
 }
 
 type CustomDate = { day: string; month: string };
