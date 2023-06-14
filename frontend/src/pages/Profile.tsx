@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { baseUrl } from "../shared.js";
 import WalletCard from "../components/ProfilePageComponents/WalletCard.js";
 import SelectSmall from "../components/Select/Select";
-import { Grid, Paper } from "@mui/material";
+import { Grid, Paper, Tooltip } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import CircularLoading from "../components/CircularLoading.js";
 import FriendBox from "../components/ProfilePageComponents/FriendBox.js";
@@ -15,6 +15,8 @@ import EditProfile from "../components/ProfilePageComponents/EditProfile.tsx";
 import Cards from "../components/ProfilePageComponents/Cards.tsx";
 import SelectCard from "../components/Select/SelectCard.tsx";
 import TransactionPanel from "../components/ProfilePageComponents/TransactionPanel.tsx";
+import ButtonBlack from "../components/Buttons/ButtonBlack.tsx";
+import AddIcon from "@mui/icons-material/Add";
 
 export type Wallet = {
   id: string;
@@ -199,11 +201,23 @@ export default function Profile() {
                   walletName={wallet?.name || "Wallet"}
                 />
 
-                <SelectSmall
-                  username={username}
-                  setWallet={handleSelectWallet}
-                  refreshFriends={refreshFriends}
-                />
+                <Box sx={{ display: "flex", gap: "10px" }}>
+                  <Tooltip title={"Create a new wallet"}>
+                    <span className="mt-[8px]">
+                      <ButtonBlack
+                        invert
+                        sx={{ height: "100%", borderColor: "lightgray" }}
+                      >
+                        <AddIcon />
+                      </ButtonBlack>
+                    </span>
+                  </Tooltip>
+                  <SelectSmall
+                    username={username}
+                    setWallet={handleSelectWallet}
+                    refreshFriends={refreshFriends}
+                  />
+                </Box>
               </>
             )}
             {/* CARDS */}
@@ -215,11 +229,23 @@ export default function Profile() {
                 exp={new Date(card.expiry)}
               />
             )}
-            <SelectCard
-              username={username}
-              token={localStorage.token}
-              setCard={handleSelectCard}
-            />
+            <Box sx={{ display: "flex", gap: "10px" }}>
+              <Tooltip title={"Add a new card"}>
+                <span className="mt-[8px]">
+                  <ButtonBlack
+                    invert
+                    sx={{ height: "100%", borderColor: "lightgray" }}
+                  >
+                    <AddIcon />
+                  </ButtonBlack>
+                </span>
+              </Tooltip>
+              <SelectCard
+                username={username}
+                token={localStorage.token}
+                setCard={handleSelectCard}
+              />
+            </Box>
           </Paper>
         </Grid>
         <Grid item xs={12} md={6}>
