@@ -28,7 +28,7 @@ class UserBase(SQLModel):
 
 
 class UserCreate(UserBase):
-    password: str = Field(regex="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[-+*&^_]).{8,}$")
+    password: str = Field(regex="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[-+*&^_!]).{8,}$")
 
 
 class UserUpdate(SQLModel):
