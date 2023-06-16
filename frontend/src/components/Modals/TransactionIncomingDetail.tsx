@@ -41,6 +41,8 @@ export interface Transaction {
   spending_category_id: number;
   created: string;
   updated: string;
+  link_accept: string;
+  link_decline: string;
 }
 
 type dataState = [boolean, (e: boolean) => void];
@@ -59,6 +61,9 @@ export default function TransactionDetail(props: Props) {
   const [refresh, setRefresh] = props.refresh;
 
   const [cancelled, setCancelled] = useState(false);
+  const [declined, setDeclined] = useState(false);
+  const [accepted, setAccepted] = useState(false);
+
   const [sender, setSender] = useState<Friend>();
   const [receiver, setReceiver] = useState<Friend>();
 
@@ -80,6 +85,52 @@ export default function TransactionDetail(props: Props) {
             setRefresh(!refresh);
             setTimeout(() => {
               setCancelled(false);
+              handleClose();
+            }, 3000);
+          }
+        });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleDecline = () => {
+    try {
+      axios
+        .get(apiUrl + transaction.link_decline, {
+          headers: {
+            Authorization: `Bearer ${localStorage.token}`,
+          },
+        })
+        .then((response) => {
+          if (response.status === 200) {
+            setDeclined(true);
+            setRefresh(!refresh);
+            setTimeout(() => {
+              setDeclined(false);
+              handleClose();
+            }, 3000);
+          }
+        });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleAccept = () => {
+    try {
+      axios
+        .get(apiUrl + transaction.link_accept, {
+          headers: {
+            Authorization: `Bearer ${localStorage.token}`,
+          },
+        })
+        .then((response) => {
+          if (response.status === 200) {
+            setAccepted(true);
+            setRefresh(!refresh);
+            setTimeout(() => {
+              setAccepted(false);
               handleClose();
             }, 3000);
           }
@@ -124,9 +175,11 @@ export default function TransactionDetail(props: Props) {
             </Typography>
           )}
           <Box sx={{ display: "flex", gap: "10px" }}>
-            <ButtonBlack>Accept</ButtonBlack>
-            <ButtonBlack>Decline</ButtonBlack>
+            <ButtonBlack onClick={handleAccept}>Accept</ButtonBlack>
+            <ButtonBlack onClick={handleDecline}>Decline</ButtonBlack>
           </Box>
+          <Typography>{declined && "Transaction declined!"}</Typography>
+          <Typography>{accepted && "Transaction accepted!"}</Typography>
         </Box>
       ) : (
         <Box sx={style}>
@@ -138,8 +191,8 @@ export default function TransactionDetail(props: Props) {
           )}
           <Box sx={{ display: "flex", gap: "10px" }}>
             <ButtonBlack onClick={handleCancel}>I changed my mind</ButtonBlack>
-            <Typography>{cancelled && "Transaction cancelled!"}</Typography>
           </Box>
+          <Typography>{cancelled && "Transaction cancelled!"}</Typography>
         </Box>
       )}
     </Modal>
