@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { baseUrl } from "../shared.js";
 import WalletCard from "../components/ProfilePageComponents/WalletCard.js";
 import SelectSmall from "../components/Select/Select";
-import { Grid, Paper, Tooltip } from "@mui/material";
+import { Card, CardContent, Grid, Paper, Tooltip } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import CircularLoading from "../components/CircularLoading.js";
 import FriendBox from "../components/ProfilePageComponents/FriendBox.js";
@@ -222,12 +222,41 @@ export default function Profile() {
             )}
             {/* CARDS */}
             <br />
-            {card && (
+            {card ? (
               <Cards
                 holder={card.holder}
                 number={card.number}
                 exp={new Date(card.expiry)}
               />
+            ) : (
+              <Card
+                sx={{
+                  padding: "1rem",
+                  backgroundColor: "white",
+                  display: "flex",
+                  justifyContent: "center",
+                }}
+              >
+                <CardContent>
+                  <Paper
+                    sx={{
+                      width: "344px",
+                      height: " 186px",
+                      borderRadius: "10px",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      backgroundColor: "white",
+                    }}
+                  >
+                    <Typography variant="h5">No cards added yet</Typography>
+                    <Typography variant="body2">
+                      start by clicking the + button bellow!
+                    </Typography>
+                  </Paper>
+                </CardContent>
+              </Card>
             )}
             <Box sx={{ display: "flex", gap: "10px" }}>
               <Tooltip title={"Add a new card"}>
