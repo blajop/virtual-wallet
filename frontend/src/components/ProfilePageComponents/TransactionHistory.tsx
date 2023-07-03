@@ -8,6 +8,8 @@ import { Friend } from "./FriendBox";
 import LocalAtmIcon from "@mui/icons-material/LocalAtm";
 import CreditCardIcon from "@mui/icons-material/CreditCard";
 import LocalDiningIcon from "@mui/icons-material/LocalDining";
+import LocalAirportIcon from "@mui/icons-material/LocalAirport";
+import EastIcon from "@mui/icons-material/East";
 import React from "react";
 import Pagination from "@mui/material/Pagination/Pagination";
 
@@ -57,6 +59,8 @@ function formatDateTime(dateTime: string): CustomDate {
 const spendingIcons = [
   <CreditCardIcon />,
   <LocalDiningIcon />,
+  <EastIcon />,
+  <LocalAirportIcon />,
   <LocalAtmIcon />,
 ];
 
