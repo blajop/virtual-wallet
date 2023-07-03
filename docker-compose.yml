@@ -1,30 +1,29 @@
 version: "3.9"
 services:
   backend-api:
-    # image: python-backend:latest
-    build: ./backend
+    image: uncles_be:latest
+    # build: ./backend
     depends_on:
-      - database
+      - persistence
     ports:
       - "8000:5555"
     restart: on-failure
-    env_file: .env
 
 
 
 
-  database:
+  persistence:
     image: mariadb:latest
     ports:
       - "6666:3306"
     volumes:
-      - uncles:/var/lib/mysql
+      - uncles_db:/var/lib/mysql
     environment:
       - MARIADB_ROOT_PASSWORD=mainatavihakeri
 
 
 volumes:
-  uncles:
+  uncles_db:
     external: true
 
 
